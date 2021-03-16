@@ -239,7 +239,7 @@ if __name__ == '__main__':
     test_names = TST_VALUES.NAMES[:5]
 #     test_names.append(TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0])
     
-    test_names = ['Acer saccharum Marshall']
+    test_names = ['Phlox longifolia Nutt.']
     for namestr in test_names:
         for gparse in [True, False]:
 #             print('Name = {}  GBIF parse = {}'.format(namestr, gparse))

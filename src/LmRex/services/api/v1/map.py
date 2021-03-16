@@ -190,7 +190,7 @@ if __name__ == '__main__':
     # test    
 #     Phlox longifolia Nutt., 2927725
     names = TST_VALUES.NAMES[0:2]
-    names = ['Puntius ticto']
+#     names = ['Puntius ticto']
     for namestr in names:
         print('Name = {}'.format(namestr))
         

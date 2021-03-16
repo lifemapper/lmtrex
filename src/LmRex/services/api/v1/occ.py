@@ -266,20 +266,20 @@ if __name__ == '__main__':
 
     print('*** Return valid URL')
 #     for occid in TST_VALUES.GUIDS_W_SPECIFY_ACCESS:
-    for occid in ['2c1becd5-e641-4e83-b3f5-76a55206539a']:
-#         for cls in [OccMopho, OccGBIF, OccIDB, OccSpecify]:
+    for occid in ['dcb298f9-1ed3-11e3-bfac-90b11c41863e']:
+        for cls in [OccMopho]:
 #         for cls in [OccGBIF, OccSpecify, OccTentacles]:
-#             api = cls()
-#             output = api.GET(occid=occid, count_only=False)
-#             print_s2n_output(output)
+            api = cls()
+            output = api.GET(occid=occid, count_only=False)
+            print_s2n_output(output)
 
-        # Queries all services
-        s2napi = OccTentacles()
-        for count_only in [True, False]:
-            all_output = s2napi.GET(occid=occid, count_only=count_only)
-            print_s2n_output(all_output)
-               
-            for one_output in all_output['records']:
-                print_s2n_output(one_output)
-                print('')
+#         # Queries all services
+#         s2napi = OccTentacles()
+#         for count_only in [True, False]:
+#             all_output = s2napi.GET(occid=occid, count_only=count_only)
+#             print_s2n_output(all_output)
+#                
+#             for one_output in all_output['records']:
+#                 print_s2n_output(one_output)
+#                 print('')
 
