@@ -3,8 +3,10 @@ import cherrypy
 from LmRex.common.lmconstants import (ServiceProvider, ServiceProviderNew, APIService)
 from LmRex.tools.provider.gbif import GbifAPI
 from LmRex.tools.provider.bison import BisonAPI
+from LmRex.tools.utils import get_traceback
+
 from LmRex.services.api.v1.base import _S2nService
-from LmRex.services.api.v1.s2n_type import (S2nOutput, get_traceback, print_s2n_output)
+from LmRex.services.api.v1.s2n_type import (S2nOutput, print_s2n_output)
         
 # .............................................................................
 @cherrypy.expose

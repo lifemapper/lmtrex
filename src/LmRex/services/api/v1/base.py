@@ -1,7 +1,7 @@
 import typing
 
 from LmRex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider)
+    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProviderNew)
 from LmRex.tools.provider.gbif import GbifAPI
 from LmRex.tools.provider.itis import ItisAPI
 from LmRex.services.api.v1.s2n_type import S2nOutput, S2nKey
@@ -330,7 +330,7 @@ class _S2nService:
             tmpprovs = usr_params['provider'].split(',') 
             for tp in tmpprovs:
                 prov = tp.strip()
-                if ServiceProvider.is_valid_param(prov):
+                if ServiceProviderNew.is_valid_param(prov):
                     provs.append(prov)
             usr_params['provider'] = provs
             

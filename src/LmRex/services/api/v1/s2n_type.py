@@ -1,23 +1,6 @@
-import sys
-import traceback
 import typing
 
 RecordsList = typing.List[typing.Dict]
-
-# ..........................
-def get_traceback(self):
-    """Get the traceback for this exception"""
-    exc_type, exc_val, this_traceback = sys.exc_info()
-    tb = traceback.format_exception(exc_type, exc_val, this_traceback)
-    tblines = []
-    cr = '\n'
-    for line in tb:
-        line = line.rstrip(cr)
-        parts = line.split(cr)
-        tblines.extend(parts)
-    trcbk = cr.join(tblines)
-    return trcbk
-
 
 # .............................................................................
 class S2nKey:
