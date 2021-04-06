@@ -10,11 +10,15 @@ class S2nKey:
     RECORDS = 'records'
     ERRORS = 'errors'
     QUERY_TERM = 'query_term'
+    # output one service at a time
     SERVICE = 'service'
     PROVIDER = 'provider'
     PROVIDER_QUERY = 'provider_query'
     # other S2N constant keys
     NAME = 'name'
+    # input request multiple services
+    SERVICES = 'services'
+    PARAM = 'param'
     OCCURRENCE_COUNT = 'occurrence_count'
     OCCURRENCE_URL = 'occurrence_url'
     

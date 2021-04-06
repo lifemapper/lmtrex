@@ -186,50 +186,50 @@ class APIService:
 # .............................................................................
 class ServiceProviderNew:
     BISON = {
-        S2nKey.NAME: 'BISON', 'param': 'bison', 'services': [APIService.Dataset]}
+        S2nKey.NAME: 'BISON', S2nKey.PARAM: 'bison', S2nKey.SERVICES: [APIService.Dataset]}
     GBIF = {
-        S2nKey.NAME: 'GBIF', 'param': 'gbif', 'service': [
+        S2nKey.NAME: 'GBIF', S2nKey.PARAM: 'gbif', S2nKey.SERVICES: [
             APIService.Occurrence, APIService.Name, APIService.Dataset]}
     iDigBio = {
-        S2nKey.NAME: 'iDigBio', 'param': 'idb', 'services': [
+        S2nKey.NAME: 'iDigBio', S2nKey.PARAM: 'idb', S2nKey.SERVICES: [
             APIService.Occurrence]}
     ITISSolr = {
-        S2nKey.NAME: 'ITIS Solr Web Services', 'param': 'itis', 'services': [
+        S2nKey.NAME: 'ITIS Solr Web Services', S2nKey.PARAM: 'itis', S2nKey.SERVICES: [
             APIService.Name]}
     Lifemapper = {
-        S2nKey.NAME: 'Lifemapper', 'param': 'lm', 'services': [
+        S2nKey.NAME: 'Lifemapper', S2nKey.PARAM: 'lm', S2nKey.SERVICES: [
             APIService.Map]}
     MorphoSource = {
-        S2nKey.NAME: 'MorphoSource', 'param': 'mopho', 'services': [
+        S2nKey.NAME: 'MorphoSource', S2nKey.PARAM: 'mopho', S2nKey.SERVICES: [
             APIService.Occurrence]}
     Specify = {
-        S2nKey.NAME: 'Specify', 'param': 'specify', 'services': [
+        S2nKey.NAME: 'Specify', S2nKey.PARAM: 'specify', S2nKey.SERVICES: [
             APIService.Occurrence, APIService.Resolve]}
 # ....................
     @classmethod
     def get_values(cls, param):
-        if param == ServiceProviderNew.BISON['param']:
+        if param == ServiceProviderNew.BISON[S2nKey.PARAM]:
             return ServiceProviderNew.BISON
-        elif param == ServiceProviderNew.GBIF['param']:
+        elif param == ServiceProviderNew.GBIF[S2nKey.PARAM]:
             return ServiceProviderNew.GBIF
-        elif param == ServiceProviderNew.iDigBio['param']:
+        elif param == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
             return ServiceProviderNew.iDigBio
-        elif param == ServiceProviderNew.ITISSolr['param']:
+        elif param == ServiceProviderNew.ITISSolr[S2nKey.PARAM]:
             return ServiceProviderNew.ITISSolr
-        elif param == ServiceProviderNew.Lifemapper['param']:
+        elif param == ServiceProviderNew.Lifemapper[S2nKey.PARAM]:
             return ServiceProviderNew.Lifemapper
-        elif param == ServiceProviderNew.MorphoSource['param']:
+        elif param == ServiceProviderNew.MorphoSource[S2nKey.PARAM]:
             return ServiceProviderNew.MorphoSource
-        elif param == ServiceProviderNew.Specify['param']:
+        elif param == ServiceProviderNew.Specify[S2nKey.PARAM]:
             return ServiceProviderNew.Specify
 # ....................
     @classmethod
     def is_valid_param(cls, param):
         if param in (
-            ServiceProviderNew.BISON['param'], ServiceProviderNew.GBIF['param'], 
-            ServiceProviderNew.iDigBio['param'], ServiceProviderNew.ITISSolr['param'], 
-            ServiceProviderNew.Lifemapper['param'], ServiceProviderNew.MorphoSource['param'],
-            ServiceProviderNew.Specify['param']):
+            ServiceProviderNew.BISON[S2nKey.PARAM], ServiceProviderNew.GBIF[S2nKey.PARAM], 
+            ServiceProviderNew.iDigBio[S2nKey.PARAM], ServiceProviderNew.ITISSolr[S2nKey.PARAM], 
+            ServiceProviderNew.Lifemapper[S2nKey.PARAM], ServiceProviderNew.MorphoSource[S2nKey.PARAM],
+            ServiceProviderNew.Specify[S2nKey.PARAM]):
             return True
         return False
 # ....................
@@ -245,10 +245,6 @@ class ServiceProviderNew:
 # ....................
     @classmethod
     def all(cls):
-#         atts = []
-#         for k in ServiceProviderNew.__dict__.keys():
-#             if not k.startswith('_'):
-#                 atts.append(k)
         return [
             ServiceProviderNew.BISON, ServiceProviderNew.GBIF, ServiceProviderNew.iDigBio, 
             ServiceProviderNew.ITISSolr, ServiceProviderNew.Lifemapper, 
