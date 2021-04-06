@@ -36,7 +36,10 @@ class _S2nService:
             LmRex.services.api.v1.S2nOutput object
         """
         if not provider:
-            provider = cls.PROVIDER[S2nKey.NAME]
+            try:
+                provider = cls.PROVIDER[S2nKey.NAME]
+            except:
+                provider = ''
         if not service: 
             service = cls.SERVICE_TYPE
         all_output = S2nOutput(
