@@ -1,5 +1,6 @@
 import os
 from LmRex.services.api.v1.s2n_type import S2nKey        
+from builtins import True
 
 # .............................................................................
 # hierarchySoFarWRanks <class 'list'>: ['41107:$Kingdom:Plantae$Subkingdom:Viridiplantae$Infrakingdom:Streptophyta$Superdivision:Embryophyta$Division:Tracheophyta$Subdivision:Spermatophytina$Class:Magnoliopsida$Superorder:Lilianae$Order:Poales$Family:Poaceae$Genus:Poa$Species:Poa annua$']
@@ -184,6 +185,77 @@ class APIService:
     Resolve = 'resolve'
 
 # .............................................................................
+class ServiceProviderNew:
+    BISON = {
+        S2nKey.NAME: 'BISON', 'param': 'bison', 'services': [APIService.Dataset]}
+    GBIF = {
+        S2nKey.NAME: 'GBIF', 'param': 'gbif', 'service': [
+            APIService.Occurrence, APIService.Name, APIService.Dataset]}
+    iDigBio = {
+        S2nKey.NAME: 'iDigBio', 'param': 'idb', 'services': [
+            APIService.Occurrence]}
+    ITISSolr = {
+        S2nKey.NAME: 'ITIS Solr Web Services', 'param': 'itis', 'services': [
+            APIService.Name]}
+    Lifemapper = {
+        S2nKey.NAME: 'Lifemapper', 'param': 'lm', 'services': [
+            APIService.Map]}
+    MorphoSource = {
+        S2nKey.NAME: 'MorphoSource', 'param': 'mopho', 'services': [
+            APIService.Occurrence]}
+    Specify = {
+        S2nKey.NAME: 'Specify', 'param': 'specify', 'services': [
+            APIService.Occurrence, APIService.Resolve]}
+# ....................
+    @classmethod
+    def get_values(cls, param):
+        if param == ServiceProviderNew.BISON['param']:
+            return ServiceProviderNew.BISON
+        elif param == ServiceProviderNew.GBIF['param']:
+            return ServiceProviderNew.GBIF
+        elif param == ServiceProviderNew.iDigBio['param']:
+            return ServiceProviderNew.iDigBio
+        elif param == ServiceProviderNew.ITISSolr['param']:
+            return ServiceProviderNew.ITISSolr
+        elif param == ServiceProviderNew.Lifemapper['param']:
+            return ServiceProviderNew.Lifemapper
+        elif param == ServiceProviderNew.MorphoSource['param']:
+            return ServiceProviderNew.MorphoSource
+        elif param == ServiceProviderNew.Specify['param']:
+            return ServiceProviderNew.Specify
+# ....................
+    @classmethod
+    def is_valid_param(cls, param):
+        if param in (
+            ServiceProviderNew.BISON['param'], ServiceProviderNew.GBIF['param'], 
+            ServiceProviderNew.iDigBio['param'], ServiceProviderNew.ITISSolr['param'], 
+            ServiceProviderNew.Lifemapper['param'], ServiceProviderNew.MorphoSource['param'],
+            ServiceProviderNew.Specify['param']):
+            return True
+        return False
+# ....................
+    @classmethod
+    def is_valid_service(cls, param, svc):
+        if param is None:
+            return True
+        else:
+            val_dict = ServiceProviderNew.get_values(param)
+            if svc in (val_dict['services']):
+                return True
+        return False
+# ....................
+    @classmethod
+    def all(cls):
+#         atts = []
+#         for k in ServiceProviderNew.__dict__.keys():
+#             if not k.startswith('_'):
+#                 atts.append(k)
+        return [
+            ServiceProviderNew.BISON, ServiceProviderNew.GBIF, ServiceProviderNew.iDigBio, 
+            ServiceProviderNew.ITISSolr, ServiceProviderNew.Lifemapper, 
+            ServiceProviderNew.MorphoSource, ServiceProviderNew.Specify]
+
+# .............................................................................
 class ServiceProvider:
     S2N = {
         S2nKey.NAME: 'S2N', 'endpoint': '', 'services': [
@@ -212,6 +284,9 @@ class ServiceProvider:
     Specify = {
         S2nKey.NAME: 'Specify', 'endpoint': 'specify', 'services': [
             APIService.Occurrence, APIService.Resolve]}
+
+
+
 #     SpecifyArk = {
 #         'name': 'Specify Resolver', 'endpoint': 'sparks', 'services': [
 #             APIService.Resolver]}

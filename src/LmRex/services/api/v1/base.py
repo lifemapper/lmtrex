@@ -1,7 +1,7 @@
 import typing
 
 from LmRex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS)
+    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider)
 from LmRex.tools.provider.gbif import GbifAPI
 from LmRex.tools.provider.itis import ItisAPI
 from LmRex.services.api.v1.s2n_type import S2nOutput, S2nKey
@@ -60,12 +60,18 @@ class _S2nService:
         return param
     
     # ...............................................
-    def _show_online(self):
-        msg = 'S^n {} {} service is online'.format(
-                self.SERVICE_TYPE, self.PROVIDER['name'])
-            
-        output = S2nOutput(
-            0, '', self.SERVICE_TYPE, self.PROVIDER['name'], errors=[msg])
+    def _show_online(self, providers=None):
+        if providers is None:
+            msg = 'S^n {} {} service is online'.format(
+                    self.SERVICE_TYPE, self.PROVIDER['name'])
+            output = S2nOutput(
+                0, '', self.SERVICE_TYPE, self.PROVIDER['name'], errors=[msg])
+        else:
+            providers_str = ', '.join(providers)
+            msg = 'S^n {} service is online for requested providers: '.format(
+                    self.SERVICE_TYPE, providers_str)
+            output = S2nOutput(
+                0, '', self.SERVICE_TYPE, providers_str, errors=[msg])
         return output
 
     # ...............................................
@@ -183,7 +189,7 @@ class _S2nService:
     # ...............................................
 #     @cherrypy.tools.json_out()
     def _standardize_params(
-            self, namestr=None, gbif_accepted=False, gbif_parse=False,  
+            self, provider=None, namestr=None, gbif_accepted=False, gbif_parse=False,  
             gbif_count=False, itis_match=False, itis_accepted=False, kingdom=None, 
             occid=None, dataset_key=None, count_only=False, url=None,
             scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
@@ -199,6 +205,9 @@ class _S2nService:
             Change default with _set_default, prior to calling this method.
         
         Args:
+            provider: string containing a comma delimited list of provider 
+                codes indicating which providers to query.  If the string is not present
+                or 'all', all providers of this service will be queried.
             namestr: a scientific name
             gbif_accepted: flag to indicate whether to limit to "Accepted" 
                 taxa in the GBIF Backbone Taxonomy
@@ -250,6 +259,7 @@ class _S2nService:
             #    other values are of the required type
             # For name services
 #             'namestr': (None, empty_str),
+            'provider': (None, empty_str),
             'gbif_accepted': False, 
             'gbif_parse': False, 
             'gbif_count': False, 
@@ -281,6 +291,7 @@ class _S2nService:
             'do_match': True}
         user_kwargs = {
 #             'namestr': namestr, 
+            'provider': provider,
             'gbif_accepted': gbif_accepted, 
             'gbif_parse': gbif_parse, 
             'gbif_count': gbif_count, 
@@ -303,9 +314,23 @@ class _S2nService:
             'transparent': transparent, 
             'width': width, 
             'do_match': do_match}
+        
         usr_params = self._process_params(kwarg_defaults, user_kwargs)
         # Do not edit namestr, maintain capitalization
         usr_params['namestr'] = namestr
+        # Allow for None or comma-delimited list of providers
+        if provider is None:
+            usr_params['provider'] = provider
+        else:
+            provs = []
+            # Prepared params are lower case 
+            tmpprovs = usr_params['provider'].split(',') 
+            for tp in tmpprovs:
+                prov = tp.strip()
+                if ServiceProvider.is_valid_param(prov):
+                    provs.append(prov)
+            usr_params['provider'] = provs
+            
         # Remove 'gbif_accepted' flag and replace with 'gbif_status' filter for GBIF
         # GBIF Taxonomic Constants at:
         # https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/TaxonomicStatus.html
