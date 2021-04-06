@@ -4,7 +4,7 @@ from LmRex.common.lmconstants import (ServiceProvider, ServiceProviderNew, APISe
 from LmRex.tools.provider.gbif import GbifAPI
 from LmRex.tools.provider.bison import BisonAPI
 from LmRex.services.api.v1.base import _S2nService
-from LmRex.services.api.v1.s2n_type import (S2nOutput, S2nError, print_s2n_output)
+from LmRex.services.api.v1.s2n_type import (S2nOutput, get_traceback, print_s2n_output)
         
 # .............................................................................
 @cherrypy.expose
@@ -90,8 +90,7 @@ class Dataset(_S2nService):
                     dataset_key, req_providers, usr_params['count_only'])
                 
         except Exception as e:
-            se = S2nError(e)
-            traceback = se.get_traceback()
+            traceback = get_traceback()
             output = self.get_failure(query_term=dataset_key, errors=[traceback])
         return output.response
     
@@ -147,7 +146,8 @@ class DatasetGBIF(_DatasetSvc):
             else:
                 output = self.get_records(dataset_key, usr_params['count_only'])
         except Exception as e:
-            output = self.get_failure(query_term=dataset_key, errors=[str(e)])
+            traceback = get_traceback()
+            output = self.get_failure(query_term=dataset_key, errors=[traceback])
         return output.response
 
 # # .............................................................................

@@ -3,50 +3,21 @@ import traceback
 import typing
 
 RecordsList = typing.List[typing.Dict]
-# .............................................................................
-class S2nError(Exception):
-    """Base class for exceptions in the lifemapper project.
-    """
 
-    # ..........................
-    def __init__(self, *args, do_trace=False, line_num=None, **kwargs):
-        """Constructor for LMError
+# ..........................
+def get_traceback(self):
+    """Get the traceback for this exception"""
+    exc_type, exc_val, this_traceback = sys.exc_info()
+    tb = traceback.format_exception(exc_type, exc_val, this_traceback)
+    tblines = []
+    cr = '\n'
+    for line in tb:
+        line = line.rstrip(cr)
+        parts = line.split(cr)
+        tblines.extend(parts)
+    trcbk = cr.join(tblines)
+    return trcbk
 
-        Args:
-            *args: Any positional agruments sent to this constructor
-            do_trace (bool): Should a traceback be attached to the exception
-            line_num (int): A line number to attach to this exception
-            **kwargs: Any additional keyword arguements sent to the constructor
-
-        Note:
-            Assembles all arguments into Exception.args
-        """
-        self.previous_exceptions = []
-        list_args = []
-        for arg in args:
-            if isinstance(arg, Exception):
-                self.previous_exceptions.append(arg)
-            else:
-                list_args.append(arg)
-
-        kw_arg_dict = dict(kwargs)
-        if line_num:
-            kw_arg_dict['Line number'] = line_num
-        kw_arg_dict['Location'] = self.get_location(line_num=line_num)
-        if do_trace:
-            self.traceback = self.get_traceback()
-            kw_arg_dict['Traceback'] = self.traceback
-        list_args.append(kw_arg_dict)
-        self.args = tuple(list_args)
-        Exception.__init__(self, self.args)
-
-    # ..........................
-    @staticmethod
-    def get_traceback():
-        """Get the traceback for this exception
-        """
-        exc_type, exc_val, this_traceback = sys.exc_info()
-        return traceback.format_exception(exc_type, exc_val, this_traceback)
 
 # .............................................................................
 class S2nKey:
