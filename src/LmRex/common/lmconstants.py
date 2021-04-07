@@ -177,6 +177,7 @@ class APIService:
     Root = '/api/v1'
     # Service types
     Occurrence = 'occ'
+    SpecimenExtension = 'occext'
     Name = 'name'
     Dataset = 'dataset'
     Map = 'map'
@@ -201,7 +202,7 @@ class ServiceProviderNew:
             APIService.Map]}
     MorphoSource = {
         S2nKey.NAME: 'MorphoSource', S2nKey.PARAM: 'mopho', S2nKey.SERVICES: [
-            APIService.Occurrence]}
+            APIService.SpecimenExtension]}
     Specify = {
         S2nKey.NAME: 'Specify', S2nKey.PARAM: 'specify', S2nKey.SERVICES: [
             APIService.Occurrence, APIService.Resolve]}

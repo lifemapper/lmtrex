@@ -147,12 +147,25 @@ class S2nError(str):
     pass
 
 
+def _print_oneprov_output(oneprov):
+    print('* One provider S^n output *')
+    for name, attelt in oneprov.items():
+        try:
+            if name == 'records':
+                print('   {}: {} returned records'.format(name, len(attelt)))
+            else:
+                print('   {}: {}'.format(name, attelt))
+        except:
+            pass
+
 def print_s2n_output(response_dict):
-    print('*** S^n output ***')
+    print('*** Dictionary of S^n dictionaries ***')
     for name, attelt in response_dict.items():
         try:
             if name == 'records':
-                print('{}: {} returned records'.format(name, len(attelt)))
+                print('{}: '.format(name))
+                for respdict in attelt:
+                    _print_oneprov_output(respdict)
             else:
                 print('{}: {}'.format(name, attelt))
         except:

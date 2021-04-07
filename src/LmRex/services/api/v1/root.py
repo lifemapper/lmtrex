@@ -61,10 +61,10 @@ def start_cherrypy_services():
     # ARK service
     cherrypy.tree.mount(SpecifyResolve(), SpecifyResolve.endpoint(), conf)
 
-    # Occurrence services
+    # Occurrence services, by GUID, by parameters (i.e. dataset_key, ...)
     cherrypy.tree.mount(OccurrenceSvc(), OccurrenceSvc.endpoint(), conf)
-    # Occurrence by dataset
-    cherrypy.tree.mount(DatasetSvc(), DatasetSvc.endpoint(), conf)
+#     # Occurrence by dataset
+#     cherrypy.tree.mount(DatasetSvc(), DatasetSvc.endpoint(), conf)
     # Map services
     cherrypy.tree.mount(MapLM(), MapLM.endpoint(), conf)
     # Name services

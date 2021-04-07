@@ -50,9 +50,9 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_valid_requested_providers(cls, standardized_providers):
+    def get_valid_requested_providers(cls, standardized_providers, filter_params=None):
         # Who to query
-        all_providers = cls.get_providers()
+        all_providers = cls.get_providers(filter_params=filter_params)
         req_providers = set(standardized_providers)
         if req_providers is None: 
             req_providers = all_providers
@@ -62,8 +62,9 @@ class _S2nService:
                 req_providers = all_providers
             # Error parameters
             invalid_providers = req_providers.difference(all_providers)
-            print('Request specified invalid providers {} for {} service'
-                  .format(cls.SERVICE_TYPE, ', '.join(invalid_providers)))
+            if len(invalid_providers) > 0:
+                print('Request specified invalid providers {} for {} service'
+                      .format(', '.join(invalid_providers), cls.SERVICE_TYPE))
         return req_providers
 
     # .............................................................................

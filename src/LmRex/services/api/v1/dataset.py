@@ -41,13 +41,10 @@ class DatasetSvc(_S2nService):
                 gbif_output = self._get_gbif_records(dataset_key, count_only)
                 allrecs.append(gbif_output)
         # Assemble
-        if len(providers) > 1:
-            provstr = ', '.join(providers)
-            full_out = S2nOutput(
-                len(allrecs), dataset_key, APIService.Dataset, provstr, 
-                records=allrecs)
-        else:
-            full_out = allrecs[0]        
+        provstr = ', '.join(providers)
+        full_out = S2nOutput(
+            len(allrecs), dataset_key, APIService.Dataset, provstr, 
+            records=allrecs)
         return full_out
 
     # ...............................................
