@@ -50,6 +50,24 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
+    def get_valid_requested_providers(self, standardized_providers):
+        # Who to query
+        all_providers = self._get_providers()
+        req_providers = set(standardized_providers)
+        if req_providers is None: 
+            req_providers = all_providers
+        else:
+            req_providers = all_providers.intersection(req_providers)
+            if len(req_providers) == 0:
+                req_providers = all_providers
+            # Error parameters
+            invalid_providers = req_providers.difference(all_providers)
+            print('Request specified invalid providers {} for {} service'
+                  .format(self.SERVICE_TYPE, ', '.join(invalid_providers)))
+        return req_providers
+
+    # .............................................................................
+    @classmethod
     def endpoint(self):
         endpoint =  '{}/{}'.format(APIService.Root, self.SERVICE_TYPE)
         if self.PROVIDER is not None:
@@ -211,7 +229,6 @@ class _S2nService:
             provider: string containing a comma delimited list of provider 
                 codes indicating which providers to query.  If the string is not present
                 or 'all', all providers of this service will be queried.
-            namestr: a scientific name
             gbif_accepted: flag to indicate whether to limit to "Accepted" 
                 taxa in the GBIF Backbone Taxonomy
             gbif_parse: flag to indicate whether to first use the GBIF parser 
@@ -261,7 +278,6 @@ class _S2nService:
             # Sequences denote value options, the first is the default, 
             #    other values are of the required type
             # For name services
-#             'namestr': (None, empty_str),
             'provider': (None, empty_str),
             'gbif_accepted': False, 
             'gbif_parse': False, 
@@ -277,23 +293,16 @@ class _S2nService:
             'scenariocode': Lifemapper.valid_scenario_codes(),
             'bbox': '-180,-90,180,90', 
             'color': Lifemapper.VALID_COLORS,
-#             'crs': (None, ''), 
             'exceptions': (None, empty_str), 
             'height': 300, 
             'layers': (None, 'prj', 'occ', 'bmng'),
             'request': VALID_MAP_REQUESTS, 
             'format': None, 
-#             'service': 'wms',
-#             'sld': None, 
-#             'sld_body': None, 
             'srs': 'epsg:4326', 
-#             'styles': None, 
             'transparent': None, 
-#             'version': '1.0', 
             'width': 600,
             'do_match': True}
         user_kwargs = {
-#             'namestr': namestr, 
             'provider': provider,
             'gbif_accepted': gbif_accepted, 
             'gbif_parse': gbif_parse, 
@@ -345,7 +354,6 @@ class _S2nService:
         # Remove 'gbif_parse' and itis_match flags
         gbif_parse = usr_params.pop('gbif_parse')
         itis_match = usr_params.pop('itis_match')
-#         namestr = usr_params['namestr']
         # Replace namestr with GBIF-parsed namestr
         if namestr:
             if gbif_parse: 
