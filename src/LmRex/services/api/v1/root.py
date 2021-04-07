@@ -4,8 +4,7 @@ import cherrypy
 from LmRex.services.api.v1.dataset import DatasetSvc
 from LmRex.services.api.v1.map import MapLM
 from LmRex.services.api.v1.name import (NameGBIF, NameITISSolr, NameTentacles)
-from LmRex.services.api.v1.occ import (
-    OccGBIF, OccIDB, OccMopho, OccSpecify, OccTentacles)
+from LmRex.services.api.v1.occ import OccurrenceSvc
 from LmRex.services.api.v1.resolve import SpecifyResolve
 
 from LmRex.common.lmconstants import (CHERRYPY_CONFIG_FILE)
@@ -63,11 +62,7 @@ def start_cherrypy_services():
     cherrypy.tree.mount(SpecifyResolve(), SpecifyResolve.endpoint(), conf)
 
     # Occurrence services
-    cherrypy.tree.mount(OccTentacles(), OccTentacles.endpoint(), conf)
-    cherrypy.tree.mount(OccGBIF(), OccGBIF.endpoint(), conf)
-    cherrypy.tree.mount(OccIDB(), OccIDB.endpoint(), conf)
-    cherrypy.tree.mount(OccMopho(), OccMopho.endpoint(), conf)
-    cherrypy.tree.mount(OccSpecify(), OccSpecify.endpoint(), conf)
+    cherrypy.tree.mount(OccurrenceSvc(), OccurrenceSvc.endpoint(), conf)
     # Occurrence by dataset
     cherrypy.tree.mount(DatasetSvc(), DatasetSvc.endpoint(), conf)
     # Map services
