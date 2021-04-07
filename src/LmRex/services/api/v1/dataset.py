@@ -14,7 +14,8 @@ class DatasetSvc(_S2nService):
     SERVICE_TYPE = APIService.Dataset
     
     # ...............................................
-    def _get_providers(self):
+    @classmethod
+    def _get_providers(cls):
         provnames = set()
         for p in ServiceProviderNew.all():
             if APIService.Dataset in p[S2nKey.SERVICES]:
@@ -22,13 +23,14 @@ class DatasetSvc(_S2nService):
         return provnames
 
     # ...............................................
-    def _get_gbif_records(self, dataset_key, count_only):
+    @classmethod
+    def _get_gbif_records(cls, dataset_key, count_only):
         try:
             output = GbifAPI.get_occurrences_by_dataset(
                 dataset_key, count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=dataset_key, errors=[traceback])
+            output = cls.get_failure(query_term=dataset_key, errors=[traceback])
         return output
 
     # ...............................................
@@ -96,7 +98,7 @@ class DatasetSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term=dataset_key, errors=[traceback])
-        return output
+        return output.response
     
 # # .............................................................................
 # @cherrypy.expose

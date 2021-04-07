@@ -1,7 +1,7 @@
 """This module provides REST services for service objects"""
 import cherrypy
 # import cherrypy_cors
-from LmRex.services.api.v1.dataset import Dataset
+from LmRex.services.api.v1.dataset import DatasetSvc
 from LmRex.services.api.v1.map import MapLM
 from LmRex.services.api.v1.name import (NameGBIF, NameITISSolr, NameTentacles)
 from LmRex.services.api.v1.occ import (
@@ -69,7 +69,7 @@ def start_cherrypy_services():
     cherrypy.tree.mount(OccMopho(), OccMopho.endpoint(), conf)
     cherrypy.tree.mount(OccSpecify(), OccSpecify.endpoint(), conf)
     # Occurrence by dataset
-    cherrypy.tree.mount(Dataset(), Dataset.endpoint(), conf)
+    cherrypy.tree.mount(DatasetSvc(), DatasetSvc.endpoint(), conf)
     # Map services
     cherrypy.tree.mount(MapLM(), MapLM.endpoint(), conf)
     # Name services

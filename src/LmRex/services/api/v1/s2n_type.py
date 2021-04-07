@@ -99,6 +99,7 @@ class S2nOutput(object):
     def __init__(
             self, count, query_term, service, provider, provider_query=[], 
             record_format='', records=[], errors=[]):
+        # Dictionary is json-serializable
         self._response = {
             S2nKey.COUNT: count, S2nKey.QUERY_TERM: query_term, 
             S2nKey.SERVICE: service, S2nKey.PROVIDER: provider, 

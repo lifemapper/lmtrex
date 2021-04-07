@@ -50,9 +50,9 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_valid_requested_providers(self, standardized_providers):
+    def get_valid_requested_providers(cls, standardized_providers):
         # Who to query
-        all_providers = self._get_providers()
+        all_providers = cls._get_providers()
         req_providers = set(standardized_providers)
         if req_providers is None: 
             req_providers = all_providers
@@ -63,15 +63,15 @@ class _S2nService:
             # Error parameters
             invalid_providers = req_providers.difference(all_providers)
             print('Request specified invalid providers {} for {} service'
-                  .format(self.SERVICE_TYPE, ', '.join(invalid_providers)))
+                  .format(cls.SERVICE_TYPE, ', '.join(invalid_providers)))
         return req_providers
 
     # .............................................................................
     @classmethod
-    def endpoint(self):
-        endpoint =  '{}/{}'.format(APIService.Root, self.SERVICE_TYPE)
-        if self.PROVIDER is not None:
-            endpoint = '{}/{}'.format(endpoint, self.PROVIDER['endpoint'])
+    def endpoint(cls):
+        endpoint =  '{}/{}'.format(APIService.Root, cls.SERVICE_TYPE)
+        if cls.PROVIDER is not None:
+            endpoint = '{}/{}'.format(endpoint, cls.PROVIDER['endpoint'])
         return endpoint
 
     # ...............................................
