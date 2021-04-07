@@ -15,7 +15,7 @@ class DatasetSvc(_S2nService):
     
     # ...............................................
     @classmethod
-    def _get_providers(cls):
+    def get_providers(cls):
         provnames = set()
         for p in ServiceProviderNew.all():
             if APIService.Dataset in p[S2nKey.SERVICES]:
@@ -23,14 +23,13 @@ class DatasetSvc(_S2nService):
         return provnames
 
     # ...............................................
-    @classmethod
-    def _get_gbif_records(cls, dataset_key, count_only):
+    def _get_gbif_records(self, dataset_key, count_only):
         try:
             output = GbifAPI.get_occurrences_by_dataset(
                 dataset_key, count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = cls.get_failure(query_term=dataset_key, errors=[traceback])
+            output = self.get_failure(query_term=dataset_key, errors=[traceback])
         return output
 
     # ...............................................
@@ -219,10 +218,11 @@ if __name__ == '__main__':
     
     svc = DatasetSvc()
     for count_only in [True, False]:
-        out = svc.GET(
-            dataset_key=TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0], 
-            provider='gbif',
-            count_only=count_only)
+        for prov in svc.get_providers():
+            out = svc.GET(
+                dataset_key=TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0], 
+                provider=prov,
+                count_only=count_only)
         print_s2n_output(out)
             
 
