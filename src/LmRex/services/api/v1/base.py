@@ -50,18 +50,20 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_valid_requested_providers(cls, standardized_providers, filter_params=None):
+    def get_valid_requested_providers(cls, standardized_providers, valid_providers):
         # Who to query
-        all_providers = cls.get_providers(filter_params=filter_params)
+#         all_providers = cls.get_providers(filter_params=filter_params)
+        if standardized_providers
         req_providers = set(standardized_providers)
+        valid_providers = set(valid_providers)
         if req_providers is None: 
-            req_providers = all_providers
+            req_providers = valid_providers
         else:
-            req_providers = all_providers.intersection(req_providers)
+            req_providers = valid_providers.intersection(req_providers)
             if len(req_providers) == 0:
-                req_providers = all_providers
+                req_providers = valid_providers
             # Error parameters
-            invalid_providers = req_providers.difference(all_providers)
+            invalid_providers = req_providers.difference(valid_providers)
             if len(invalid_providers) > 0:
                 print('Request specified invalid providers {} for {} service'
                       .format(', '.join(invalid_providers), cls.SERVICE_TYPE))
@@ -249,7 +251,7 @@ class _S2nService:
             count_only: flag indicating whether to return records
             url: direct URL to Specify occurrence, only used with for Specify
                 queries
-            scenariocode: A lifemapper code indicating the climate scenario used
+            scenariocode: A lifemapper code indiget_valid_requested_providerscating the climate scenario used
                 to calculate predicted presence of a species 
             bbox: A (min x, min y, max x, max y) tuple of bounding parameters
             color: The color (or color ramp) to use for the map
@@ -332,9 +334,8 @@ class _S2nService:
         # Do not edit namestr, maintain capitalization
         usr_params['namestr'] = namestr
         # Allow for None or comma-delimited list of providers
-        if provider is None:
-            usr_params['provider'] = provider
-        else:
+        provs = []
+        if provider is not None:
             provs = []
             # Prepared params are lower case 
             tmpprovs = usr_params['provider'].split(',') 
@@ -342,8 +343,7 @@ class _S2nService:
                 prov = tp.strip()
                 if ServiceProviderNew.is_valid_param(prov):
                     provs.append(prov)
-            usr_params['provider'] = provs
-            
+        usr_params['provider'] = provs
         # Remove 'gbif_accepted' flag and replace with 'gbif_status' filter for GBIF
         # GBIF Taxonomic Constants at:
         # https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/TaxonomicStatus.html

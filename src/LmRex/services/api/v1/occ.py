@@ -166,10 +166,11 @@ class OccurrenceSvc(_S2nService):
                 dskey = usr_params['dataset_key']
                 if dskey:
                     filter_params = {'dataset_key': dskey}
-            # Who to query#     occids = ['dcb298f9-1ed3-11e3-bfac-90b11c41863e']
+            # Who to query
+            valid_providers = self.get_providers(filter_params=filter_params)
             req_providers = self.get_valid_requested_providers(
-                usr_params['provider'], filter_params=filter_params)
-            
+                usr_params['provider'], valid_providers)
+            # Query
             output = self.get_records(
                 occid, req_providers, count_only, filter_params=filter_params)
         except Exception as e:
