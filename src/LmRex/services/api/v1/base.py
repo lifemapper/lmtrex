@@ -52,8 +52,6 @@ class _S2nService:
     @classmethod
     def get_valid_requested_providers(cls, standardized_providers, valid_providers):
         # Who to query
-#         all_providers = cls.get_providers(filter_params=filter_params)
-        if standardized_providers
         req_providers = set(standardized_providers)
         valid_providers = set(valid_providers)
         if req_providers is None: 
