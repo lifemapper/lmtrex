@@ -89,6 +89,7 @@ class OccurrenceSvc(_S2nService):
         allrecs = []
         # Determine query
         query_term = 'invalid query term'
+        dskey = None
         if occid is not None:
             query_term = occid
         elif filter_params:
@@ -96,7 +97,7 @@ class OccurrenceSvc(_S2nService):
             try:
                 dskey = filter_params['dataset_key']
             except:
-                dskey = None
+                pass
                 
         for pr in providers:
             # Address single record
