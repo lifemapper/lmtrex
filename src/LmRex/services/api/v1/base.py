@@ -84,10 +84,8 @@ class _S2nService:
     # ...............................................
     def _show_online(self, providers=None):
         if providers is None:
-            msg = 'S^n {} {} service is online'.format(
-                    self.SERVICE_TYPE, self.PROVIDER['name'])
-            output = S2nOutput(
-                0, '', self.SERVICE_TYPE, self.PROVIDER['name'], errors=[msg])
+            msg = 'S^n {} service is online'.format(self.SERVICE_TYPE)
+            output = S2nOutput(0, '', self.SERVICE_TYPE, '', errors=[msg])
         else:
             providers_str = ', '.join(providers)
             msg = 'S^n {} service is online for requested providers: '.format(

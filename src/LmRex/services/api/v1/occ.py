@@ -20,14 +20,14 @@ class OccurrenceSvc(_S2nService):
 
     # ...............................................
     @classmethod
-    def get_providers(self, filter_params=None):
+    def get_providers(self, search_params=None):
         provnames = set()
-        if filter_params is None:
+        if search_params is None:
             for p in ServiceProviderNew.all():
                 if APIService.Occurrence in p[S2nKey.SERVICES]:
                     provnames.add(p[S2nKey.PARAM])
         # Fewer providers by dataset
-        elif 'dataset_key' in filter_params.keys():
+        elif 'dataset_key' in search_params.keys():
             provnames = set([ServiceProviderNew.GBIF[S2nKey.PARAM]])
         return provnames
 
@@ -85,21 +85,21 @@ class OccurrenceSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def get_records(self, occid, providers, count_only, filter_params={}):
+    def get_records(self, occid, req_providers, count_only, search_params={}):
         allrecs = []
         # Determine query
-        query_term = 'invalid query term'
+        query_term = ''
         dskey = None
         if occid is not None:
             query_term = occid
-        elif filter_params:
-            query_term = '{}'.format(filter_params)
+        elif search_params:
             try:
-                dskey = filter_params['dataset_key']
+                dskey = search_params['dataset_key']
+                query_term = '{}'.format(search_params)
             except:
-                pass
+                query_term = 'invalid query term'
                 
-        for pr in providers:
+        for pr in req_providers:
             # Address single record
             if occid is not None:
                 # GBIF
@@ -119,14 +119,14 @@ class OccurrenceSvc(_S2nService):
                     sp_output = self._get_specify_records(occid, count_only)
                     allrecs.append(sp_output)
             # Filter by parameters
-            elif filter_params:
+            elif search_params:
                 if dskey:
                     if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
                         gbif_output = self._get_gbif_records(occid, dskey, count_only)
                         allrecs.append(gbif_output)
 
         # Assemble
-        provstr = ', '.join(providers)
+        provstr = ', '.join(req_providers)
         full_out = S2nOutput(
             len(allrecs), query_term, APIService.Occurrence, provstr, 
             records=allrecs)
@@ -152,27 +152,33 @@ class OccurrenceSvc(_S2nService):
             list of dictionaries of records corresponding to specimen 
             occurrences in the provider database
         """
+        search_params = None
         try:
-            filter_params = None
             usr_params = self._standardize_params(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
+            
+            # Who to query
+            valid_providers = self.get_providers(search_params=search_params)
+            req_providers = self.get_valid_requested_providers(
+                usr_params['provider'], valid_providers)
+            
             # What to query: address one occurrence record, with optional filters
             occid = usr_params['occid']
-            # What to query: common filters
-            count_only = usr_params['count_only']
             if occid is None:
                 # What to query: query for many records with filters
                 dskey = usr_params['dataset_key']
                 if dskey:
-                    filter_params = {'dataset_key': dskey}
-            # Who to query
-            valid_providers = self.get_providers(filter_params=filter_params)
-            req_providers = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-            # Query
-            output = self.get_records(
-                occid, req_providers, count_only, filter_params=filter_params)
+                    search_params = {'dataset_key': dskey}
+            
+            if occid is None and search_params is None:
+                output = self._show_online()
+            else:
+                # What to query: common filters
+                count_only = usr_params['count_only']
+                # Query
+                output = self.get_records(
+                    occid, req_providers, count_only, search_params=search_params)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term=occid, errors=[traceback])
@@ -428,7 +434,7 @@ if __name__ == '__main__':
     # Query by datasetid
     for dskey in dskeys:
         for count_only in [True]:
-            for prov in svc.get_providers(filter_params={'dataset_key': dskey}):
+            for prov in svc.get_providers(search_params={'dataset_key': dskey}):
                 out = svc.GET(
                     occid=None, provider=prov, dataset_key=dskey, count_only=count_only)
                 print_s2n_output(out)
