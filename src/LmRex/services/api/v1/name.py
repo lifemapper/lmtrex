@@ -1,7 +1,7 @@
 import cherrypy
 
 from LmRex.common.lmconstants import (
-    ServiceProvider, ServiceProviderNew, APIService, TST_VALUES)
+    ServiceProviderNew, APIService, TST_VALUES)
 from LmRex.services.api.v1.base import _S2nService
 from LmRex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from LmRex.tools.provider.gbif import GbifAPI
@@ -24,7 +24,7 @@ class NameSvc(_S2nService):
         return provnames
     
     # ...............................................
-    def _get_gbif_records(self, namestr, gbif_status, gbif_count, search_params=None):
+    def _get_gbif_records(self, namestr, gbif_status, gbif_count):
         try:
             # Get name from Gbif        
             output = GbifAPI.match_name(namestr, status=gbif_status)
@@ -57,7 +57,7 @@ class NameSvc(_S2nService):
             return output.response
 
     # ...............................................
-    def _get_itis_records(self, namestr, itis_accepted, kingdom, search_params=None):
+    def _get_itis_records(self, namestr, itis_accepted, kingdom):
         try:
             std_output = ItisAPI.match_name(
                 namestr, itis_accepted=itis_accepted, kingdom=kingdom)
@@ -71,31 +71,27 @@ class NameSvc(_S2nService):
             self, namestr, gbif_status, gbif_count, itis_accepted, kingdom, req_providers, 
             search_params=None):
         allrecs = []
-        # Determine query
+        # for response metadata
         query_term = ''
         if namestr is not None:
             query_term = namestr
         elif search_params:
             query_term = 'invalid query term'
-
-                
+            
         for pr in req_providers:
             # GBIF
             if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
-                goutput = self._get_gbif_records(
-                    namestr, gbif_status, gbif_count, search_params=search_params)
+                goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
                 allrecs.append(goutput)
             # iDigBio
             elif pr == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
-                isoutput = self._get_itis_records(
-                    namestr, itis_accepted, kingdom, search_params=search_params)
+                isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
                 allrecs.append(isoutput)
         
         # Assemble
         provstr = ', '.join(req_providers)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE, provstr, 
-            records=allrecs)
+            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs)
 
         return full_out
 
@@ -132,18 +128,17 @@ class NameSvc(_S2nService):
                 namestr=namestr, gbif_accepted=gbif_accepted, gbif_parse=gbif_parse, 
                 gbif_count=gbif_count, itis_accepted=itis_accepted, kingdom=kingdom)
             
+            # What to query
+            namestr = usr_params['namestr']
             # Who to query
             valid_providers = self.get_providers(search_params=search_params)
             req_providers = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
 
-            # What to query: address one taxon record, with optional filters
-            namestr = usr_params['namestr']
-
             if namestr is None and search_params is None:
                 output = self._show_online(providers=valid_providers)
             else:
-                # What to query: common filters
+                # common filters
                 gbif_status = usr_params['gbif_status']
                 gbif_count = usr_params['gbif_count']
                 itis_accepted = usr_params['itis_accepted'] 

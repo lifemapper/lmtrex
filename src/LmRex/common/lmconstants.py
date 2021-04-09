@@ -429,6 +429,7 @@ class BisonQuery:
 # ......................................................
 class Lifemapper:
     URL = 'http://client.lifemapper.org/api/v2'
+    OCC_RESOURCE = 'sdmproject'
     PROJ_RESOURCE = 'sdmproject'
     MAP_RESOURCE = 'ogc' 
     OBSERVED_SCENARIO_CODE = 'worldclim-curr'

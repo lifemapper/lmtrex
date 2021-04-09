@@ -367,7 +367,7 @@ class LifemapperAPI(APIQuery):
             Taxonomy and this method requires them for success.
 
         Todo:
-            handle full record returns instead of atoms
+            search on occurrenceset, then also pull projection layers
         """
         other_filters[Lifemapper.NAME_KEY] = name
         other_filters[Lifemapper.ATOM_KEY] = 0

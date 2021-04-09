@@ -2,7 +2,6 @@ import cherrypy
 
 from LmRex.common.lmconstants import (ServiceProviderNew, APIService)
 
-from LmRex.tools.provider.bison import BisonAPI
 from LmRex.tools.provider.gbif import GbifAPI
 from LmRex.tools.provider.idigbio import IdigbioAPI
 from LmRex.tools.provider.mopho import MorphoSourceAPI
@@ -85,9 +84,9 @@ class OccurrenceSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def get_records(self, occid, req_providers, count_only, search_params={}):
+    def get_records(self, occid, req_providers, count_only, search_params=None):
         allrecs = []
-        # Determine query
+        # for response metadata
         query_term = ''
         dskey = None
         if occid is not None:
@@ -158,11 +157,6 @@ class OccurrenceSvc(_S2nService):
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
             
-            # Who to query
-            valid_providers = self.get_providers(search_params=search_params)
-            req_providers = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-            
             # What to query: address one occurrence record, with optional filters
             occid = usr_params['occid']
             if occid is None:
@@ -170,6 +164,11 @@ class OccurrenceSvc(_S2nService):
                 dskey = usr_params['dataset_key']
                 if dskey:
                     search_params = {'dataset_key': dskey}
+            
+            # Who to query
+            valid_providers = self.get_providers(search_params=search_params)
+            req_providers = self.get_valid_requested_providers(
+                usr_params['provider'], valid_providers)
             
             if occid is None and search_params is None:
                 output = self._show_online()
