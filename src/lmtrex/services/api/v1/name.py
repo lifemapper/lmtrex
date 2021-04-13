@@ -30,8 +30,9 @@ class NameSvc(_S2nService):
             output = GbifAPI.match_name(namestr, status=gbif_status)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=namestr, errors=[traceback])
-#         return output.response
+            output = self.get_failure(
+                provider=ServiceProviderNew.GBIF[S2nKey.NAME], query_term=namestr, 
+                errors=[traceback])
 
         prov_query_list = output.provider_query
         # Add occurrence count to name records
@@ -54,16 +55,18 @@ class NameSvc(_S2nService):
                         prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
 
             output.set_value(S2nKey.PROVIDER_QUERY, prov_query_list)
-            return output.response
+        return output.response
 
     # ...............................................
     def _get_itis_records(self, namestr, itis_accepted, kingdom):
         try:
-            std_output = ItisAPI.match_name(
+            output = ItisAPI.match_name(
                 namestr, itis_accepted=itis_accepted, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=namestr, errors=[traceback])
+            output = self.get_failure(
+                provider=ServiceProviderNew.iDigBio[S2nKey.NAME], query_term=namestr, 
+                errors=[traceback])
         return output.response
 
     # ...............................................
@@ -78,6 +81,7 @@ class NameSvc(_S2nService):
         elif search_params:
             query_term = 'invalid query term'
             
+        provnames = []
         for pr in req_providers:
             # Address single record
             if namestr is not None:
@@ -85,17 +89,19 @@ class NameSvc(_S2nService):
                 if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
                     allrecs.append(goutput)
+                    provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
                 # iDigBio
                 elif pr == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
                     allrecs.append(isoutput)
+                    provnames.append(ServiceProviderNew.iDigBio[S2nKey.NAME])
             # Filter by parameters
             # TODO: enable search parameters
             elif search_params:
                 pass
             
         # Assemble
-        provstr = ', '.join(req_providers)
+        provstr = ','.join(provnames)
         full_out = S2nOutput(
             len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs)
 
