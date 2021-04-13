@@ -16,7 +16,7 @@ setup(
     author_email='aimeestewart@ku.edu',
     url='https://github.com/lifemapper/t-rex',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs')),
+    packages=find_packages(exclude=('data', 'docs', 'solrcores', 'tests')),
     install_requires=[
         'cherrypy>=18.6.0',
         'requests>=2.25.1',
