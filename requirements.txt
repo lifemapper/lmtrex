@@ -1,0 +1,3 @@
+cherrypy>=18.6.0
+requests>=2.25.1
+gdal>=1.11.4
