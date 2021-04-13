@@ -38,13 +38,21 @@ class OccurrenceSvc(_S2nService):
         (url, msg) = spark.get_url_from_meta(solr_output)
                 
         if url is None:
-            output = self.get_failure(query_term=occid, errors=[msg])
+            msgs = []
+            if msg is not None:
+                msgs.append(msg)
+            msgs.append('No endpoint for Specify record with occurrenceID {}'.format(occid))
+            output = self.get_failure(
+                provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
+                errors=msgs)
         else:
             try:
                 output = SpecifyPortalAPI.get_specify_record(occid, url, count_only)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=occid, errors=[traceback])
+                output = self.get_failure(
+                    provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
+                    errors=[traceback])
         return output.response
 
     # ...............................................
@@ -54,7 +62,9 @@ class OccurrenceSvc(_S2nService):
                 occid, count_only=count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=occid, errors=[traceback])
+            output = self.get_failure(
+                provider=ServiceProviderNew.MorphoSource[S2nKey.NAME], query_term=occid, 
+                errors=[traceback])
         return output.response
 
     # ...............................................
@@ -80,7 +90,9 @@ class OccurrenceSvc(_S2nService):
                     dataset_key, count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=query_term, errors=[traceback])
+            output = self.get_failure(
+                provider=ServiceProviderNew.GBIF[S2nKey.NAME], query_term=query_term, 
+                errors=[traceback])
         return output.response
 
     # ...............................................
@@ -98,6 +110,7 @@ class OccurrenceSvc(_S2nService):
             except:
                 query_term = 'invalid query term'
                 
+        provnames = []
         for pr in req_providers:
             # Address single record
             if occid is not None:
@@ -105,27 +118,32 @@ class OccurrenceSvc(_S2nService):
                 if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
                     gbif_output = self._get_gbif_records(occid, dskey, count_only)
                     allrecs.append(gbif_output)
+                    provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
                 # iDigBio
                 elif pr == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
                     idb_output = self._get_idb_records(occid, count_only)
                     allrecs.append(idb_output)
+                    provnames.append(ServiceProviderNew.iDigBio[S2nKey.NAME])
                 # MorphoSource
                 elif pr == ServiceProviderNew.MorphoSource[S2nKey.PARAM]:
                     mopho_output = self._get_mopho_records(occid, count_only)
                     allrecs.append(mopho_output)
+                    provnames.append(ServiceProviderNew.MorphoSource[S2nKey.NAME])
                 # Specify
                 elif pr == ServiceProviderNew.Specify[S2nKey.PARAM]:
                     sp_output = self._get_specify_records(occid, count_only)
                     allrecs.append(sp_output)
+                    provnames.append(ServiceProviderNew.Specify[S2nKey.NAME])
             # Filter by parameters
             elif search_params:
                 if dskey:
                     if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
                         gbif_output = self._get_gbif_records(occid, dskey, count_only)
                         allrecs.append(gbif_output)
+                        provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
 
         # Assemble
-        provstr = ', '.join(req_providers)
+        provstr = ','.join(provnames)
         full_out = S2nOutput(
             len(allrecs), query_term, APIService.Occurrence, provstr, 
             records=allrecs)
@@ -426,10 +444,15 @@ if __name__ == '__main__':
     # Query by occurrenceid
     for occid in occids:
         for count_only in [False]:
+            # Get one provider at a time
             for prov in svc.get_providers():
                 out = svc.GET(
                     occid=occid, provider=prov, count_only=count_only)
                 print_s2n_output(out)
+    # Get all providers for last occid
+    out = svc.GET(occid=occid, count_only=count_only)
+    print_s2n_output(out)
+    
     # Query by datasetid
     for dskey in dskeys:
         for count_only in [True]:

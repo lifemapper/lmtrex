@@ -17,65 +17,6 @@ SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 
 DATA_DUMP_DELIMITER = '\t'
 GBIF_MISSING_KEY = 'unmatched_gbif_ids'
-
-# class S2N:
-#     COUNT_KEY = 'count'
-#     RECORD_FORMAT_KEY = 'record_format'
-#     RECORDS_KEY = 'records'
-#     ERRORS_KEY = 'errors'
-#     NAME_KEY = 'name'
-#     OCCURRENCE_ID_KEY = 'occurrenceid'
-#     DATASET_ID_KEY = 'dataset_key'
-#     SERVICE_KEY = 'service'
-#     PROVIDER_KEY = 'provider'
-#     PROVIDER_QUERY_KEY = 'provider_query'
-#     
-#     @classmethod
-#     def all_keys(cls):
-#         return  [
-#             cls.COUNT_KEY, cls.RECORD_FORMAT_KEY, cls.RECORDS_KEY, 
-#             cls.ERRORS_KEY, cls.NAME_KEY, cls.OCCURRENCE_ID_KEY, 
-#             cls.DATASET_ID_KEY, cls.SERVICE_KEY, cls.PROVIDER_KEY, 
-#             cls.PROVIDER_QUERY_KEY]
-# 
-#     @classmethod
-#     def required_keys(cls):
-#         return  [
-#             cls.COUNT_KEY, cls.ERRORS_KEY, cls.SERVICE_KEY, cls.PROVIDER_KEY, 
-#             cls.PROVIDER_QUERY_KEY]
-# 
-#     @classmethod
-#     def required_for_namesvc_keys(cls):
-#         keys = cls.required_keys()
-#         keys.extend([cls.RECORD_FORMAT_KEY, cls.RECORDS_KEY])
-#         keys.append(cls.NAME_KEY)
-#         return keys
-#     
-#     @classmethod
-#     def required_for_occsvc_keys(cls):
-#         keys = cls.required_keys()
-#         keys.extend([cls.RECORD_FORMAT_KEY, cls.RECORDS_KEY])
-#         keys.append(cls.OCCURRENCE_ID_KEY)
-#         return keys
-#     
-#     @classmethod
-#     def required_for_occsvc_norecs_keys(cls):
-#         keys = cls.required_keys()
-#         keys.append(cls.OCCURRENCE_ID_KEY)
-#         return keys
-#     
-#     @classmethod
-#     def required_for_datasetsvc_keys(cls):
-#         keys = cls.required_keys()
-#         keys.extend([cls.RECORD_FORMAT_KEY, cls.RECORDS_KEY])
-#         keys.append(cls.DATASET_ID_KEY)
-#         return keys
-#     
-#     @classmethod
-#     def required_for_datasetsvc_norecs_keys(cls):
-#         keys = cls.required_keys()
-#         keys.append(cls.DATASET_ID_KEY)
-#         return keys
     
 # .............................................................................
 class DWC:
@@ -223,6 +164,8 @@ class ServiceProviderNew:
             return ServiceProviderNew.MorphoSource
         elif param == ServiceProviderNew.Specify[S2nKey.PARAM]:
             return ServiceProviderNew.Specify
+        else:
+            return None
 # ....................
     @classmethod
     def is_valid_param(cls, param):
@@ -236,13 +179,21 @@ class ServiceProviderNew:
 # ....................
     @classmethod
     def is_valid_service(cls, param, svc):
-        if param is None:
-            return True
-        else:
+        if param is not None:
             val_dict = ServiceProviderNew.get_values(param)
             if svc in (val_dict['services']):
                 return True
         return False
+
+# ....................
+    @classmethod
+    def get_name_from_param(cls, param):
+        name = None
+        if param is not None:
+            val_dict = ServiceProviderNew.get_values(param)
+            name = val_dict[S2nKey.NAME]
+        return name
+
 # ....................
     @classmethod
     def all(cls):

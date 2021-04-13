@@ -68,7 +68,7 @@ class NameSvc(_S2nService):
 
     # ...............................................
     def get_records(
-            self, namestr, gbif_status, gbif_count, itis_accepted, kingdom, req_providers, 
+            self, namestr, req_providers, gbif_status, gbif_count, itis_accepted, kingdom, 
             search_params=None):
         allrecs = []
         # for response metadata
@@ -79,15 +79,21 @@ class NameSvc(_S2nService):
             query_term = 'invalid query term'
             
         for pr in req_providers:
-            # GBIF
-            if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
-                goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
-                allrecs.append(goutput)
-            # iDigBio
-            elif pr == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
-                isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
-                allrecs.append(isoutput)
-        
+            # Address single record
+            if namestr is not None:
+                # GBIF
+                if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
+                    goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
+                    allrecs.append(goutput)
+                # iDigBio
+                elif pr == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
+                    isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
+                    allrecs.append(isoutput)
+            # Filter by parameters
+            # TODO: enable search parameters
+            elif search_params:
+                pass
+            
         # Assemble
         provstr = ', '.join(req_providers)
         full_out = S2nOutput(
@@ -97,7 +103,7 @@ class NameSvc(_S2nService):
 
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, namestr=None, gbif_accepted=True, gbif_parse=True, 
+    def GET(self, namestr=None, provider=None, gbif_accepted=True, gbif_parse=True, 
             gbif_count=True, itis_accepted=None, kingdom=None, **kwargs):
         """Get one or more taxon records for a scientific name string from each
         available name service.
@@ -125,8 +131,9 @@ class NameSvc(_S2nService):
         search_params = None
         try:
             usr_params = self._standardize_params(
-                namestr=namestr, gbif_accepted=gbif_accepted, gbif_parse=gbif_parse, 
-                gbif_count=gbif_count, itis_accepted=itis_accepted, kingdom=kingdom)
+                namestr=namestr, provider=provider, gbif_accepted=gbif_accepted, 
+                gbif_parse=gbif_parse, gbif_count=gbif_count, itis_accepted=itis_accepted, 
+                kingdom=kingdom)
             
             # What to query
             namestr = usr_params['namestr']
@@ -145,8 +152,8 @@ class NameSvc(_S2nService):
                 kingdom = usr_params['kingdom']
                 # Query
                 output = self.get_records(
-                    namestr, gbif_status, gbif_count, itis_accepted, kingdom, 
-                    req_providers, search_params=search_params)
+                    namestr, req_providers, gbif_status, gbif_count, itis_accepted, 
+                    kingdom, search_params=search_params)
                 
         except Exception as e:
             output = self.get_failure(query_term=namestr, errors=[str(e)])

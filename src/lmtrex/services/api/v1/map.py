@@ -89,8 +89,8 @@ class MapSvc(_S2nService):
 
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, namestr=None, scenariocode=Lifemapper.OBSERVED_SCENARIO_CODE, 
-            color=None, do_match=True, **kwargs):
+    def GET(self, namestr=None, provider=None, scenariocode=None, color=None, 
+            do_match=True, **kwargs):
         """Get one or more taxon records for a scientific name string from each
         available name service.
         
