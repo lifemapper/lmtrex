@@ -139,8 +139,8 @@ src/web/.DS_Store
 # MacOS
 .DS_Store
 
-# Error logs
-src/LmRex/automated_testing/error_logs
+# Testing-generated directories
+src/LmRex/automated_testing
 
 # Collection Stats Charts
 src/LmRex/collection_stats/data
