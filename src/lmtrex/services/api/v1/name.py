@@ -23,6 +23,32 @@ class NameSvc(_S2nService):
                 provnames.add(p[S2nKey.PARAM])
         return provnames
     
+    #         std_output = GbifAPI.match_name(namestr, status=gbif_status)
+#         prov_query_list = std_output.provider_query
+#         # Add occurrence count to name records
+#         if gbif_count is True:
+#             for namerec in std_output.records:
+#                 try:
+#                     taxon_key = namerec['usageKey']
+#                 except Exception as e:
+#                     print('Exception on {}: {}'.format(namestr, e))
+#                     print('name = {}'.format(namerec))
+#                 else:
+#                     # Add more info to each record
+#                     outdict = GbifAPI.count_occurrences_for_taxon(taxon_key)
+#                     namerec[S2nKey.OCCURRENCE_COUNT] = outdict[S2nKey.COUNT]
+#                     namerec[S2nKey.OCCURRENCE_URL] = outdict[S2nKey.OCCURRENCE_URL]
+#                     prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
+# 
+#             # TODO: add setters to response dictionary elements                    
+#             std_output._response[S2nKey.PROVIDER_QUERY] = prov_query_list
+#                         
+# #         all_output = S2nOutput(
+# #             out1.count, namestr, self.SERVICE_TYPE, out1.provider, 
+# #             provider_query=prov_query_list, record_format=out1.record_format,  
+# #             records=good_names, errors=out1.errors)
+#         return std_output
+
     # ...............................................
     def _get_gbif_records(self, namestr, gbif_status, gbif_count):
         try:
@@ -53,7 +79,7 @@ class NameSvc(_S2nService):
                         namerec[S2nKey.OCCURRENCE_COUNT] = outdict[S2nKey.COUNT]
                         namerec[S2nKey.OCCURRENCE_URL] = outdict[S2nKey.OCCURRENCE_URL]
                         prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
-
+ 
             output.set_value(S2nKey.PROVIDER_QUERY, prov_query_list)
         return output.response
 
@@ -163,8 +189,11 @@ class NameSvc(_S2nService):
                 
         except Exception as e:
             output = self.get_failure(query_term=namestr, errors=[str(e)])
-            
+        
         return output.response
+#         import json
+#         s = json.dumps(output.response)
+#         return s
             
 
 # # .............................................................................
@@ -288,7 +317,7 @@ class NameSvc(_S2nService):
 #         return std_output
 # 
 #     # ...............................................
-#     @cherrypy.tools.json_out()
+#     @cherrypy.tools.json_out()#                 
 #     def GET(self, namestr=None, gbif_parse=True, itis_accepted=None, 
 #             kingdom=None, **kwargs):
 #         """Get ITIS accepted taxon records for a scientific name string
@@ -353,7 +382,8 @@ class NameSvc(_S2nService):
 #         return full_out
 # 
 #     # ...............................................
-#     @cherrypy.tools.json_out()
+#     @cherrypy.tools.json_out()simplejson/encoder
+
 #     def GET(self, namestr=None, gbif_accepted=True, gbif_parse=True, 
 #             gbif_count=True, itis_accepted=None, kingdom=None, **kwargs):
 #         """Get one or more taxon records for a scientific name string from each
@@ -396,15 +426,42 @@ class NameSvc(_S2nService):
 if __name__ == '__main__':
 
     # test
-    test_names = [TST_VALUES.NAMES[4]]
+    test_names = [TST_VALUES.NAMES[0:4]]
 #     test_names.append(TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0])
     
     svc = NameSvc()
     for namestr in test_names:
-        for gparse in [True, False]:
+        for gparse in [True]:
             for prov in svc.get_providers():
                 out = svc.GET(
-                    namestr=namestr, gbif_accepted=False, gbif_parse=gparse, 
+                    namestr=namestr, provider='prov', gbif_accepted=False, gbif_parse=gparse, 
                     gbif_count=True, itis_accepted=True, kingdom=None)
                 print_s2n_output(out)
+    # Try once with all providers
+    out = svc.GET(
+        namestr=namestr, provider=None, gbif_accepted=False, gbif_parse=True, 
+        gbif_count=True, itis_accepted=True, kingdom=None)
+    print_s2n_output(out)
                 
+"""
+import cherrypy
+import json
+
+from lmtrex.common.lmconstants import (
+    ServiceProviderNew, APIService, TST_VALUES)
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.tools.provider.gbif import GbifAPI
+from lmtrex.tools.provider.itis import ItisAPI
+from lmtrex.tools.utils import get_traceback
+from lmtrex.services.api.v1.name import NameSvc
+
+
+namestr = TST_VALUES.NAMES[4]
+svc = NameSvc()
+gparse = True
+prov = 'gbif'
+out = svc.GET(namestr=namestr, provider=prov, gbif_accepted=False, gbif_parse=gparse,gbif_count=True, itis_accepted=True, kingdom=None)
+print_s2n_output(out)
+
+"""

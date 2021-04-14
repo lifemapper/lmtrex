@@ -112,10 +112,7 @@ class S2nOutput(object):
             S2nKey.COUNT, S2nKey.QUERY_TERM, S2nKey.SERVICE, S2nKey.PROVIDER, 
             S2nKey.PROVIDER_QUERY, S2nKey.RECORD_FORMAT, S2nKey.RECORDS, S2nKey.ERRORS):
             # Append or set
-            try:
-                self._response[prop].append(value)
-            except:
-                self._response[prop] = value
+            self._response[prop] = value
         else:
             raise Exception('Unrecognized property {}'.format(prop))
         

@@ -120,18 +120,11 @@ class GbifAPI(APIQuery):
             std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
             # Standardize output from provider response
-            std_out = cls._standardize_output(
-                api.output, GBIF.COUNT_KEY, GBIF.RECORDS_KEY, 
-                GBIF.RECORD_FORMAT_OCCURRENCE, occid, 
-                APIService.Occurrence, provider_query=[api.url], 
+            std_output = cls._standardize_occurrence_output(
+                api.output, occid, APIService.Occurrence, provider_query=[api.url], 
                 count_only=count_only, err=api.error)
         
-#         full_out = S2nOutput(
-#             count=out.count, record_format=out.record_format, 
-#             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-#             provider_query=[api.url], query_term=occid, 
-#             service=APIService.Occurrence)
-        return std_out
+        return std_output
 
     # ...............................................
     @classmethod
@@ -146,13 +139,13 @@ class GbifAPI(APIQuery):
 
     # ...............................................
     @classmethod
-    def _standardize_gbif_occurrence(cls, rec):
+    def _standardize_occurrence_record(cls, rec):
         # todo: standardize gbif output to DWC, DSO, etc
         return rec
     
     # ...............................................
     @classmethod
-    def _standardize_gbif_name(cls, rec):
+    def _standardize_name_record(cls, rec):
         # todo: standardize gbif output
         return rec
     
@@ -206,7 +199,7 @@ class GbifAPI(APIQuery):
                     goodrecs.append(alt)
             # Standardize name output
             for r in goodrecs:
-                stdrecs.append(cls._standardize_gbif_name(r))
+                stdrecs.append(cls._standardize_name_record(r))
         total = len(stdrecs)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
@@ -220,15 +213,16 @@ class GbifAPI(APIQuery):
     def _standardize_record(cls, rec, record_format):
         # todo: standardize gbif output to DWC, DSO, etc
         if record_format == GBIF.RECORD_FORMAT_OCCURRENCE:
-            return cls._standardize_gbif_occurrence(rec)
+            return cls._standardize_occurrence_record(rec)
         else:
-            return cls._standardize_gbif_name(rec)
+            return cls._standardize_name_record(rec)
     
     # ...............................................
     @classmethod
-    def _standardize_output(
-            cls, output, count_key, records_key, record_format, query_term, 
-            service, provider_query=[], count_only=False, err=None):
+    def _standardize_occurrence_output(
+            cls, output, query_term, service, provider_query=[], count_only=False, 
+            err=None):
+        # GBIF.COUNT_KEY, GBIF.RECORDS_KEY, GBIF.RECORD_FORMAT_OCCURRENCE, 
         stdrecs = []
         total = 0
         errmsgs = []
@@ -236,25 +230,25 @@ class GbifAPI(APIQuery):
             errmsgs.append(err)
         # Count
         try:
-            total = output[count_key]
+            total = output[GBIF.COUNT_KEY]
         except:
             errmsgs.append(
                 cls._get_error_message(
-                    msg='Missing `{}` element'.format(count_key)))
+                    msg='Missing `{}` element'.format(GBIF.COUNT_KEY)))
         # Records
         if not count_only:
             try:
-                recs = output[records_key]
+                recs = output[GBIF.RECORDS_KEY]
             except:
                 errmsgs.append(
                     cls._get_error_message(
-                        msg='Missing `{}` element'.format(records_key)))
+                        msg='Missing `{}` element'.format(GBIF.RECORDS_KEY)))
             else:
                 stdrecs = []
                 for r in recs:
                     try:
                         stdrecs.append(
-                            cls._standardize_record(r, record_format))
+                            cls._standardize_record(r, GBIF.RECORD_FORMAT_OCCURRENCE))
                     except Exception as e:
                         msg = cls._get_error_message(err=e)
                         errmsgs.append(msg)
@@ -302,16 +296,10 @@ class GbifAPI(APIQuery):
             std_out = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
             # Standardize output from provider response
-            std_out = cls._standardize_output(
-                api.output, GBIF.COUNT_KEY, GBIF.RECORDS_KEY, 
-                GBIF.RECORD_FORMAT_OCCURRENCE, dataset_key, APIService.Dataset, 
+            std_out = cls._standardize_occurrence_output(
+                api.output, dataset_key, APIService.Dataset, 
                 provider_query=[api.url], count_only=count_only, err=api.error)
             
-#         full_out = S2nOutput(
-#             count=out.count, record_format=out.record_format, 
-#             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-#             provider_query=[api.url], query_term=dataset_key, 
-#             service=APIService.Dataset)
         return std_out
 
 
@@ -355,10 +343,6 @@ class GbifAPI(APIQuery):
                 api.output, status, namestr, APIService.Name, 
                 provider_query=[api.url], err=api.error)
             
-#         full_out = S2nOutput(
-#             out.count, namestr, APIService.Name, cls.PROVIDER, 
-#             provider_query=[api.url], record_format=out.record_format, 
-#             records=out.records, errors=out.errors)
         return std_output
 
 
