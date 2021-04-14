@@ -299,8 +299,7 @@ class _S2nService:
             'format': None, 
             'srs': 'epsg:4326', 
             'transparent': None, 
-            'width': 600,
-            'do_match': True}
+            'width': 600}
         user_kwargs = {
             'provider': provider,
             'gbif_accepted': gbif_accepted, 
@@ -323,8 +322,7 @@ class _S2nService:
             'format': frmat, 
             'srs': srs, 
             'transparent': transparent, 
-            'width': width, 
-            'do_match': do_match}
+            'width': width}
         
         usr_params = self._process_params(kwarg_defaults, user_kwargs)
         # Do not edit namestr, maintain capitalization

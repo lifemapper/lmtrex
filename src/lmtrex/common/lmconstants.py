@@ -136,7 +136,7 @@ class ServiceProviderNew:
         S2nKey.NAME: 'iDigBio', S2nKey.PARAM: 'idb', S2nKey.SERVICES: [
             APIService.Occurrence]}
     ITISSolr = {
-        S2nKey.NAME: 'ITIS Solr Web Services', S2nKey.PARAM: 'itis', S2nKey.SERVICES: [
+        S2nKey.NAME: 'ITIS', S2nKey.PARAM: 'itis', S2nKey.SERVICES: [
             APIService.Name]}
     Lifemapper = {
         S2nKey.NAME: 'Lifemapper', S2nKey.PARAM: 'lm', S2nKey.SERVICES: [

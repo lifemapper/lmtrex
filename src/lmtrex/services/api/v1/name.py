@@ -23,32 +23,6 @@ class NameSvc(_S2nService):
                 provnames.add(p[S2nKey.PARAM])
         return provnames
     
-    #         std_output = GbifAPI.match_name(namestr, status=gbif_status)
-#         prov_query_list = std_output.provider_query
-#         # Add occurrence count to name records
-#         if gbif_count is True:
-#             for namerec in std_output.records:
-#                 try:
-#                     taxon_key = namerec['usageKey']
-#                 except Exception as e:
-#                     print('Exception on {}: {}'.format(namestr, e))
-#                     print('name = {}'.format(namerec))
-#                 else:
-#                     # Add more info to each record
-#                     outdict = GbifAPI.count_occurrences_for_taxon(taxon_key)
-#                     namerec[S2nKey.OCCURRENCE_COUNT] = outdict[S2nKey.COUNT]
-#                     namerec[S2nKey.OCCURRENCE_URL] = outdict[S2nKey.OCCURRENCE_URL]
-#                     prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
-# 
-#             # TODO: add setters to response dictionary elements                    
-#             std_output._response[S2nKey.PROVIDER_QUERY] = prov_query_list
-#                         
-# #         all_output = S2nOutput(
-# #             out1.count, namestr, self.SERVICE_TYPE, out1.provider, 
-# #             provider_query=prov_query_list, record_format=out1.record_format,  
-# #             records=good_names, errors=out1.errors)
-#         return std_output
-
     # ...............................................
     def _get_gbif_records(self, namestr, gbif_status, gbif_count):
         try:
@@ -59,28 +33,28 @@ class NameSvc(_S2nService):
             output = self.get_failure(
                 provider=ServiceProviderNew.GBIF[S2nKey.NAME], query_term=namestr, 
                 errors=[traceback])
-
-        prov_query_list = output.provider_query
-        # Add occurrence count to name records
-        if gbif_count is True:
-            for namerec in output.records:
-                try:
-                    taxon_key = namerec['usageKey']
-                except Exception as e:
-                    print('No usageKey for counting {} records'.format(namestr))
-                else:
-                    # Add more info to each record
+        else:
+            prov_query_list = output.provider_query
+            # Add occurrence count to name records
+            if gbif_count is True:
+                for namerec in output.records:
                     try:
-                        outdict = GbifAPI.count_occurrences_for_taxon(taxon_key)
+                        taxon_key = namerec['usageKey']
                     except Exception as e:
-                        traceback = get_traceback()
-                        print(traceback)
+                        print('No usageKey for counting {} records'.format(namestr))
                     else:
-                        namerec[S2nKey.OCCURRENCE_COUNT] = outdict[S2nKey.COUNT]
-                        namerec[S2nKey.OCCURRENCE_URL] = outdict[S2nKey.OCCURRENCE_URL]
-                        prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
- 
-            output.set_value(S2nKey.PROVIDER_QUERY, prov_query_list)
+                        # Add more info to each record
+                        try:
+                            outdict = GbifAPI.count_occurrences_for_taxon(taxon_key)
+                        except Exception as e:
+                            traceback = get_traceback()
+                            print(traceback)
+                        else:
+                            namerec[S2nKey.OCCURRENCE_COUNT] = outdict[S2nKey.COUNT]
+                            namerec[S2nKey.OCCURRENCE_URL] = outdict[S2nKey.OCCURRENCE_URL]
+                            prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
+     
+                output.set_value(S2nKey.PROVIDER_QUERY, prov_query_list)
         return output.response
 
     # ...............................................

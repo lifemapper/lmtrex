@@ -204,7 +204,7 @@ class OccurrenceSvc(_S2nService):
 
 # .............................................................................
 if __name__ == '__main__':
-    from lmtrex.common.lmconstants import TST_VALUES   
+    from lmtrex.common.lmconstants import TST_VALUES
     occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0]]
 #     occids = ['dcb298f9-1ed3-11e3-bfac-90b11c41863e']
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]

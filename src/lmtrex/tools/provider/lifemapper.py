@@ -35,7 +35,7 @@ class LifemapperAPI(APIQuery):
     
     # ...............................................
     @classmethod
-    def _standardize_map_record(cls, rec, color=None):
+    def _standardize_map_record(cls, rec, prjscenariocode=None, color=None):
         try:
             mapname = rec['map']['mapName']
             url = rec['map']['endpoint']
@@ -108,71 +108,85 @@ class LifemapperAPI(APIQuery):
     @classmethod
     def _standardize_occ_record(cls, rec, color=None):
         errmsgs = []
+        stat = mapname = url = point_name = endpoint = bbox = ptcount = None
+        # Check status first
         try:
-            mapname = rec['map']['mapName']
-            url = rec['map']['endpoint']
-            point_name = rec['map']['layerName']
+            occid = rec['id']
+            point_url = rec['url']
         except Exception as e:
-            msg = 'Failed to retrieve map url from {}, {}'.format(rec, e)
+            msg = 'Failed to retrieve point data from {}, {}'.format(rec, e)
             raise Exception(msg)
         else:
-            endpoint = '{}/{}'.format(url, mapname)
             try:
-                rec['spatialVector']
+                stat = rec['status']
             except:
-                errmsgs.append('Missing spatialVector element')
-            else:
-                bbox = ptcount = None
-                try:
-                    bbox = rec['spatialVector']['bbox']
-                except:
-                    errmsgs.append('Missing spatialVector/bbox element')
-                try:
-                    ptcount = rec['spatialVector']['numFeatures']
-                except:
-                    errmsgs.append('Missing spatialVector/numFeatures element')
-
-                try:
-                    occid = rec['id']
-                    point_url = rec['url']
-                    newrec = {
-                        'endpoint': endpoint,
-                        'point_link': point_url,
-                        'point_name': point_name,
-                        'point_count': ptcount,
-                        'point_bbox': bbox,
-                        'species_name': rec['speciesName'],
-                        'modtime': rec['statusModTime']}
-                except Exception as e:
-                    msg = 'Failed to retrieve point data from {}, {}'.format(rec, e)
-                    raise Exception(msg)
-        
-        try:
-            stat = rec['status']
-        except:
-            errmsgs.append(cls._get_error_message(
-                msg='Missing `status` element'))
-        else:
-            # No projection layer without Complete status 
-            if stat != Lifemapper.COMPLETE_STAT_VAL:
                 errmsgs.append(cls._get_error_message(
-                    msg='Occurrenceset status is not complete'))
+                    msg='Missing `status` element'))
+            else:
+                # No projection layer without Complete status 
+                if stat != Lifemapper.COMPLETE_STAT_VAL:
+                    errmsgs.append(cls._get_error_message(
+                        msg='Occurrenceset status is not complete'))
+                else: 
+                    try:
+                        mapname = rec['map']['mapName']
+                        url = rec['map']['endpoint']
+                        point_name = rec['map']['layerName']
+                    except Exception as e:
+                        msg = 'Failed to retrieve map url from {}, {}'.format(rec, e)
+                        raise Exception(msg)
+                    else:
+                        endpoint = '{}/{}'.format(url, mapname)
+                        try:
+                            species_name = rec['speciesName']
+                            modtime = rec['statusModTime']
+                        except:
+                            pass
+                        try:
+                            bbox = rec['spatialVector']['bbox']
+                        except:
+                            errmsgs.append('Missing spatialVector/bbox element')
+                        try:
+                            ptcount = rec['spatialVector']['numFeatures']
+                        except:
+                            errmsgs.append('Missing spatialVector/numFeatures element')            
+        newrec = {
+            'endpoint': endpoint,
+            'point_link': point_url,
+            'point_name': point_name,
+            'point_count': ptcount,
+            'point_bbox': bbox,
+            'species_name': species_name,
+            'status': stat,
+            'modtime': modtime}
+        
         newrec[S2nKey.ERRORS] = errmsgs
         return newrec
 
+
     # ...............................................
     @classmethod
-    def _standardize_map_output(cls, output, color=None, count_only=False, err=None):
+    def _standardize_map_output(
+            cls, output, prjscenariocode=None, color=None, count_only=False, err=None):
         stdrecs = []
         errmsgs = []
+        if err is not None:
+            errmsgs.append(err)
         total = len(output)
         if err is not None:
             errmsgs.append(err)
-        # Records]
+        # Records
+        if len(output) == 0:
+            errmsgs.append('Failed to return any map layers')
+            occ_rec = cls._standardize_occ_record(output[0])
+            if occ_rec['status'] != Lifemapper.COMPLETE_STAT_VAL:
+                errmsgs.append('Failed to return completed map layers')
         if not count_only:
             for r in output:
                 try:
-                    stdrecs.append(cls._standardize_map_record(r, color=color))
+                    r2 = cls._standardize_map_record(
+                        r, prjscenariocode=prjscenariocode, color=color)
+                    stdrecs.append(r2)
                 except Exception as e:
                     errmsgs.append(cls._get_error_message(err=e))
         
@@ -373,8 +387,8 @@ class LifemapperAPI(APIQuery):
         other_filters[Lifemapper.ATOM_KEY] = 0
 #         other_filters[Lifemapper.MIN_STAT_KEY] = Lifemapper.COMPLETE_STAT_VAL
 #         other_filters[Lifemapper.MAX_STAT_KEY] = Lifemapper.COMPLETE_STAT_VAL
-        if prjscenariocode is not None:
-            other_filters[Lifemapper.SCENARIO_KEY] = prjscenariocode
+#         if prjscenariocode is not None:
+#             other_filters[Lifemapper.SCENARIO_KEY] = prjscenariocode
         api = LifemapperAPI(
             resource=Lifemapper.PROJ_RESOURCE, other_filters=other_filters)
         
@@ -384,13 +398,14 @@ class LifemapperAPI(APIQuery):
             out = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
             out = cls._standardize_map_output(
-                api.output, color=color, count_only=False, err=api.error)
+                api.output, prjscenariocode=prjscenariocode, color=color, 
+                count_only=False, err=api.error)
 
         full_out = S2nOutput(
             count=out.count, record_format=out.record_format, 
             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
             provider_query=[api.url], query_term=name, 
-            service=APIService.Dataset)
+            service=APIService.Map)
         return full_out
 
     # ...............................................
@@ -404,14 +419,14 @@ class LifemapperAPI(APIQuery):
                 Taxonomy
             logger: optional logger for info and error messages.  If None, 
                 prints to stdout    
-
+, 
         Note: 
             Lifemapper contains only 'Accepted' name froms the GBIF Backbone 
             Taxonomy and this method requires them for success.
         """
+        other_filters = {Lifemapper.NAME_KEY: name, Lifemapper.ATOM_KEY: 0}
         api = LifemapperAPI(
-            resource=Lifemapper.OCC_RESOURCE, 
-            q_filters={Lifemapper.NAME_KEY: name})
+            resource=Lifemapper.OCC_RESOURCE, other_filters=other_filters)
         try:
             api.query_by_get()
         except Exception as e:
@@ -423,7 +438,8 @@ class LifemapperAPI(APIQuery):
         full_out = S2nOutput(
             count=out.count, record_format=out.record_format, 
             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-            query_term=name)
+            provider_query=[api.url], query_term=name, 
+            service=APIService.Map)
         return full_out    
 
     # ...............................................
@@ -452,6 +468,12 @@ class LifemapperAPI(APIQuery):
             provider_query=[url])
         return full_out    
 
+# .............................................................................
+if __name__ == '__main__':
+    # test
+
+    namestr = 'Plagioecia patina (Lamarck, 1816)'
+    occset = LifemapperAPI.find_occurrencesets_by_name(namestr)
 
 """
 http://client.lifemapper.org/api/v2/sdmproject?displayname=Conibiosoma%20elongatum&projectionscenariocode=worldclim-curr
