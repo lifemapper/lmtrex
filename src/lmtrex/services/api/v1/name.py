@@ -3,7 +3,7 @@ import cherrypy
 from lmtrex.common.lmconstants import (
     ServiceProviderNew, APIService, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.tools.utils import get_traceback
@@ -176,6 +176,7 @@ if __name__ == '__main__':
 
     # test
     test_names = TST_VALUES.NAMES[0:4]
+    test_names = ['Tulipa sylvestris']
 #     test_names.append(TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0])
     
     svc = NameSvc()

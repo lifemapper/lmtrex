@@ -150,6 +150,7 @@ class MapSvc(_S2nService):
 if __name__ == '__main__':
     # test    
     names = TST_VALUES.NAMES[5:9]
+    names = ['Tulipa sylvestris']
     svc = MapSvc()
     for namestr in names:        
         for prov in svc.get_providers():
