@@ -86,6 +86,9 @@ class S2nKey:
 #         return so
 
 # .............................................................................
+class S2n:
+    RECORD_FORMAT = 'Lifemapper service broker schema TBD'
+    
 class S2nOutput(object):
     count: int
     query_term: str

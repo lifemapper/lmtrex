@@ -10,7 +10,7 @@ from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.resolve import SpecifyResolve
-from lmtrex.services.api.v1.s2n_type import (print_s2n_output, S2nOutput, S2nKey)
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 # .............................................................................
 @cherrypy.expose
@@ -145,8 +145,8 @@ class OccurrenceSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, APIService.Occurrence, provstr, 
-            records=allrecs)
+            len(allrecs), query_term, APIService.Occurrence, provstr, records=allrecs,
+            record_format=S2n.RECORD_FORMAT)
         return full_out
 
     # ...............................................

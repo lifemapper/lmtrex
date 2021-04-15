@@ -103,7 +103,8 @@ class NameSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs)
+            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
+            record_format=S2n.RECORD_FORMAT)
 
         return full_out
 

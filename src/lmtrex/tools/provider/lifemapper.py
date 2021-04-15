@@ -173,12 +173,12 @@ class LifemapperAPI(APIQuery):
         errmsgs = []
         if err is not None:
             errmsgs.append(err)
-        total = len(output)
         if err is not None:
             errmsgs.append(err)
         # Records
         if len(output) == 0:
-            errmsgs.append(cls._get_error_message('Failed to return any map layers'))
+            errmsgs.append(cls._get_error_message(
+                'Failed to return any map layers for {}'.format(query_term)))
         else:
             try:
                 occ_url = output[0]['occurrenceSet']['metadataUrl']
@@ -204,9 +204,8 @@ class LifemapperAPI(APIQuery):
         
         # TODO: revisit record format for other map providers
         std_output = S2nOutput(
-            len(stdrecs), record_format=Lifemapper.RECORD_FORMAT_MAP, 
-            records=stdrecs, provider=cls.PROVIDER, errors=errmsgs, 
-            provider_query=provider_query, query_term=None, service=None)
+            len(stdrecs), query_term, service, cls.PROVIDER, provider_query=provider_query, 
+            record_format=Lifemapper.RECORD_FORMAT_MAP, records=stdrecs, errors=errmsgs )
 
         return std_output
     

@@ -3,7 +3,7 @@ import cherrypy
 from lmtrex.common.lmconstants import (
     ServiceProviderNew, APIService, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.lifemapper import LifemapperAPI
 from lmtrex.tools.utils import get_traceback
@@ -60,9 +60,10 @@ class MapSvc(_S2nService):
             # TODO: search on occurrenceset, then also pull projection layers
             lout = LifemapperAPI.find_map_layers_by_name(
                 sname, prjscenariocode=scenariocode, color=color)
-            stdrecs.extend(lout.records)
-            errmsgs.extend(lout.errors)
-            queries.extend(lout.provider_query)
+            if len(lout.records) > 0:
+                stdrecs.extend(lout.records)
+                errmsgs.extend(lout.errors)
+                queries.extend(lout.provider_query)
         
         full_out = S2nOutput(
             len(stdrecs), namestr, self.SERVICE_TYPE, lout.provider, 
@@ -93,7 +94,8 @@ class MapSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, APIService.Map, provstr, records=allrecs)
+            len(allrecs), query_term, APIService.Map, provstr, records=allrecs,
+            record_format=S2n.RECORD_FORMAT)
         return full_out
 
     # ...............................................
@@ -147,9 +149,9 @@ class MapSvc(_S2nService):
 # .............................................................................
 if __name__ == '__main__':
     # test    
-    names = TST_VALUES.NAMES[0:2]
+    names = TST_VALUES.NAMES[5:9]
     svc = MapSvc()
     for namestr in names:        
         for prov in svc.get_providers():
-            out = svc.GET(namestr=namestr, provider=prov)
+            out = svc.GET(namestr=namestr, scenariocode=None, provider=prov)
             print_s2n_output(out, do_print_rec=True)
