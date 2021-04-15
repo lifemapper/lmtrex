@@ -1,8 +1,7 @@
-from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, ServiceProvider, TST_VALUES)
-from lmtrex.fileop.logtools import (log_error)
+from lmtrex.common.lmconstants import (APIService, Lifemapper, ServiceProvider)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils import get_traceback
 
 # .............................................................................
 class LifemapperAPI(APIQuery):
@@ -35,125 +34,125 @@ class LifemapperAPI(APIQuery):
     
     # ...............................................
     @classmethod
-    def _standardize_map_record(cls, rec, prjscenariocode=None, color=None):
-        try:
-            mapname = rec['map']['mapName']
-            url = rec['map']['endpoint']
-        except Exception as e:
-            msg = 'Failed to retrieve map url from {}, {}'.format(rec, e)
-            raise Exception(msg)
-        else:
-            endpoint = '{}/{}'.format(url, mapname)
-            try:
-                data_url = rec['spatialRaster']['dataUrl']
-            except:
-                msg = 'Failed to get projection API link (spatialRaster/dataUrl)'
-                raise Exception(msg)
-            else:        
-                proj_url = data_url.rstrip('/gtiff')
-                try:
-                    occid = rec['occurrenceSet']['id']
-                    point_url = rec['occurrenceSet']['metadataUrl']
-                    point_name = 'occ_{}'.format(occid)
-                    newrec = {
-                        'endpoint': endpoint,
-                        'point_link': point_url,
-                        'point_name': point_name,
-                        'species_name': rec['speciesName'],
-                        'modtime': rec['statusModTime'],
-                        'projection_link': proj_url}
-                except Exception as e:
-                    msg = 'Failed to retrieve point data from {}, {}'.format(rec, e)
-                    raise Exception(msg)
-        
-        # Ran the gauntlet of exceptions
-        if color is not None:
-            newrec['vendor-specific-parameters'] = {'color': color}
-        # Minor errors return messages within record
-        record_errors = []
+    def _standardize_proj_layer_record(cls, rec, prjscenariocode=None, color=None):
+        errmsgs = []
+        stat = endpoint = sdm_layer_name = proj_url = None
+        scen_code = scen_link = species_name = modtime = None
         try:
             stat = rec['status']
-        except:
-            msg = 'Failed to get projection \'status\' for layer {}'.format(
-                proj_url)
-            record_errors.append(msg)
+        except Exception as e:
+            errmsgs.append(cls._get_error_message(
+                msg='Failed to retrieve status element'))
         else:
-            # No projection layer without Complete status 
-            if stat == Lifemapper.COMPLETE_STAT_VAL:
+            # No incomplete projection layer
+            if stat != Lifemapper.COMPLETE_STAT_VAL:
+                errmsgs.append(cls._get_error_message(
+                    msg='SDM projection status is not complete'))
+            else:
                 try:
-                    newrec['projection_name'] = rec['map']['layerName']
-                except:
-                    msg = 'Failed to get projection map/layerName from {}'.format(
-                        proj_url)
-                    record_errors.append(msg)
-                # Add projection metadata
-                try:
-                    prj_metadata = rec['metadata']
-                except:
-                    msg = 'Failed to retrieve projection metadata for {}'.format(
-                        proj_url)
-                    record_errors.append(msg)
-                for key in Lifemapper.PROJECTION_METADATA_KEYS:
+                    scen_code = rec['projectionScenario']['code']
+                except Exception as e:
+                    errmsgs.append(cls._get_error_message(
+                        'Failed to retrieve projectionScenario/code element'))
+                # Return all valid projection layers or requested projection layer for scenario
+                if prjscenariocode is None or prjscenariocode == scen_code:
+                    errmsgs.append(cls._get_error_message(
+                        'Non-matching projectionScenario element {}'.format(scen_code)))
+                else:
                     try:
-                        prj_metadata[key] = rec[key]
-                    except:
-                        msg = 'Failed to retrieve projection {} for {}'.format(
-                            key, proj_url)
-                        record_errors.append(msg)
-        if len(record_errors) > 0:
-            newrec[S2nKey.ERRORS] = record_errors
+                        mapname = rec['map']['mapName']
+                        url = rec['map']['endpoint']
+                        sdm_layer_name = rec['map']['layerName']
+                        endpoint = '{}/{}'.format(url, mapname)
+                    except Exception as e:
+                        errmsgs.append(cls._get_error_message(
+                            'Failed to retrieve map info {}'.format(e)))
+                    else:
+                        try:
+                            data_url = rec['spatialRaster']['dataUrl']
+                            proj_url = data_url.rstrip('/gtiff')
+                        except:
+                            errmsgs.append(cls._get_error_message(
+                                'Failed to retrieve spatialRaster/dataUrl element'))
+                        try:
+                            scen_link = rec['projectionScenario']['metadataUrl']
+                        except Exception as e:
+                            errmsgs.append(cls._get_error_message(
+                                'Failed to retrieve projectionScenario/metadataUrl element'))
+                        try:
+                            species_name = rec['speciesName']
+                        except:
+                            errmsgs.append(cls._get_error_message(
+                                'Failed to get speciesName element'))
+                        try:
+                            modtime = rec['statusModTime']
+                        except:
+                            errmsgs.append(cls._get_error_message(
+                                'Failed to get speciesName element'))
+        newrec = {
+            'endpoint': endpoint,
+            'sdm_layer_name': sdm_layer_name,
+            'sdm_projection_link': proj_url,
+            'sdm_projection_scenario_code': scen_code,
+            'sdm_projection_scenario_link': scen_link,
+            'species_name': species_name,
+            'status': stat,
+            'modtime': modtime,
+            }
+        # Ran the gauntlet of errors
+        if color is not None and endpoint is not None:
+            newrec['vendor-specific-parameters'] = {'color': color}
+        newrec[S2nKey.ERRORS] = errmsgs
         return newrec
     
     # ...............................................
     @classmethod
-    def _standardize_occ_record(cls, rec, color=None):
+    def _standardize_occ_layer_record(cls, rec, color=None):
         errmsgs = []
-        stat = mapname = url = point_name = endpoint = bbox = ptcount = None
+        stat = endpoint = point_url = point_layer_name = ptcount = bbox = None
+        species_name = modtime = None
         # Check status first
         try:
-            occid = rec['id']
-            point_url = rec['url']
+            stat = rec['status']
+            # No incomplete projection layer
+            if stat != Lifemapper.COMPLETE_STAT_VAL:
+                errmsgs.append(cls._get_error_message('Point status is not complete'))
         except Exception as e:
-            msg = 'Failed to retrieve point data from {}, {}'.format(rec, e)
-            raise Exception(msg)
+            errmsgs.append(cls._get_error_message(msg='Missing `status` element'))
         else:
             try:
-                stat = rec['status']
-            except:
+                mapname = rec['map']['mapName']
+                map_url = rec['map']['endpoint']
+                point_layer_name = rec['map']['layerName']
+                endpoint = '{}/{}'.format(map_url, mapname)
+            except Exception as e:
                 errmsgs.append(cls._get_error_message(
-                    msg='Missing `status` element'))
+                    'Failed to retrieve map info from {}, {}'.format(rec, e)))
             else:
-                # No projection layer without Complete status 
-                if stat != Lifemapper.COMPLETE_STAT_VAL:
-                    errmsgs.append(cls._get_error_message(
-                        msg='Occurrenceset status is not complete'))
-                else: 
-                    try:
-                        mapname = rec['map']['mapName']
-                        url = rec['map']['endpoint']
-                        point_name = rec['map']['layerName']
-                    except Exception as e:
-                        msg = 'Failed to retrieve map url from {}, {}'.format(rec, e)
-                        raise Exception(msg)
-                    else:
-                        endpoint = '{}/{}'.format(url, mapname)
-                        try:
-                            species_name = rec['speciesName']
-                            modtime = rec['statusModTime']
-                        except:
-                            pass
-                        try:
-                            bbox = rec['spatialVector']['bbox']
-                        except:
-                            errmsgs.append('Missing spatialVector/bbox element')
-                        try:
-                            ptcount = rec['spatialVector']['numFeatures']
-                        except:
-                            errmsgs.append('Missing spatialVector/numFeatures element')            
+                try:
+                    point_url = rec['url']
+                except:
+                    errmsgs.append(cls._get_error_message('Failed to get point URL'))
+                try:
+                    ptcount = rec['spatialVector']['numFeatures']
+                except:
+                    errmsgs.append(cls._get_error_message('Failed to get spatialVector/numFeatures'))
+                try:
+                    bbox = rec['spatialVector']['bbox']
+                except:
+                    errmsgs.append(cls._get_error_message('Failed to get spatialVector/bbox'))
+                try:
+                    species_name = rec['speciesName']
+                except:
+                    errmsgs.append(cls._get_error_message('Failed to get speciesName'))
+                try:
+                    modtime = rec['statusModTime']
+                except:
+                    errmsgs.append(cls._get_error_message('Failed to get speciesName'))
         newrec = {
             'endpoint': endpoint,
             'point_link': point_url,
-            'point_name': point_name,
+            'point_layer_name': point_layer_name,
             'point_count': ptcount,
             'point_bbox': bbox,
             'species_name': species_name,
@@ -167,7 +166,9 @@ class LifemapperAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_map_output(
-            cls, output, prjscenariocode=None, color=None, count_only=False, err=None):
+            cls, output, query_term, service, prjscenariocode=None, color=None, count_only=False, 
+            provider_query=[], err=None):
+        occ_layer_rec = None
         stdrecs = []
         errmsgs = []
         if err is not None:
@@ -177,24 +178,35 @@ class LifemapperAPI(APIQuery):
             errmsgs.append(err)
         # Records
         if len(output) == 0:
-            errmsgs.append('Failed to return any map layers')
-            occ_rec = cls._standardize_occ_record(output[0])
-            if occ_rec['status'] != Lifemapper.COMPLETE_STAT_VAL:
-                errmsgs.append('Failed to return completed map layers')
-        if not count_only:
+            errmsgs.append(cls._get_error_message('Failed to return any map layers'))
+        else:
+            try:
+                occ_url = output[0]['occurrenceSet']['metadataUrl']
+            except Exception as e:
+                errmsgs.append(cls._get_error_message('Failed to return occurrence URL'))
+            else:
+                occ_rec = cls._get_occurrenceset_record(occ_url)
+                occ_layer_rec = cls._standardize_occ_layer_record(occ_rec)
+                if occ_layer_rec is not None and occ_layer_rec['endpoint'] is None:
+                    errmsgs.extend(occ_layer_rec[S2nKey.ERRORS])
+                    occ_layer_rec = None
+        
+        if occ_layer_rec is not None and not count_only:
+            stdrecs.append(occ_layer_rec)
             for r in output:
                 try:
-                    r2 = cls._standardize_map_record(
+                    r2 = cls._standardize_proj_layer_record(
                         r, prjscenariocode=prjscenariocode, color=color)
-                    stdrecs.append(r2)
+                    if r2['endpoint'] is not None:
+                        stdrecs.append(r2)
                 except Exception as e:
                     errmsgs.append(cls._get_error_message(err=e))
         
         # TODO: revisit record format for other map providers
         std_output = S2nOutput(
-            count=total, record_format=Lifemapper.RECORD_FORMAT_MAP, 
+            len(stdrecs), record_format=Lifemapper.RECORD_FORMAT_MAP, 
             records=stdrecs, provider=cls.PROVIDER, errors=errmsgs, 
-            provider_query=None, query_term=None, service=None)
+            provider_query=provider_query, query_term=None, service=None)
 
         return std_output
     
@@ -395,18 +407,14 @@ class LifemapperAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            out = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
-            out = cls._standardize_map_output(
-                api.output, prjscenariocode=prjscenariocode, color=color, 
-                count_only=False, err=api.error)
+            std_output = cls._standardize_map_output(
+                api.output, name, APIService.Map, provider_query=[api.url], 
+                prjscenariocode=prjscenariocode, color=color, count_only=False, 
+                err=api.error)
 
-        full_out = S2nOutput(
-            count=out.count, record_format=out.record_format, 
-            records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-            provider_query=[api.url], query_term=name, 
-            service=APIService.Map)
-        return full_out
+        return std_output
 
     # ...............................................
     @classmethod
@@ -441,32 +449,31 @@ class LifemapperAPI(APIQuery):
             provider_query=[api.url], query_term=name, 
             service=APIService.Map)
         return full_out    
+   
 
     # ...............................................
     @classmethod
-    def _get_occurrenceset_data(cls, url, logger=None):
+    def _get_occurrenceset_record(cls, url, logger=None):
         """
         Return occurrenceset for a given metadata url.  
         
         Args:
-            url: a link to the metadata for a Lifemapper occurrenceSet
+            id: a unique id for a Lifemapper occurrenceSet
             logger: optional logger for info and error messages.  If None, 
                 prints to stdout    
         """
-        api = APIQuery(url, logger=logger)
+        rec = None
+        api = APIQuery(url)            
         try:
             api.query_by_get()
         except Exception as e:
             out = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
-            # Standardize output from provider response
-            out = cls._standardize_occ_output(api.output, err=api.error)
-
-        full_out = S2nOutput(
-            count=out.count, record_format=out.record_format, 
-            records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-            provider_query=[url])
-        return full_out    
+            try:
+                rec = api.output
+            except:
+                pass
+        return rec
 
 # .............................................................................
 if __name__ == '__main__':

@@ -254,7 +254,7 @@ class GbifAPI(APIQuery):
                         errmsgs.append(msg)
         std_output = S2nOutput(
             total, query_term, service, cls.PROVIDER, 
-            provider_query=provider_query, record_format=record_format, 
+            provider_query=provider_query, record_format=GBIF.RECORD_FORMAT_OCCURRENCE, 
             records=stdrecs, errors=errmsgs)
 
         return std_output

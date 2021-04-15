@@ -68,7 +68,7 @@ class MapSvc(_S2nService):
             len(stdrecs), namestr, self.SERVICE_TYPE, lout.provider, 
             provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
             records=stdrecs, errors=errmsgs)
-        return full_out
+        return full_out.response
 
     # ...............................................
     def get_records(
@@ -152,4 +152,4 @@ if __name__ == '__main__':
     for namestr in names:        
         for prov in svc.get_providers():
             out = svc.GET(namestr=namestr, provider=prov)
-            print_s2n_output(out)
+            print_s2n_output(out, do_print_rec=True)

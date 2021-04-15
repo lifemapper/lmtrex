@@ -152,29 +152,39 @@ class S2nOutput(object):
     def errors(self):
         return self._response[S2nKey.ERRORS]
 
+# .............................................................................
 class S2nError(str):
     pass
 
 
-def _print_oneprov_output(oneprov):
+# .............................................................................
+def _print_oneprov_output(oneprov, do_print_rec):
     print('* One provider S^n output *')
     for name, attelt in oneprov.items():
         try:
             if name == 'records':
-                print('   {}: {} returned records'.format(name, len(attelt)))
+                print('   records')
+                if do_print_rec is False:
+                    print('      {}: {} returned records'.format(name, len(attelt)))
+                else:
+                    for rec in attelt:
+                        print('      record')
+                        for k, v in rec.items():
+                            print('         {}: {}'.format(k, v))
             else:
                 print('   {}: {}'.format(name, attelt))
         except:
             pass
 
-def print_s2n_output(response_dict):
+# ....................................
+def print_s2n_output(response_dict, do_print_rec=False):
     print('*** Dictionary of S^n dictionaries ***')
     for name, attelt in response_dict.items():
         try:
             if name == 'records':
                 print('{}: '.format(name))
                 for respdict in attelt:
-                    _print_oneprov_output(respdict)
+                    _print_oneprov_output(respdict, do_print_rec)
             else:
                 print('{}: {}'.format(name, attelt))
         except:
