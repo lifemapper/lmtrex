@@ -14,17 +14,6 @@ class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
     
     # ...............................................
-    @classmethod
-    def get_providers(self, search_params=None):
-        provnames = set()
-        # Ignore as-yet undefined search_params
-        for p in ServiceProviderNew.all():
-            if APIService.Map in p[S2nKey.SERVICES]:
-                provnames.add(p[S2nKey.PARAM])
-        return provnames
-
-
-    # ...............................................
     def _match_gbif_names(self, namestr, gbif_status):
         scinames = []
         errmsgs = []
@@ -94,7 +83,7 @@ class MapSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, APIService.Map, provstr, records=allrecs,
+            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
@@ -128,7 +117,6 @@ class MapSvc(_S2nService):
             valid_providers = self.get_providers(search_params=search_params)
             req_providers = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
-
 
             if namestr is None and search_params is None:
                 output = self._show_online(providers=valid_providers)

@@ -14,16 +14,6 @@ class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
     
     # ...............................................
-    @classmethod
-    def get_providers(self, search_params=None):
-        provnames = set()
-        # Ignore as-yet undefined search_params
-        for p in ServiceProviderNew.all():
-            if APIService.Name in p[S2nKey.SERVICES]:
-                provnames.add(p[S2nKey.PARAM])
-        return provnames
-    
-    # ...............................................
     def _get_gbif_records(self, namestr, gbif_status, gbif_count):
         try:
             # Get name from Gbif        
@@ -166,9 +156,6 @@ class NameSvc(_S2nService):
             output = self.get_failure(query_term=namestr, errors=[str(e)])
         
         return output.response
-#         import json
-#         s = json.dumps(output.response)
-#         return s
             
 
 # .............................................................................
@@ -177,22 +164,20 @@ if __name__ == '__main__':
     # test
     test_names = TST_VALUES.NAMES[0:4]
     test_names = ['Tulipa sylvestris']
-#     test_names.append(TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0])
     
     svc = NameSvc()
     for namestr in test_names:
         for gparse in [True]:
-            for prov in ['itis']:
-#             for prov in svc.get_providers():
+            for prov in svc.get_providers():
                 out = svc.GET(
                     namestr=namestr, provider=prov, gbif_accepted=False, gbif_parse=gparse, 
                     gbif_count=True, itis_accepted=True, kingdom=None)
                 print_s2n_output(out)
-#     # Try once with all providers
-#     out = svc.GET(
-#         namestr=namestr, provider=None, gbif_accepted=False, gbif_parse=True, 
-#         gbif_count=True, itis_accepted=True, kingdom=None)
-#     print_s2n_output(out)
+    # Try once with all providers
+    out = svc.GET(
+        namestr=namestr, provider=None, gbif_accepted=False, gbif_parse=True, 
+        gbif_count=True, itis_accepted=True, kingdom=None)
+    print_s2n_output(out)
                 
 """
 import cherrypy

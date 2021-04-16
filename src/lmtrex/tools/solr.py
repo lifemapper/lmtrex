@@ -3,7 +3,7 @@ import subprocess
 
 from lmtrex.common.lmconstants import SPECIFY, TST_VALUES
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.services.api.v1.s2n_type import S2nKey        
+from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 
 SOLR_POST_COMMAND = '/opt/solr/bin/post'
 SOLR_COMMAND = '/opt/solr/bin/solr'
@@ -13,9 +13,13 @@ ENCODING='utf-8'
 """
 Defined solrcores in /var/solr/data/cores/
 """
+
+def _get_record_format(collection):
+    return 'Solr schema {} TBD'.format(collection)
+
 # ......................................................
 def count_docs(collection, solr_location):
-    output = query(collection, solr_location)
+    output = query(collection, solr_location, query_term='*')
     output.pop(S2nKey.RECORDS)
     return output
 
@@ -106,10 +110,10 @@ def query_guid(guid, collection, solr_location):
     Return: 
         a dictionary containing one or more keys: count, docs, error
     """
-    return query(collection, solr_location, filters={'id': guid})
+    return query(collection, solr_location, filters={'id': guid}, query_term=guid)
     
 # .............................................................................
-def query(collection, solr_location, filters={'*': '*'}):
+def query(collection, solr_location, filters={'*': '*'}, query_term='*'):
     """Query a solr index and return results in JSON format
     
     Args:
@@ -132,15 +136,21 @@ def query(collection, solr_location, filters={'*': '*'}):
         errmsgs.append('Missing `response` element')
     else:
         try:
-            output[S2nKey.COUNT] = response['numFound']
+            count = response['numFound']
         except:
             errmsgs.append('Failed to return numFound from solr')
         try:
-            output[S2nKey.RECORDS] = response['docs']
+            recs = response['docs']
         except:
             errmsgs.append('Failed to return docs from solr')
-    output[S2nKey.ERRORS] = errmsgs
-    return output
+    
+    service = provider = ''
+    record_format = _get_record_format(collection)    
+    std_output = S2nOutput(
+        count, query_term, service, provider, provider_query=[api.url], 
+            record_format=record_format, records=recs, errors=errmsgs)
+    
+    return std_output
 
 # .............................................................................
 def update(collection, solr_location):

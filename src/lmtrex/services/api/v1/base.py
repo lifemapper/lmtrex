@@ -11,7 +11,16 @@ class _S2nService:
     """Base S-to-the-N service, handles parameter names and acceptable values"""
     # overridden by subclasses
     SERVICE_TYPE = None
-    PROVIDER = None
+
+    # ...............................................
+    @classmethod
+    def get_providers(cls, search_params=None):
+        provnames = set()
+        # Ignore as-yet undefined search_params
+        for p in ServiceProviderNew.all():
+            if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
+                provnames.add(p[S2nKey.PARAM])
+        return provnames
 
     # .............................................................................
     @classmethod
@@ -35,11 +44,6 @@ class _S2nService:
         Return:
             lmtrex.services.api.v1.S2nOutput object
         """
-        if not provider:
-            try:
-                provider = cls.PROVIDER[S2nKey.NAME]
-            except:
-                provider = ''
         if not service: 
             service = cls.SERVICE_TYPE
         all_output = S2nOutput(
@@ -71,8 +75,6 @@ class _S2nService:
     @classmethod
     def endpoint(cls):
         endpoint =  '{}/{}'.format(APIService.Root, cls.SERVICE_TYPE)
-        if cls.PROVIDER is not None:
-            endpoint = '{}/{}'.format(endpoint, cls.PROVIDER['endpoint'])
         return endpoint
 
     # ...............................................

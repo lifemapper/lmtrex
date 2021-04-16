@@ -119,6 +119,14 @@ class S2nOutput(object):
         else:
             raise Exception('Unrecognized property {}'.format(prop))
         
+    def append_value(self, prop, value):
+        if prop in (S2nKey.PROVIDER_QUERY, S2nKey.RECORDS, S2nKey.ERRORS):
+            # Append or set
+            self._response[prop].append(value)
+        else:
+            raise Exception(
+                'Property {} is not a multi-value element, use `set_value`'.format(prop))
+
     @property
     def response(self):
         return self._response
