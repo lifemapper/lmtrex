@@ -68,7 +68,7 @@ class MapSvc(_S2nService):
         query_term = ''
         if namestr is not None:
             query_term = namestr
-...            
+            
         provnames = []
         for pr in req_providers:
             # Lifemapper
