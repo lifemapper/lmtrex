@@ -58,18 +58,17 @@ class _S2nService:
         # Who to query
         req_providers = set(standardized_providers)
         valid_providers = set(valid_providers)
+        
         if req_providers is None: 
             req_providers = valid_providers
         else:
-            req_providers = valid_providers.intersection(req_providers)
-            if len(req_providers) == 0:
-                req_providers = valid_providers
-            # Error parameters
+            # Note invalid providers
             invalid_providers = req_providers.difference(valid_providers)
-            if len(invalid_providers) > 0:
-                print('Request specified invalid providers {} for {} service'
-                      .format(', '.join(invalid_providers), cls.SERVICE_TYPE))
-        return req_providers
+            # Only return valid requested providers
+            valid_req_providers = valid_providers.intersection(req_providers)
+            if len(valid_req_providers) == 0:
+                valid_req_providers = valid_providers
+        return valid_req_providers, invalid_providers
 
     # .............................................................................
     @classmethod
@@ -249,7 +248,7 @@ class _S2nService:
             count_only: flag indicating whether to return records
             url: direct URL to Specify occurrence, only used with for Specify
                 queries
-            scenariocode: A lifemapper code indiget_valid_requested_providerscating the climate scenario used
+            scenariocode: A lifemapper code indicating the climate scenario used
                 to calculate predicted presence of a species 
             bbox: A (min x, min y, max x, max y) tuple of bounding parameters
             color: The color (or color ramp) to use for the map

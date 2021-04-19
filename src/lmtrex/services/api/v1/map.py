@@ -106,26 +106,31 @@ class MapSvc(_S2nService):
             usr_params = self._standardize_params(
                 namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                 gbif_accepted=gbif_accepted, scenariocode=scenariocode, color=color)
-            
-            # What to query
-            namestr = usr_params['namestr']
+        except Exception as e:
+            traceback = get_traceback()
+            output = self.get_failure(query_term=namestr, errors=[traceback])
+        else:            
             # Who to query
             valid_providers = self.get_providers()
-            req_providers = self.get_valid_requested_providers(
+            valid_req_providers, invalid_providers = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
 
-            if namestr is None:
-                output = self._show_online(providers=valid_providers)
-            else:
-                # common filters
-                scenariocode = usr_params['scenariocode']
-                color = usr_params['color'] 
-                gbif_status = usr_params['gbif_status']
-                # Query
-                output = self.get_records(
-                    namestr, req_providers, gbif_status, scenariocode, color)
-        except Exception as e:
-            output = self.get_failure(query_term=namestr, errors=[str(e)])
+            # What to query
+            namestr = usr_params['namestr']
+            try:
+                if namestr is None:
+                    output = self._show_online(providers=valid_providers)
+                else:
+                    # Query
+                    output = self.get_records(
+                        namestr, valid_req_providers, usr_params['gbif_status'], 
+                        usr_params['scenariocode'], usr_params['color'])
+                    if invalid_providers:
+                        msg = 'Invalid providers requested: {}'.format(
+                            ','.join(invalid_providers))
+                        output.append_value(S2nKey.ERRORS, msg)
+            except Exception as e:
+                output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
 
 

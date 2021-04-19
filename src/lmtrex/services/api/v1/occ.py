@@ -172,7 +172,7 @@ class OccurrenceSvc(_S2nService):
         else:
             # Who to query
             valid_providers = self.get_providers(filter_params=filter_params)
-            req_providers = self.get_valid_requested_providers(
+            valid_req_providers, invalid_providers = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
 
             # What to query: address one occurrence record, with optional filters
@@ -181,17 +181,21 @@ class OccurrenceSvc(_S2nService):
             else:
                 occid = usr_params['occid']
                 dskey = usr_params['dataset_key']
-                count_only = usr_params['count_only']
 
-        try:
-            if occid is None and dskey is None:
-                output = self._show_online(providers=req_providers)
-            else:
-                output = self.get_records(
-                    occid, req_providers, count_only, filter_params={'dataset_key': dskey})
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term=occid, errors=[traceback])
+            try:
+                if occid is None and dskey is None:
+                    output = self._show_online(providers=valid_req_providers)
+                else:
+                    output = self.get_records(
+                        occid, valid_req_providers, usr_params['count_only'], 
+                        filter_params={'dataset_key': dskey})
+                    if invalid_providers:
+                        msg = 'Invalid providers requested: {}'.format(
+                            ','.join(invalid_providers))
+                        output.append_value(S2nKey.ERRORS, msg)
+            except Exception as e:
+                traceback = get_traceback()
+                output = self.get_failure(query_term=occid, errors=[traceback])
         return output.response
     
 
