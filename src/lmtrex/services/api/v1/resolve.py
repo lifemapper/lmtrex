@@ -116,11 +116,14 @@ class ResolveSvc(_S2nService):
             # What to query: address one occurrence record, with optional filters
             occid = usr_params['occid']
             if occid is None:
-                std_output = self._show_online()
+                output = self._show_online()
             else:
                 # What to query: common filters
-                std_output = self.get_records(occid, req_providers)
-            return std_output.response
+                output = self.get_records(occid, req_providers)
+        except Exception as e:
+            traceback = get_traceback()
+            output = self.get_failure(query_term=occid, errors=[traceback])
+        return output.response
 
 # .............................................................................
 # @cherrypy.expose

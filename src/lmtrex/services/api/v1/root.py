@@ -5,7 +5,7 @@ import cherrypy
 from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.occ import OccurrenceSvc
-from lmtrex.services.api.v1.resolve import SpecifyResolve
+from lmtrex.services.api.v1.resolve import ResolveSvc
 
 from lmtrex.common.lmconstants import (CHERRYPY_CONFIG_FILE)
 
@@ -57,7 +57,7 @@ def start_cherrypy_services():
          })
     cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
     # ARK service
-    cherrypy.tree.mount(SpecifyResolve(), SpecifyResolve.endpoint(), conf)
+    cherrypy.tree.mount(ResolveSvc(), ResolveSvc.endpoint(), conf)
     # Occurrence services, by GUID, by parameters (i.e. dataset_key, ...)
     cherrypy.tree.mount(OccurrenceSvc(), OccurrenceSvc.endpoint(), conf)
     # Map services
