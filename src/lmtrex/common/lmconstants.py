@@ -118,6 +118,7 @@ class APIService:
     Root = '/api/v1'
     # Service types
     Occurrence = 'occ'
+    # TODO: Consider an Extension service for Digital Object Architecture
     SpecimenExtension = 'occext'
     Name = 'name'
     Dataset = 'dataset'
@@ -143,7 +144,7 @@ class ServiceProviderNew:
             APIService.Map]}
     MorphoSource = {
         S2nKey.NAME: 'MorphoSource', S2nKey.PARAM: 'mopho', S2nKey.SERVICES: [
-            APIService.SpecimenExtension]}
+            APIService.SpecimenExtension, APIService.Occurrence]}
     Specify = {
         S2nKey.NAME: 'Specify', S2nKey.PARAM: 'specify', S2nKey.SERVICES: [
             APIService.Occurrence, APIService.Resolve]}
@@ -171,8 +172,10 @@ class ServiceProviderNew:
     def is_valid_param(cls, param):
         if param in (
             ServiceProviderNew.BISON[S2nKey.PARAM], ServiceProviderNew.GBIF[S2nKey.PARAM], 
-            ServiceProviderNew.iDigBio[S2nKey.PARAM], ServiceProviderNew.ITISSolr[S2nKey.PARAM], 
-            ServiceProviderNew.Lifemapper[S2nKey.PARAM], ServiceProviderNew.MorphoSource[S2nKey.PARAM],
+            ServiceProviderNew.iDigBio[S2nKey.PARAM], 
+            ServiceProviderNew.ITISSolr[S2nKey.PARAM], 
+            ServiceProviderNew.Lifemapper[S2nKey.PARAM], 
+            ServiceProviderNew.MorphoSource[S2nKey.PARAM],
             ServiceProviderNew.Specify[S2nKey.PARAM]):
             return True
         return False
