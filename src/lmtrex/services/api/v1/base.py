@@ -360,6 +360,11 @@ class _S2nService:
                 
         return usr_params
 
+    # ..........................
+    @staticmethod
+    def OPTIONS():
+        """Common options request for all services (needed for CORS)"""
+        return
 
 # .............................................................................
 if __name__ == '__main__':

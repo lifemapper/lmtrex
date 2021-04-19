@@ -37,15 +37,6 @@ class OccurrenceSvc(_S2nService):
         std_output = spark.get_specify_records(occid)
         (url, msg) = spark.get_url_from_meta(std_output)
                 
-#         if url is None:
-#             msgs = []
-#             if msg is not None:
-#                 msgs.append(msg)
-#             msgs.append('No public endpoint for Specify record with occurrenceID {}'.format(occid))
-#             output = self.get_failure(
-#                 provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
-#                 errors=msgs)
-#         else:
         try:
             output = SpecifyPortalAPI.get_specify_record(occid, url, count_only)
         except Exception as e:
@@ -169,7 +160,7 @@ class OccurrenceSvc(_S2nService):
             list of dictionaries of records corresponding to specimen 
             occurrences in the provider database
         """
-        search_params = None
+        search_params = dskey = None
         try:
             usr_params = self._standardize_params(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
@@ -188,8 +179,8 @@ class OccurrenceSvc(_S2nService):
             req_providers = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
             
-            if occid is None and search_params is None:
-                output = self._show_online()
+            if occid is None and dskey is None:
+                output = self._show_online(providers=req_providers)
             else:
                 # What to query: common filters
                 count_only = usr_params['count_only']
