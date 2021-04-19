@@ -37,22 +37,22 @@ class OccurrenceSvc(_S2nService):
         std_output = spark.get_specify_records(occid)
         (url, msg) = spark.get_url_from_meta(std_output)
                 
-        if url is None:
-            msgs = []
-            if msg is not None:
-                msgs.append(msg)
-            msgs.append('No endpoint for Specify record with occurrenceID {}'.format(occid))
+#         if url is None:
+#             msgs = []
+#             if msg is not None:
+#                 msgs.append(msg)
+#             msgs.append('No public endpoint for Specify record with occurrenceID {}'.format(occid))
+#             output = self.get_failure(
+#                 provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
+#                 errors=msgs)
+#         else:
+        try:
+            output = SpecifyPortalAPI.get_specify_record(occid, url, count_only)
+        except Exception as e:
+            traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
-                errors=msgs)
-        else:
-            try:
-                output = SpecifyPortalAPI.get_specify_record(occid, url, count_only)
-            except Exception as e:
-                traceback = get_traceback()
-                output = self.get_failure(
-                    provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
-                    errors=[traceback])
+                errors=[traceback])
         return output.response
 
     # ...............................................

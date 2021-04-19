@@ -32,7 +32,7 @@ class SpecifyPortalAPI(APIQuery):
             errmsgs.append(err)
         # Count
         try:
-            recs = [output]
+            recs = list(output)
         except Exception as e:
             errmsgs.append(cls._get_error_message(err=e))
         else:
@@ -71,7 +71,12 @@ class SpecifyPortalAPI(APIQuery):
             in the Solr Specify Resolver but are not resolvable to the host 
             database.  URLs returned for these records begin with 'unknown_url'.
         """
-        if url.startswith('http'):
+        if url is None:
+            recs = []
+            std_output = cls._standardize_output(
+                recs, occid, APIService.Occurrence, provider_query=[], 
+                count_only=count_only)
+        elif url.startswith('http'):
             api = APIQuery(url, headers=JSON_HEADERS, logger=logger)
     
             try:
