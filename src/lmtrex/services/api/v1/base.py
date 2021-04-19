@@ -14,9 +14,9 @@ class _S2nService:
 
     # ...............................................
     @classmethod
-    def get_providers(cls, search_params=None):
+    def get_providers(cls, filter_params=None):
         provnames = set()
-        # Ignore as-yet undefined search_params
+        # Ignore as-yet undefined filter_params
         for p in ServiceProviderNew.all():
             if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
