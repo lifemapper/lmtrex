@@ -34,8 +34,8 @@ class OccurrenceSvc(_S2nService):
     def _get_specify_records(self, occid, count_only):
         # Resolve for record URL
         spark = ResolveSvc()
-        solr_output = spark.get_specify_guid_meta(occid)
-        (url, msg) = spark.get_url_from_meta(solr_output)
+        std_output = spark.get_specify_records(occid)
+        (url, msg) = spark.get_url_from_meta(std_output)
                 
         if url is None:
             msgs = []

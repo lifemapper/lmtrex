@@ -17,10 +17,10 @@ class ResolveSvc(_S2nService):
     
     # ...............................................
     @staticmethod
-    def get_url_from_meta(solr_output):
+    def get_url_from_meta(std_output):
         url = msg = None
         try:
-            solr_doc = solr_output[S2nKey.RECORDS][0]
+            solr_doc = std_output[S2nKey.RECORDS][0]
         except:
             pass
         else:
