@@ -62,16 +62,13 @@ class MapSvc(_S2nService):
 
     # ...............................................
     def get_records(
-            self, namestr, req_providers, gbif_status, scenariocode, color,  
-            search_params=None):
+            self, namestr, req_providers, gbif_status, scenariocode, color):
         allrecs = []
         # for response metadata
         query_term = ''
         if namestr is not None:
             query_term = namestr
-        elif search_params:
-            query_term = 'invalid query term'
-            
+...            
         provnames = []
         for pr in req_providers:
             # Lifemapper
@@ -104,8 +101,7 @@ class MapSvc(_S2nService):
             list of dictionaries of Lifemapper records corresponding to 
             maps with URLs and their layers in the Lifemapper archive
         """
-        # No search_params defined for Map service yet
-        search_params = None
+        # No filter_params defined for Map service yet
         try:
             usr_params = self._standardize_params(
                 namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
@@ -114,11 +110,11 @@ class MapSvc(_S2nService):
             # What to query
             namestr = usr_params['namestr']
             # Who to query
-            valid_providers = self.get_providers(search_params=search_params)
+            valid_providers = self.get_providers()
             req_providers = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
 
-            if namestr is None and search_params is None:
+            if namestr is None:
                 output = self._show_online(providers=valid_providers)
             else:
                 # common filters
@@ -127,8 +123,7 @@ class MapSvc(_S2nService):
                 gbif_status = usr_params['gbif_status']
                 # Query
                 output = self.get_records(
-                    namestr, req_providers, gbif_status, scenariocode, color,  
-                    search_params=search_params)
+                    namestr, req_providers, gbif_status, scenariocode, color)
         except Exception as e:
             output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
