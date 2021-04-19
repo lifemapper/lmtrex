@@ -57,6 +57,7 @@ class APIQuery:
         errmsgs = []
         stdrecs = []
         total = 0
+        query_term = 'query_term={}; count_only={}'.format(query_term, count_only)
         if err is not None:
             errmsgs.append(err)
         # Count

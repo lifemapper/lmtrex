@@ -89,6 +89,7 @@ class S2nKey:
 class S2n:
     RECORD_FORMAT = 'Lifemapper service broker schema TBD'
     
+# TODO: change query_term to a list or dictionary
 class S2nOutput(object):
     count: int
     query_term: str

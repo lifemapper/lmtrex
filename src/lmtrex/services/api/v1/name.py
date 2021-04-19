@@ -66,7 +66,7 @@ class NameSvc(_S2nService):
         # for response metadata
         query_term = ''
         if namestr is not None:
-            query_term = namestr
+            query_term = 'namestr={}'.format(namestr)
             
         provnames = []
         for pr in req_providers:
@@ -77,11 +77,15 @@ class NameSvc(_S2nService):
                     goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
                     allrecs.append(goutput)
                     provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
+                    query_term = '{}; gbif_status={}; gbif_count={}'.format(
+                        query_term, gbif_status, gbif_count)
                 #  ITIS
                 elif pr == ServiceProviderNew.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
                     allrecs.append(isoutput)
                     provnames.append(ServiceProviderNew.ITISSolr[S2nKey.NAME])
+                    query_term = '{}; itis_accepted={}; kingdom={}'.format(
+                        query_term, itis_accepted, kingdom)
             # TODO: enable filter parameters
             
         # Assemble

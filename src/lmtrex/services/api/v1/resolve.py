@@ -3,7 +3,7 @@ import cherrypy
 from lmtrex.common.lmconstants import (ServiceProviderNew, APIService, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey)
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
 from lmtrex.tools.utils import get_traceback
 
 collection = 'spcoco'
@@ -134,6 +134,6 @@ if __name__ == '__main__':
     for occid in TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[:1]:
         print(occid)
         # Specify ARK Record
-        spark = ResolveSvc()
-        solr_output = spark.GET(occid)
-        print (solr_output)
+        svc = ResolveSvc()
+        std_output = svc.GET(occid)
+        print_s2n_output(std_output)

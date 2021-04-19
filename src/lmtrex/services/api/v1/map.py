@@ -53,9 +53,10 @@ class MapSvc(_S2nService):
                 stdrecs.extend(lout.records)
                 errmsgs.extend(lout.errors)
                 queries.extend(lout.provider_query)
-        
+        query_term = 'namestr={}; gbif_status={}; scenariocode={}; color={}'.format(
+            namestr, gbif_status, scenariocode, color)
         full_out = S2nOutput(
-            len(stdrecs), namestr, self.SERVICE_TYPE, lout.provider, 
+            len(stdrecs), query_term, self.SERVICE_TYPE, lout.provider, 
             provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
             records=stdrecs, errors=errmsgs)
         return full_out.response
@@ -65,9 +66,9 @@ class MapSvc(_S2nService):
             self, namestr, req_providers, gbif_status, scenariocode, color):
         allrecs = []
         # for response metadata
-        query_term = ''
+        common_query = ''
         if namestr is not None:
-            query_term = namestr
+            common_query = 'namestr={}'.format(namestr)
             
         provnames = []
         for pr in req_providers:
@@ -80,7 +81,7 @@ class MapSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
+            len(allrecs), common_query, self.SERVICE_TYPE, provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
