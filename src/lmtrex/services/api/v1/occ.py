@@ -14,7 +14,7 @@ from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_o
 
 # .............................................................................
 @cherrypy.expose
-@cherrypy.popargs('path_occ_id')
+# @cherrypy.popargs('path_occ_id')
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
 
@@ -143,7 +143,7 @@ class OccurrenceSvc(_S2nService):
     # ...............................................
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, path_occ_id=None, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
+    def GET(self, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
         """Get one or more occurrence records for a dwc:occurrenceID from each
         available occurrence record service.
         
@@ -176,12 +176,8 @@ class OccurrenceSvc(_S2nService):
                 usr_params['provider'], valid_providers)
 
             # What to query: address one occurrence record, with optional filters
-            if path_occ_id is not None:
-                occid = path_occ_id
-            else:
-                occid = usr_params['occid']
-                dskey = usr_params['dataset_key']
-
+            occid = usr_params['occid']
+            dskey = usr_params['dataset_key']
             try:
                 if occid is None and dskey is None:
                     output = self._show_online(providers=valid_req_providers)
