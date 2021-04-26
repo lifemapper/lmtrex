@@ -35,7 +35,7 @@ class MapSvc(_S2nService):
         return scinames, errmsgs
 
     # ...............................................
-    def _get_lifemapper_records(self, namestr, gbif_status, scenariocode, color):
+    def _get_lifemapper_records(self, namestr, gbif_status, scenariocodes, color):
         errmsgs = []
         # First: get name(s)
         if gbif_status is False:
@@ -48,13 +48,13 @@ class MapSvc(_S2nService):
         for sname in scinames:
             # TODO: search on occurrenceset, then also pull projection layers
             lout = LifemapperAPI.find_map_layers_by_name(
-                sname, prjscenariocode=scenariocode, color=color)
+                sname, prjscenariocodes=scenariocodes, color=color)
             if len(lout.records) > 0:
                 stdrecs.extend(lout.records)
                 errmsgs.extend(lout.errors)
                 queries.extend(lout.provider_query)
-        query_term = 'namestr={}; gbif_status={}; scenariocode={}; color={}'.format(
-            namestr, gbif_status, scenariocode, color)
+        query_term = 'namestr={}; gbif_status={}; scenariocodes={}; color={}'.format(
+            namestr, gbif_status, scenariocodes, color)
         full_out = S2nOutput(
             len(stdrecs), query_term, self.SERVICE_TYPE, lout.provider, 
             provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
@@ -63,7 +63,7 @@ class MapSvc(_S2nService):
 
     # ...............................................
     def get_records(
-            self, namestr, req_providers, gbif_status, scenariocode, color):
+            self, namestr, req_providers, gbif_status, scenariocodes, color):
         allrecs = []
         # for response metadata
         common_query = ''
@@ -75,7 +75,7 @@ class MapSvc(_S2nService):
             # Lifemapper
             if pr == ServiceProvider.Lifemapper[S2nKey.PARAM]:
                 lmoutput = self._get_lifemapper_records(
-                    namestr, gbif_status, scenariocode, color)
+                    namestr, gbif_status, scenariocodes, color)
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble
@@ -117,6 +117,7 @@ class MapSvc(_S2nService):
                 usr_params['provider'], valid_providers)
 
             # What to query
+            scencodes = usr_params['scenariocode']
             namestr = usr_params['namestr']
             try:
                 if namestr is None:
@@ -125,7 +126,7 @@ class MapSvc(_S2nService):
                     # Query
                     output = self.get_records(
                         namestr, valid_req_providers, usr_params['gbif_status'], 
-                        usr_params['scenariocode'], usr_params['color'])
+                        scencodes, usr_params['color'])
                     if invalid_providers:
                         msg = 'Invalid providers requested: {}'.format(
                             ','.join(invalid_providers))
@@ -142,7 +143,8 @@ if __name__ == '__main__':
     names = ['Tulipa sylvestris']
     names = ['Phlox longifolia Nutt']
     svc = MapSvc()
-    for namestr in names:        
-        for prov in svc.get_providers():
-            out = svc.GET(namestr=namestr, scenariocode=None, provider=prov)
-            print_s2n_output(out, do_print_rec=True)
+    for namestr in names:
+        for scodes in (None, 'worldclim-curr'):
+            for prov in svc.get_providers():
+                out = svc.GET(namestr=namestr, scenariocode=scodes, provider=prov)
+                print_s2n_output(out, do_print_rec=True)

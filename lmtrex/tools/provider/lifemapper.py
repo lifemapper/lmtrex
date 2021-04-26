@@ -34,7 +34,7 @@ class LifemapperAPI(APIQuery):
     
     # ...............................................
     @classmethod
-    def _standardize_proj_layer_record(cls, rec, prjscenariocode=None, color=None):
+    def _standardize_proj_layer_record(cls, rec, prjscenariocodes=None, color=None):
         errmsgs = []
         stat = endpoint = sdm_layer_name = proj_url = None
         scen_code = scen_link = species_name = modtime = None
@@ -56,7 +56,7 @@ class LifemapperAPI(APIQuery):
                         'Failed to retrieve projectionScenario/code element'))
                 else:
                     # ignore
-                    if prjscenariocode is not None and prjscenariocode != scen_code:
+                    if prjscenariocodes and scen_code not in prjscenariocodes:
                         pass
                     # Return all valid projection layers or requested projection layer for scenario
                     else:
@@ -167,7 +167,7 @@ class LifemapperAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_map_output(
-            cls, output, query_term, service, prjscenariocode=None, color=None, count_only=False, 
+            cls, output, query_term, service, prjscenariocodes=None, color=None, count_only=False, 
             provider_query=[], err=None):
         occ_layer_rec = None
         stdrecs = []
@@ -197,7 +197,7 @@ class LifemapperAPI(APIQuery):
             for r in output:
                 try:
                     r2 = cls._standardize_proj_layer_record(
-                        r, prjscenariocode=prjscenariocode, color=color)
+                        r, prjscenariocodes=prjscenariocodes, color=color)
                     if r2['endpoint'] is not None:
                         stdrecs.append(r2)
                 except Exception as e:
@@ -370,7 +370,7 @@ class LifemapperAPI(APIQuery):
     # ...............................................
     @classmethod
     def find_map_layers_by_name(
-            cls, name, prjscenariocode=None, color=None, other_filters={}, 
+            cls, name, prjscenariocodes=None, color=None, other_filters={}, 
             logger=None):
         """
         List projections for a given scientific name.  
@@ -378,7 +378,7 @@ class LifemapperAPI(APIQuery):
         Args:
             name: a scientific name 'Accepted' according to the GBIF Backbone 
                 Taxonomy
-            prjscenariocode: a Lifemapper code indicating whether the 
+            prjscenariocodes: one or more Lifemapper codes indicating whether the 
                 environmental data used for creating the projection is 
                 observed, or modeled past or future.  Codes are in 
                 LmREx.common.lmconstants Lifemapper.*_SCENARIO_CODE*. If the 
@@ -391,16 +391,9 @@ class LifemapperAPI(APIQuery):
         Note: 
             Lifemapper contains only 'Accepted' name froms the GBIF Backbone 
             Taxonomy and this method requires them for success.
-
-        Todo:
-            search on occurrenceset, then also pull projection layers
         """
         other_filters[Lifemapper.NAME_KEY] = name
         other_filters[Lifemapper.ATOM_KEY] = 0
-#         other_filters[Lifemapper.MIN_STAT_KEY] = Lifemapper.COMPLETE_STAT_VAL
-#         other_filters[Lifemapper.MAX_STAT_KEY] = Lifemapper.COMPLETE_STAT_VAL
-#         if prjscenariocode is not None:
-#             other_filters[Lifemapper.SCENARIO_KEY] = prjscenariocode
         api = LifemapperAPI(
             resource=Lifemapper.PROJ_RESOURCE, other_filters=other_filters)
         
@@ -411,7 +404,7 @@ class LifemapperAPI(APIQuery):
         else:
             std_output = cls._standardize_map_output(
                 api.output, name, APIService.Map, provider_query=[api.url], 
-                prjscenariocode=prjscenariocode, color=color, count_only=False, 
+                prjscenariocodes=prjscenariocodes, color=color, count_only=False, 
                 err=api.error)
 
         return std_output

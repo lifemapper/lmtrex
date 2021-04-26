@@ -290,7 +290,7 @@ class _S2nService:
             'dataset_key': (None, empty_str), 
             'count_only': False, 
             'url': (None, empty_str),
-            'scenariocode': Lifemapper.valid_scenario_codes(),
+            'scenariocode': (None, empty_str),
             'bbox': '-180,-90,180,90', 
             'color': Lifemapper.VALID_COLORS,
             'exceptions': (None, empty_str), 
@@ -339,6 +339,16 @@ class _S2nService:
                 if ServiceProvider.is_valid_param(prov):
                     provs.append(prov)
         usr_params['provider'] = provs
+        # Allow for None or comma-delimited list of scenarios
+        scens = []
+        if scenariocode is not None:
+            # Prepared params are lower case 
+            tmpscens = usr_params['scenariocode'].split(',') 
+            for ts in tmpscens:
+                scen = ts.strip()
+                if scen in Lifemapper.valid_scenario_codes():
+                    scens.append(scen)
+        usr_params['scenariocode'] = scens
         # Remove 'gbif_accepted' flag and replace with 'gbif_status' filter for GBIF
         # GBIF Taxonomic Constants at:
         # https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/TaxonomicStatus.html
