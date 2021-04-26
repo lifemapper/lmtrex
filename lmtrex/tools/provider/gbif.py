@@ -299,7 +299,7 @@ class GbifAPI(APIQuery):
             query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, APIService.Dataset, 
+                api.output, query_term, APIService.Occurrence, 
                 provider_query=[api.url], count_only=count_only, err=api.error)
             
         return std_out
