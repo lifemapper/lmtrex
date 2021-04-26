@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (ServiceProviderNew, APIService)
+from lmtrex.common.lmconstants import (ServiceProvider, APIService)
 
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
@@ -23,12 +23,12 @@ class OccurrenceSvc(_S2nService):
     def get_providers(cls, filter_params=None):
         provnames = set()
         if filter_params is None:
-            for p in ServiceProviderNew.all():
+            for p in ServiceProvider.all():
                 if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
                     provnames.add(p[S2nKey.PARAM])
         # Fewer providers by dataset
         elif 'dataset_key' in filter_params.keys():
-            provnames = set([ServiceProviderNew.GBIF[S2nKey.PARAM]])
+            provnames = set([ServiceProvider.GBIF[S2nKey.PARAM]])
         return provnames
 
     # ...............................................
@@ -43,7 +43,7 @@ class OccurrenceSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
-                provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
+                provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
                 errors=[traceback])
         return output.response
 
@@ -55,7 +55,7 @@ class OccurrenceSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
-                provider=ServiceProviderNew.MorphoSource[S2nKey.NAME], query_term=occid, 
+                provider=ServiceProvider.MorphoSource[S2nKey.NAME], query_term=occid, 
                 errors=[traceback])
         return output.response
 
@@ -83,7 +83,7 @@ class OccurrenceSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
-                provider=ServiceProviderNew.GBIF[S2nKey.NAME], query_term=query_term, 
+                provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=query_term, 
                 errors=[traceback])
         return output.response
 
@@ -107,31 +107,31 @@ class OccurrenceSvc(_S2nService):
             # Address single record
             if occid is not None:
                 # GBIF
-                if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
+                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     gbif_output = self._get_gbif_records(occid, dskey, count_only)
                     allrecs.append(gbif_output)
-                    provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
+                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
                 # iDigBio
-                elif pr == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
+                elif pr == ServiceProvider.iDigBio[S2nKey.PARAM]:
                     idb_output = self._get_idb_records(occid, count_only)
                     allrecs.append(idb_output)
-                    provnames.append(ServiceProviderNew.iDigBio[S2nKey.NAME])
+                    provnames.append(ServiceProvider.iDigBio[S2nKey.NAME])
                 # MorphoSource
-                elif pr == ServiceProviderNew.MorphoSource[S2nKey.PARAM]:
+                elif pr == ServiceProvider.MorphoSource[S2nKey.PARAM]:
                     mopho_output = self._get_mopho_records(occid, count_only)
                     allrecs.append(mopho_output)
-                    provnames.append(ServiceProviderNew.MorphoSource[S2nKey.NAME])
+                    provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
                 # Specify
-                elif pr == ServiceProviderNew.Specify[S2nKey.PARAM]:
+                elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
                     sp_output = self._get_specify_records(occid, count_only)
                     allrecs.append(sp_output)
-                    provnames.append(ServiceProviderNew.Specify[S2nKey.NAME])
+                    provnames.append(ServiceProvider.Specify[S2nKey.NAME])
             # Filter by parameters
             elif dskey:
-                if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
+                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     gbif_output = self._get_gbif_records(occid, dskey, count_only)
                     allrecs.append(gbif_output)
-                    provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
+                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
 
         # Assemble
         provstr = ','.join(provnames)

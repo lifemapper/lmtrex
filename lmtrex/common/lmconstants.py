@@ -128,10 +128,10 @@ class APIService:
 # .............................................................................
 class ServiceProvider:
     BISON = {
-        S2nKey.NAME: 'BISON', S2nKey.PARAM: 'bison', S2nKey.SERVICES: [APIService.Dataset]}
+        S2nKey.NAME: 'BISON', S2nKey.PARAM: 'bison', S2nKey.SERVICES: [APIService.Occurrence]}
     GBIF = {
         S2nKey.NAME: 'GBIF', S2nKey.PARAM: 'gbif', S2nKey.SERVICES: [
-            APIService.Occurrence, APIService.Name, APIService.Dataset]}
+            APIService.Occurrence, APIService.Name]}
     iDigBio = {
         S2nKey.NAME: 'iDigBio', S2nKey.PARAM: 'idb', S2nKey.SERVICES: [
             APIService.Occurrence]}
@@ -149,40 +149,47 @@ class ServiceProvider:
             APIService.Occurrence, APIService.Resolve]}
 # ....................
     @classmethod
-    def get_values(cls, param):
-        if param == ServiceProviderNew.BISON[S2nKey.PARAM]:
-            return ServiceProviderNew.BISON
-        elif param == ServiceProviderNew.GBIF[S2nKey.PARAM]:
-            return ServiceProviderNew.GBIF
-        elif param == ServiceProviderNew.iDigBio[S2nKey.PARAM]:
-            return ServiceProviderNew.iDigBio
-        elif param == ServiceProviderNew.ITISSolr[S2nKey.PARAM]:
-            return ServiceProviderNew.ITISSolr
-        elif param == ServiceProviderNew.Lifemapper[S2nKey.PARAM]:
-            return ServiceProviderNew.Lifemapper
-        elif param == ServiceProviderNew.MorphoSource[S2nKey.PARAM]:
-            return ServiceProviderNew.MorphoSource
-        elif param == ServiceProviderNew.Specify[S2nKey.PARAM]:
-            return ServiceProviderNew.Specify
+    def get_values(cls, param_or_name):
+        if param_or_name in (
+            ServiceProvider.BISON[S2nKey.NAME], ServiceProvider.BISON[S2nKey.PARAM]):
+            return ServiceProvider.BISON
+        elif param_or_name in (
+            ServiceProvider.GBIF[S2nKey.NAME], ServiceProvider.GBIF[S2nKey.PARAM]):
+            return ServiceProvider.GBIF
+        elif param_or_name in (
+            ServiceProvider.iDigBio[S2nKey.NAME], ServiceProvider.iDigBio[S2nKey.PARAM]):
+            return ServiceProvider.iDigBio
+        elif param_or_name in (
+            ServiceProvider.ITISSolr[S2nKey.NAME], ServiceProvider.ITISSolr[S2nKey.PARAM]):
+            return ServiceProvider.ITISSolr
+        elif param_or_name in (
+            ServiceProvider.Lifemapper[S2nKey.NAME], ServiceProvider.Lifemapper[S2nKey.PARAM]):
+            return ServiceProvider.Lifemapper
+        elif param_or_name in (
+            ServiceProvider.MorphoSource[S2nKey.NAME], ServiceProvider.MorphoSource[S2nKey.PARAM]):
+            return ServiceProvider.MorphoSource
+        elif param_or_name in (
+            ServiceProvider.Specify[S2nKey.NAME], ServiceProvider.Specify[S2nKey.PARAM]):
+            return ServiceProvider.Specify
         else:
             return None
 # ....................
     @classmethod
     def is_valid_param(cls, param):
         if param in (
-            ServiceProviderNew.BISON[S2nKey.PARAM], ServiceProviderNew.GBIF[S2nKey.PARAM], 
-            ServiceProviderNew.iDigBio[S2nKey.PARAM], 
-            ServiceProviderNew.ITISSolr[S2nKey.PARAM], 
-            ServiceProviderNew.Lifemapper[S2nKey.PARAM], 
-            ServiceProviderNew.MorphoSource[S2nKey.PARAM],
-            ServiceProviderNew.Specify[S2nKey.PARAM]):
+            ServiceProvider.BISON[S2nKey.PARAM], ServiceProvider.GBIF[S2nKey.PARAM], 
+            ServiceProvider.iDigBio[S2nKey.PARAM], 
+            ServiceProvider.ITISSolr[S2nKey.PARAM], 
+            ServiceProvider.Lifemapper[S2nKey.PARAM], 
+            ServiceProvider.MorphoSource[S2nKey.PARAM],
+            ServiceProvider.Specify[S2nKey.PARAM]):
             return True
         return False
 # ....................
     @classmethod
     def is_valid_service(cls, param, svc):
         if param is not None:
-            val_dict = ServiceProviderNew.get_values(param)
+            val_dict = ServiceProvider.get_values(param)
             if svc in (val_dict['services']):
                 return True
         return False
@@ -192,7 +199,7 @@ class ServiceProvider:
     def get_name_from_param(cls, param):
         name = None
         if param is not None:
-            val_dict = ServiceProviderNew.get_values(param)
+            val_dict = ServiceProvider.get_values(param)
             name = val_dict[S2nKey.NAME]
         return name
 
@@ -200,9 +207,9 @@ class ServiceProvider:
     @classmethod
     def all(cls):
         return [
-            ServiceProviderNew.BISON, ServiceProviderNew.GBIF, ServiceProviderNew.iDigBio, 
-            ServiceProviderNew.ITISSolr, ServiceProviderNew.Lifemapper, 
-            ServiceProviderNew.MorphoSource, ServiceProviderNew.Specify]
+            ServiceProvider.BISON, ServiceProvider.GBIF, ServiceProvider.iDigBio, 
+            ServiceProvider.ITISSolr, ServiceProvider.Lifemapper, 
+            ServiceProvider.MorphoSource, ServiceProvider.Specify]
 
 # # .............................................................................
 # class ServiceProvider:

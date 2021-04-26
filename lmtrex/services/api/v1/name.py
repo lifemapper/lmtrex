@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    ServiceProviderNew, APIService, TST_VALUES)
+    ServiceProvider, APIService, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -21,7 +21,7 @@ class NameSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
-                provider=ServiceProviderNew.GBIF[S2nKey.NAME], query_term=namestr, 
+                provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=namestr, 
                 errors=[traceback])
         else:
             prov_query_list = output.provider_query
@@ -55,7 +55,7 @@ class NameSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
-                provider=ServiceProviderNew.iDigBio[S2nKey.NAME], query_term=namestr, 
+                provider=ServiceProvider.iDigBio[S2nKey.NAME], query_term=namestr, 
                 errors=[traceback])
         return output.response
 
@@ -73,17 +73,17 @@ class NameSvc(_S2nService):
             # Address single record
             if namestr is not None:
                 # GBIF
-                if pr == ServiceProviderNew.GBIF[S2nKey.PARAM]:
+                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
                     allrecs.append(goutput)
-                    provnames.append(ServiceProviderNew.GBIF[S2nKey.NAME])
+                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
                     query_term = '{}; gbif_status={}; gbif_count={}'.format(
                         query_term, gbif_status, gbif_count)
                 #  ITIS
-                elif pr == ServiceProviderNew.ITISSolr[S2nKey.PARAM]:
+                elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
                     allrecs.append(isoutput)
-                    provnames.append(ServiceProviderNew.ITISSolr[S2nKey.NAME])
+                    provnames.append(ServiceProvider.ITISSolr[S2nKey.NAME])
                     query_term = '{}; itis_accepted={}; kingdom={}'.format(
                         query_term, itis_accepted, kingdom)
             # TODO: enable filter parameters
@@ -163,6 +163,7 @@ if __name__ == '__main__':
     # test
     test_names = TST_VALUES.NAMES[0:4]
     test_names = ['Tulipa sylvestris']
+    test_names = ['Plagioecia patina']
     
     svc = NameSvc()
     for namestr in test_names:
@@ -183,7 +184,7 @@ import cherrypy
 import json
 
 from lmtrex.common.lmconstants import (
-    ServiceProviderNew, APIService, TST_VALUES)
+    ServiceProvider, APIService, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI

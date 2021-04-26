@@ -1,7 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProviderNew)
+    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
@@ -17,7 +17,7 @@ class _S2nService:
     def get_providers(cls, filter_params=None):
         provnames = set()
         # Ignore as-yet undefined filter_params
-        for p in ServiceProviderNew.all():
+        for p in ServiceProvider.all():
             if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
         return provnames
@@ -336,7 +336,7 @@ class _S2nService:
             tmpprovs = usr_params['provider'].split(',') 
             for tp in tmpprovs:
                 prov = tp.strip()
-                if ServiceProviderNew.is_valid_param(prov):
+                if ServiceProvider.is_valid_param(prov):
                     provs.append(prov)
         usr_params['provider'] = provs
         # Remove 'gbif_accepted' flag and replace with 'gbif_status' filter for GBIF

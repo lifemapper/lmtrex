@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (ServiceProviderNew, APIService, SPECIFY)
+from lmtrex.common.lmconstants import (ServiceProvider, APIService, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
@@ -43,7 +43,7 @@ class ResolveSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
-                provider=ServiceProviderNew.Specify[S2nKey.NAME], query_term=occid, 
+                provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
                 errors=[traceback])
         return output.response
 
@@ -75,10 +75,10 @@ class ResolveSvc(_S2nService):
         provnames = []
         for pr in req_providers:
             # Address single record
-            if pr == ServiceProviderNew.Specify[S2nKey.PARAM]:
+            if pr == ServiceProvider.Specify[S2nKey.PARAM]:
                 sp_output = self._get_specify_records(occid)
                 allrecs.append(sp_output)
-                provnames.append(ServiceProviderNew.Specify[S2nKey.NAME])
+                provnames.append(ServiceProvider.Specify[S2nKey.NAME])
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(

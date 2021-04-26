@@ -54,41 +54,42 @@ class LifemapperAPI(APIQuery):
                 except Exception as e:
                     errmsgs.append(cls._get_error_message(
                         'Failed to retrieve projectionScenario/code element'))
-                # Return all valid projection layers or requested projection layer for scenario
-                if prjscenariocode is None or prjscenariocode == scen_code:
-                    errmsgs.append(cls._get_error_message(
-                        'Non-matching projectionScenario element {}'.format(scen_code)))
                 else:
-                    try:
-                        mapname = rec['map']['mapName']
-                        url = rec['map']['endpoint']
-                        sdm_layer_name = rec['map']['layerName']
-                        endpoint = '{}/{}'.format(url, mapname)
-                    except Exception as e:
-                        errmsgs.append(cls._get_error_message(
-                            'Failed to retrieve map info {}'.format(e)))
+                    # ignore
+                    if prjscenariocode is not None and prjscenariocode != scen_code:
+                        pass
+                    # Return all valid projection layers or requested projection layer for scenario
                     else:
                         try:
-                            data_url = rec['spatialRaster']['dataUrl']
-                            proj_url = data_url.rstrip('/gtiff')
-                        except:
-                            errmsgs.append(cls._get_error_message(
-                                'Failed to retrieve spatialRaster/dataUrl element'))
-                        try:
-                            scen_link = rec['projectionScenario']['metadataUrl']
+                            mapname = rec['map']['mapName']
+                            url = rec['map']['endpoint']
+                            sdm_layer_name = rec['map']['layerName']
+                            endpoint = '{}/{}'.format(url, mapname)
                         except Exception as e:
                             errmsgs.append(cls._get_error_message(
-                                'Failed to retrieve projectionScenario/metadataUrl element'))
-                        try:
-                            species_name = rec['speciesName']
-                        except:
-                            errmsgs.append(cls._get_error_message(
-                                'Failed to get speciesName element'))
-                        try:
-                            modtime = rec['statusModTime']
-                        except:
-                            errmsgs.append(cls._get_error_message(
-                                'Failed to get speciesName element'))
+                                'Failed to retrieve map info {}'.format(e)))
+                        else:
+                            try:
+                                data_url = rec['spatialRaster']['dataUrl']
+                                proj_url = data_url.rstrip('/gtiff')
+                            except:
+                                errmsgs.append(cls._get_error_message(
+                                    'Failed to retrieve spatialRaster/dataUrl element'))
+                            try:
+                                scen_link = rec['projectionScenario']['metadataUrl']
+                            except Exception as e:
+                                errmsgs.append(cls._get_error_message(
+                                    'Failed to retrieve projectionScenario/metadataUrl element'))
+                            try:
+                                species_name = rec['speciesName']
+                            except:
+                                errmsgs.append(cls._get_error_message(
+                                    'Failed to get speciesName element'))
+                            try:
+                                modtime = rec['statusModTime']
+                            except:
+                                errmsgs.append(cls._get_error_message(
+                                    'Failed to get speciesName element'))
         newrec = {
             'endpoint': endpoint,
             'sdm_layer_name': sdm_layer_name,

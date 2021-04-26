@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    ServiceProviderNew, APIService, Lifemapper, TST_VALUES)
+    ServiceProvider, APIService, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -73,11 +73,11 @@ class MapSvc(_S2nService):
         provnames = []
         for pr in req_providers:
             # Lifemapper
-            if pr == ServiceProviderNew.Lifemapper[S2nKey.PARAM]:
+            if pr == ServiceProvider.Lifemapper[S2nKey.PARAM]:
                 lmoutput = self._get_lifemapper_records(
                     namestr, gbif_status, scenariocode, color)
                 allrecs.append(lmoutput)
-                provnames.append(ServiceProviderNew.Lifemapper[S2nKey.NAME])
+                provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
@@ -140,6 +140,7 @@ if __name__ == '__main__':
     # test    
     names = TST_VALUES.NAMES[5:9]
     names = ['Tulipa sylvestris']
+    names = ['Phlox longifolia Nutt']
     svc = MapSvc()
     for namestr in names:        
         for prov in svc.get_providers():
