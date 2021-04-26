@@ -7,7 +7,7 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
-    PROVIDER = ServiceProvider.MorphoSource['name']
+    PROVIDER = ServiceProvider.MorphoSource[S2nKey.NAME]
     # ...............................................
     def __init__(
             self, resource=MorphoSource.OCC_RESOURCE, q_filters={}, 

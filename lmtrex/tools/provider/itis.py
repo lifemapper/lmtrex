@@ -12,7 +12,7 @@ class ItisAPI(APIQuery):
         https://www.itis.gov/solr_documentation.html and 
         https://www.itis.gov/web_service.html
     """
-    PROVIDER = ServiceProvider.ITISSolr['name']
+    PROVIDER = ServiceProvider.ITISSolr[S2nKey.NAME]
     # ...............................................
     def __init__(
             self, base_url, service=None, q_filters={}, other_filters={}, 

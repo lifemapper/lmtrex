@@ -12,7 +12,7 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class GbifAPI(APIQuery):
     """Class to query GBIF APIs and return results"""
-    PROVIDER = ServiceProvider.GBIF['name']
+    PROVIDER = ServiceProvider.GBIF[S2nKey.NAME]
     # ...............................................
     def __init__(self, service=GBIF.SPECIES_SERVICE, key=None,
                  other_filters=None, logger=None):

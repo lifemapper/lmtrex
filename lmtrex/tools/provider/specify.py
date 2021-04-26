@@ -6,7 +6,7 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class SpecifyPortalAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
-    PROVIDER = ServiceProvider.Specify['name']
+    PROVIDER = ServiceProvider.Specify[S2nKey.NAME]
     # ...............................................
     def __init__(self, url=None, logger=None):
         """Constructor for SpecifyPortalAPI class"""

@@ -6,7 +6,7 @@ from lmtrex.tools.utils import get_traceback
 # .............................................................................
 class LifemapperAPI(APIQuery):
     """Class to query Lifemapper portal APIs and return results"""
-    PROVIDER = ServiceProvider.Lifemapper['name']
+    PROVIDER = ServiceProvider.Lifemapper[S2nKey.NAME]
     # ...............................................
     def __init__(
             self, resource=Lifemapper.PROJ_RESOURCE, ident=None, command=None,  
