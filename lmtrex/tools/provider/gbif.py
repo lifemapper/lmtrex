@@ -3,7 +3,8 @@ import requests
 import urllib
 
 from lmtrex.common.lmconstants import (
-    APIService, GBIF, ServiceProvider, URL_ESCAPES, ENCODING, TST_VALUES)
+    APIService, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING, 
+    TST_VALUES)
 from lmtrex.fileop.logtools import (log_info, log_error)
 
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
@@ -13,6 +14,8 @@ from lmtrex.tools.provider.api import APIQuery
 class GbifAPI(APIQuery):
     """Class to query GBIF APIs and return results"""
     PROVIDER = ServiceProvider.GBIF[S2nKey.NAME]
+    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_gbif_occurrence_mapping()
+    
     # ...............................................
     def __init__(self, service=GBIF.SPECIES_SERVICE, key=None,
                  other_filters=None, logger=None):
@@ -141,8 +144,23 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_occurrence_record(cls, rec):
-        # todo: standardize gbif output to DWC, DSO, etc
-        return rec
+        newrec = {}
+        for fldname, val in rec.items():
+            if fldname == 'issues':
+                try:
+                    newrec['s2n:providerIssues'] = val
+                except:
+                    pass
+            elif fldname in cls.PROVIDER_S2N_MAPPING.keys():
+                newfldname = cls.PROVIDER_S2N_MAPPING[fldname]
+                if fldname in ('associatedSequences', 'associatedReferences'):
+                    if val:
+                        lst = val.split('|')
+                        elts = [l.strip() for l in lst]
+                        newrec[newfldname] = elts
+                else:
+                    newrec[newfldname] =  val
+        return newrec
     
     # ...............................................
     @classmethod
@@ -214,9 +232,10 @@ class GbifAPI(APIQuery):
     def _standardize_record(cls, rec, record_format):
         # todo: standardize gbif output to DWC, DSO, etc
         if record_format == GBIF.RECORD_FORMAT_OCCURRENCE:
-            return cls._standardize_occurrence_record(rec)
+            stdrec = cls._standardize_occurrence_record(rec)
         else:
-            return cls._standardize_name_record(rec)
+            stdrec = cls._standardize_name_record(rec)
+        return stdrec
     
     # ...............................................
     @classmethod

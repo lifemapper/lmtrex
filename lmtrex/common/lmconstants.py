@@ -510,6 +510,92 @@ class GBIF:
     LINK_PREFIX = 'http://www.gbif.org/occurrence/'
 
 
+# .............................................................................
+class COMMUNITY_SCHEMA:
+    DWC = {'code': 'dwc', 'url': 'http://rs.tdwg.org/dwc/terms'}
+    GBIF = {'code': 'gbif', 'url': 'http://rs.gbif.org/terms/1.0'}
+    DCT = {'code': 'dcterms', 'url': 'http://purl.org/dc/terms'}
+    S2N = {'code': 's2n', 'url': ''}
+
+# .............................................................................
+class S2N_SCHEMA:
+    OCCURRENCE = {
+    'gbifID': COMMUNITY_SCHEMA.GBIF,
+    'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
+
+    'idigbioUUID': COMMUNITY_SCHEMA.S2N,
+    'providerFlags': COMMUNITY_SCHEMA.S2N,
+
+    'accessRights': COMMUNITY_SCHEMA.DCT,
+    'language': COMMUNITY_SCHEMA.DCT,
+    'license': COMMUNITY_SCHEMA.DCT,
+    'modified': COMMUNITY_SCHEMA.DCT,
+    'type': COMMUNITY_SCHEMA.DCT,
+    
+    'taxonRank': COMMUNITY_SCHEMA.DWC,
+    'kingdom': COMMUNITY_SCHEMA.DWC,
+    'phylum': COMMUNITY_SCHEMA.DWC,
+    'class': COMMUNITY_SCHEMA.DWC,
+    'order': COMMUNITY_SCHEMA.DWC,
+    'family': COMMUNITY_SCHEMA.DWC,
+    'genus': COMMUNITY_SCHEMA.DWC,
+    'scientificName': COMMUNITY_SCHEMA.DWC,
+    'specificEpithet': COMMUNITY_SCHEMA.DWC, 
+    'scientificNameAuthorship': COMMUNITY_SCHEMA.DWC,
+
+    'recordedBy': COMMUNITY_SCHEMA.DWC,
+    'fieldNumber': COMMUNITY_SCHEMA.DWC,
+    'occurrenceID': COMMUNITY_SCHEMA.DWC, 
+    'institutionCode': COMMUNITY_SCHEMA.DWC,
+    'collectionCode': COMMUNITY_SCHEMA.DWC,
+    'catalogNumber': COMMUNITY_SCHEMA.DWC,
+    'basisOfRecord': COMMUNITY_SCHEMA.DWC,
+    'preparations': COMMUNITY_SCHEMA.DWC,
+    'datasetName': COMMUNITY_SCHEMA.DWC,
+
+    'associatedReferences': COMMUNITY_SCHEMA.DWC, 
+    'associatedSequences': COMMUNITY_SCHEMA.DWC,
+    'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,
+    
+    'locality': COMMUNITY_SCHEMA.DWC,
+    'decimalLongitude': COMMUNITY_SCHEMA.DWC,
+    'decimalLatitude': COMMUNITY_SCHEMA.DWC,
+    'geodeticDatum': COMMUNITY_SCHEMA.DWC,
+    'year': COMMUNITY_SCHEMA.DWC,
+    'month': COMMUNITY_SCHEMA.DWC,
+    'day': COMMUNITY_SCHEMA.DWC,
+    }
+    
+    @classmethod
+    def get_s2n_occurrence_fields(cls):
+        stdnames = []
+        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+            stdnames.append('{}:{}'.format(comschem['code'], fn))
+        return stdnames
+
+    @classmethod
+    def get_gbif_occurrence_mapping(cls):
+        gname_stdname = {}
+        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+            gname_stdname[fn] = '{}:{}'.format(comschem['code'], fn)
+        return gname_stdname
+
+    @classmethod
+    def get_idb_occurrence_mapping(cls):
+        iname_stdname = {}
+        stdnames = cls.get_s2n_occurrence_fields()
+        for fldname in stdnames:
+            iname_stdname[fldname] = fldname
+        return iname_stdname
+
+    @classmethod
+    def get_specify_occurrence_mapping(cls):
+        sname_stdname = {}
+        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+            spfldname = '{}/{}'.format(comschem['url'], fn)
+            newfldname = '{}:{}'.format(comschem['code'], fn)
+            sname_stdname[spfldname] = newfldname
+        return sname_stdname
 
 # .............................................................................
 class Itis:
@@ -556,6 +642,8 @@ class Itis:
 # .............................................................................
 class Idigbio:
     """iDigBio constants enumeration"""
+    NAMESPACE_URL = ''
+    NAMESPACE_ABBR = 'gbif'
     LINK_PREFIX = 'https://www.idigbio.org/portal/records/'
     SEARCH_PREFIX = 'https://search.idigbio.org/v2'
     SEARCH_POSTFIX = 'search'

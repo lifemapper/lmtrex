@@ -1,5 +1,5 @@
 from lmtrex.common.lmconstants import (
-    APIService, DWC, JSON_HEADERS, ServiceProvider, TST_VALUES)
+    APIService, DWC, JSON_HEADERS, ServiceProvider, S2N_SCHEMA, TST_VALUES)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
 
@@ -7,6 +7,7 @@ from lmtrex.tools.provider.api import APIQuery
 class SpecifyPortalAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
     PROVIDER = ServiceProvider.Specify[S2nKey.NAME]
+    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_specify_occurrence_mapping()
     # ...............................................
     def __init__(self, url=None, logger=None):
         """Constructor for SpecifyPortalAPI class"""
@@ -14,13 +15,16 @@ class SpecifyPortalAPI(APIQuery):
             url = 'http://preview.specifycloud.org/export/record'
         APIQuery.__init__(self, url, headers=JSON_HEADERS, logger=logger)
 
-
     # ...............................................
     @classmethod
     def _standardize_record(cls, rec):
-        # todo: standardize gbif output to DWC, DSO, etc
-        return rec
-    
+        newrec = {}
+        for fldname, val in rec:
+            if fldname in cls.PROVIDER_S2N_MAPPING.keys():
+                newfldname = cls.PROVIDER_S2N_MAPPING[fldname]
+                newrec[newfldname] = val
+        return newrec
+                
     # ...............................................
     @classmethod
     def _standardize_output(
@@ -32,19 +36,18 @@ class SpecifyPortalAPI(APIQuery):
             errmsgs.append(err)
         # Count
         try:
-            recs = list(output)
+            rec = output['core']
         except Exception as e:
             errmsgs.append(cls._get_error_message(err=e))
         else:
-            total = len(recs)
+            total = 1
         # Records
         if not count_only:
-            for r in recs:
-                try:
-                    stdrecs.append(cls._standardize_record(r))
-                except Exception as e:
-                    msg = cls._get_error_message(err=e)
-                    errmsgs.append(msg)
+            try:
+                stdrecs.append(cls._standardize_record(rec))
+            except Exception as e:
+                msg = cls._get_error_message(err=e)
+                errmsgs.append(msg)
 
         # TODO: make sure Specify is using full DWC              
 #         out = cls._standardize_output(

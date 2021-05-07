@@ -201,22 +201,76 @@ if __name__ == '__main__':
     occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0]]
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
-    # Query by occurrenceid
-    for occid in occids:
-        for count_only in [False]:
-            # Get one provider at a time
-            for prov in svc.get_providers():
-                out = svc.GET(
-                    occid=occid, provider=prov, count_only=count_only)
-                print_s2n_output(out)
+#     # Query by occurrenceid
+#     for occid in occids:
+#         for count_only in [False]:
+#             # Get one provider at a time
+#             for prov in svc.get_providers():
+#                 out = svc.GET(
+#                     occid=occid, provider=prov, count_only=count_only)
+#                 print_s2n_output(out)
     # Get all providers for last occid
-    out = svc.GET(occid=occid, count_only=count_only)
-    print_s2n_output(out)
+    occid = occids[-1]
+    out = svc.GET(occid=occid, count_only=False)
     
-    # Query by datasetid
-    for dskey in dskeys:
-        for count_only in [True]:
-            for prov in svc.get_providers(filter_params={'dataset_key': dskey}):
-                out = svc.GET(
-                    occid=None, provider=prov, dataset_key=dskey, count_only=count_only)
-                print_s2n_output(out)
+#     # Query by datasetid
+#     for dskey in dskeys:
+#         for count_only in [True]:
+#             for prov in svc.get_providers(filter_params={'dataset_key': dskey}):
+#                 out = svc.GET(
+#                     occid=None, provider=prov, dataset_key=dskey, count_only=count_only)
+#                 print_s2n_output(out)
+    specify_occ = gbif_occ = idig_occ = mopho_occ = None 
+    outputs = out['records']
+    for pout in outputs:
+        if pout['count'] > 0:
+            if pout['provider'] == 'Specify':
+                specify_occ = pout['records'][0]
+            elif pout['provider'] == 'GBIF':
+                gbif_occ = pout['records'][0]
+            elif pout['provider'] == 'iDigBio':
+                idig_occ = pout['records'][0]
+            elif pout['provider'] == 'MorphoSource':
+                mopho_occ = pout['records'][0]
+    x = 1
+    
+"""
+import cherrypy
+
+from lmtrex.common.lmconstants import (ServiceProvider, APIService)
+
+from lmtrex.tools.provider.gbif import GbifAPI
+from lmtrex.tools.provider.idigbio import IdigbioAPI
+from lmtrex.tools.provider.mopho import MorphoSourceAPI
+from lmtrex.tools.provider.specify import SpecifyPortalAPI
+from lmtrex.tools.utils import get_traceback
+
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.services.api.v1.resolve import ResolveSvc
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
+
+from lmtrex.services.api.v1.occ import *
+
+from lmtrex.common.lmconstants import TST_VALUES
+
+occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0]]
+svc = OccurrenceSvc()
+# Get all providers for last occid
+occid = occids[-1]
+out = svc.GET(occid=occid, count_only=False)
+
+specify_occ = gbif_occ = idig_occ = mopho_occ = None 
+outputs = out['records']
+for pout in outputs:
+    if pout['count'] > 0:
+        if pout['provider'] == 'Specify':
+            specify_occ = pout['records'][0]
+        elif pout['provider'] == 'GBIF':
+            gbif_occ = pout['records'][0]
+        elif pout['provider'] == 'iDigBio':
+            idig_occ = pout['records'][0]
+        elif pout['provider'] == 'MorphoSource':
+            mopho_occ = pout['records'][0]
+
+
+"""
