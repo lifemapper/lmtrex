@@ -1,5 +1,5 @@
 from lmtrex.common.lmconstants import (
-    APIService, MorphoSource, ServiceProvider, TST_VALUES)
+    APIService, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
 from lmtrex.fileop.logtools import (log_error, log_info)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
@@ -7,7 +7,10 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
+    
     PROVIDER = ServiceProvider.MorphoSource[S2nKey.NAME]
+    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_mopho_occurrence_mapping()
+    
     # ...............................................
     def __init__(
             self, resource=MorphoSource.OCC_RESOURCE, q_filters={}, 
@@ -22,8 +25,12 @@ class MorphoSourceAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_record(cls, rec):
-        # todo: standardize gbif output to DWC, DSO, etc
-        return rec
+        newrec = {}
+        for fldname, val in rec.items():
+            if fldname in cls.PROVIDER_S2N_MAPPING.keys():
+                stdfld = cls.PROVIDER_S2N_MAPPING[fldname]
+                newrec[stdfld] =  val
+        return newrec
     
     # ...............................................
     @classmethod
@@ -67,3 +74,7 @@ if __name__ == '__main__':
             else:
                 msg = '{}: {}'.format(occid, notes)
             log_info(msg)
+
+"""
+url = 'https://ea-boyerlab-morphosource-01.oit.duke.edu/api/v1/find/specimens?start=0&limit=1000&q=occurrence_id%3Aed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5'
+"""

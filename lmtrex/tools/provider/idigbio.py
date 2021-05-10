@@ -3,67 +3,17 @@ import os
 
 from lmtrex.common.lmconstants import (
     APIService, GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, S2N_SCHEMA,
-    DATA_DUMP_DELIMITER)
+    DATA_DUMP_DELIMITER, COMMUNITY_SCHEMA)
 from lmtrex.fileop.logtools import (log_info)
 from lmtrex.fileop.ready_file import ready_filename
 
 from lmtrex.services.api.v1.s2n_type import S2nKey
 from lmtrex.tools.provider.api import APIQuery
 
-S2N_NAMESPACE = 's2n'
-# http://rs.tdwg.org/dwc.json
-DWC_NAMESPACE = 'dwc'
-# https://www.dublincore.org/specifications/dublin-core/dcmi-terms/
-DCT_NAMESPACE = 'dcterms'
-# our subset
-# STANDARD_OCC_FIELDS = [
-#     's2n:localUUID',
-#     's2n:providerFlags',
-#     
-#     'dcterms:accessRights', 
-#     'dcterms:language', 
-#     'dcterms:license', 
-#     'dcterms:modified', 
-#     'dcterms:type', 
-# 
-#     'dwc:taxonRank', 
-#     'dwc:kingdom', 
-#     'dwc:phylum', 
-#     'dwc:class', 
-#     'dwc:order', 
-#     'dwc:family', 
-#     'dwc:genus', 
-#     'dwc:scientificName', 
-#     'dwc:specificEpithet', 
-#     'dwc:scientificNameAuthorship', 
-# 
-#     'dwc:recordedBy', 
-#     'dwc:fieldNumber', 
-#     'dwc:occurrenceID', 
-#     'dwc:institutionCode', 
-#     'dwc:collectionCode', 
-#     'dwc:catalogNumber', 
-#     'dwc:basisOfRecord', 
-#     'dwc:preparations', 
-#     'dwc:datasetName', 
-# 
-#     'dwc:associatedReferences', 
-#     'dwc:associatedSequences', 
-#     'dwc:otherCatalogNumbers', 
-#     
-#     'dwc:locality', 
-#     'dwc:decimalLongitude',
-#     'dwc:decimalLatitude'
-#     'dwc:geodeticDatum', 
-#     'dwc:day', 
-#     'dwc:month', 
-#     'dwc:year'
-# 
-#     ]
-
 # .............................................................................
 class IdigbioAPI(APIQuery):
     """Class to query iDigBio APIs and return results"""
+    
     PROVIDER = ServiceProvider.iDigBio[S2nKey.NAME]
     PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_idb_occurrence_mapping()
 
@@ -120,26 +70,37 @@ class IdigbioAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_record(cls, rec):
-        # todo: standardize idigbio output to DWC, DSO, etc
-        flags = None
         newrec = {}
-        stripped_rec = rec['data']
-        newrec['s2n:idigbioUUID'] = rec['uuid']
-        for fldname, val in stripped_rec.items():
-            if fldname == 'indexTerms':
+        # Must contain 'data' field
+        try:
+            stripped_rec = rec['data']
+        except Exception as e:
+            pass
+        else:
+            for fldname, val in stripped_rec.items():
+                # flags field is contained within 
+                if fldname in cls.PROVIDER_S2N_MAPPING.keys():
+                    if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
+                        if val:
+                            lst = val.split('|')
+                            elts = [l.strip() for l in lst]
+                            newrec[fldname] = elts
+                    else:
+                        newrec[fldname] =  val
+            # Pull optional 'flags' element from 'indexTerms' field
+            try:
+                elt = rec['indexTerms']
+            except Exception as e:
+                pass
+            else:
+                # Fieldname modification from no namespace to S2N, contained within indexTerms
+                flags_origname = 'flags'
+                flags_stdname = cls.PROVIDER_S2N_MAPPING[flags_origname]
                 try:
-                    flags = val['flags']
-                    newrec['s2n:providerIssues'] = flags
+                    newrec[flags_stdname] = elt[flags_origname]
                 except:
                     pass
-            elif fldname in cls.PROVIDER_S2N_MAPPING.keys():
-                if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
-                    if val:
-                        lst = val.split('|')
-                        elts = [l.strip() for l in lst]
-                        newrec[fldname] = elts
-                else:
-                    newrec[fldname] =  val
+                
         return newrec
     
 
@@ -186,11 +147,6 @@ class IdigbioAPI(APIQuery):
                 Idigbio.RECORD_FORMAT, occid, APIService.Occurrence, 
                 provider_query=[api.url], count_only=count_only, err=api.error)
         
-#         full_out = S2nOutput(
-#             count=out.count, record_format=out.record_format, 
-#             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-#             provider_query=[api.url], query_term=occid, 
-#             service=APIService.Occurrence)
         return std_out
 
     # ...............................................

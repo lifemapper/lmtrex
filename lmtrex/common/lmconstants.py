@@ -515,55 +515,64 @@ class COMMUNITY_SCHEMA:
     DWC = {'code': 'dwc', 'url': 'http://rs.tdwg.org/dwc/terms'}
     GBIF = {'code': 'gbif', 'url': 'http://rs.gbif.org/terms/1.0'}
     DCT = {'code': 'dcterms', 'url': 'http://purl.org/dc/terms'}
+    IDB = {'code': 'idigbio', 'url': ''}
+    MS = {'code': 'mopho', 'url': ''}
     S2N = {'code': 's2n', 'url': ''}
 
 # .............................................................................
 class S2N_SCHEMA:
     OCCURRENCE = {
-    'gbifID': COMMUNITY_SCHEMA.GBIF,
-    'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
+        # S2n resolution of non-standard contents
+        'idigbio_flags': COMMUNITY_SCHEMA.S2N,
+        'gbif_issues': COMMUNITY_SCHEMA.S2N,
 
-    'idigbioUUID': COMMUNITY_SCHEMA.S2N,
-    'providerFlags': COMMUNITY_SCHEMA.S2N,
+        # GBIF-specific field
+        'gbifID': COMMUNITY_SCHEMA.GBIF,
+        'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
 
-    'accessRights': COMMUNITY_SCHEMA.DCT,
-    'language': COMMUNITY_SCHEMA.DCT,
-    'license': COMMUNITY_SCHEMA.DCT,
-    'modified': COMMUNITY_SCHEMA.DCT,
-    'type': COMMUNITY_SCHEMA.DCT,
+        # iDigBio-specific field
+        'uuid': COMMUNITY_SCHEMA.IDB,
+
+        # MorphoSource extension?
+
+        'accessRights': COMMUNITY_SCHEMA.DCT,
+        'language': COMMUNITY_SCHEMA.DCT,
+        'license': COMMUNITY_SCHEMA.DCT,
+        'modified': COMMUNITY_SCHEMA.DCT,
+        'type': COMMUNITY_SCHEMA.DCT,
+        
+        'taxonRank': COMMUNITY_SCHEMA.DWC,
+        'kingdom': COMMUNITY_SCHEMA.DWC,
+        'phylum': COMMUNITY_SCHEMA.DWC,
+        'class': COMMUNITY_SCHEMA.DWC,
+        'order': COMMUNITY_SCHEMA.DWC,
+        'family': COMMUNITY_SCHEMA.DWC,
+        'genus': COMMUNITY_SCHEMA.DWC,
+        'scientificName': COMMUNITY_SCHEMA.DWC,
+        'specificEpithet': COMMUNITY_SCHEMA.DWC, 
+        'scientificNameAuthorship': COMMUNITY_SCHEMA.DWC,
     
-    'taxonRank': COMMUNITY_SCHEMA.DWC,
-    'kingdom': COMMUNITY_SCHEMA.DWC,
-    'phylum': COMMUNITY_SCHEMA.DWC,
-    'class': COMMUNITY_SCHEMA.DWC,
-    'order': COMMUNITY_SCHEMA.DWC,
-    'family': COMMUNITY_SCHEMA.DWC,
-    'genus': COMMUNITY_SCHEMA.DWC,
-    'scientificName': COMMUNITY_SCHEMA.DWC,
-    'specificEpithet': COMMUNITY_SCHEMA.DWC, 
-    'scientificNameAuthorship': COMMUNITY_SCHEMA.DWC,
-
-    'recordedBy': COMMUNITY_SCHEMA.DWC,
-    'fieldNumber': COMMUNITY_SCHEMA.DWC,
-    'occurrenceID': COMMUNITY_SCHEMA.DWC, 
-    'institutionCode': COMMUNITY_SCHEMA.DWC,
-    'collectionCode': COMMUNITY_SCHEMA.DWC,
-    'catalogNumber': COMMUNITY_SCHEMA.DWC,
-    'basisOfRecord': COMMUNITY_SCHEMA.DWC,
-    'preparations': COMMUNITY_SCHEMA.DWC,
-    'datasetName': COMMUNITY_SCHEMA.DWC,
-
-    'associatedReferences': COMMUNITY_SCHEMA.DWC, 
-    'associatedSequences': COMMUNITY_SCHEMA.DWC,
-    'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,
+        'recordedBy': COMMUNITY_SCHEMA.DWC,
+        'fieldNumber': COMMUNITY_SCHEMA.DWC,
+        'occurrenceID': COMMUNITY_SCHEMA.DWC, 
+        'institutionCode': COMMUNITY_SCHEMA.DWC,
+        'collectionCode': COMMUNITY_SCHEMA.DWC,
+        'catalogNumber': COMMUNITY_SCHEMA.DWC,
+        'basisOfRecord': COMMUNITY_SCHEMA.DWC,
+        'preparations': COMMUNITY_SCHEMA.DWC,
+        'datasetName': COMMUNITY_SCHEMA.DWC,
     
-    'locality': COMMUNITY_SCHEMA.DWC,
-    'decimalLongitude': COMMUNITY_SCHEMA.DWC,
-    'decimalLatitude': COMMUNITY_SCHEMA.DWC,
-    'geodeticDatum': COMMUNITY_SCHEMA.DWC,
-    'year': COMMUNITY_SCHEMA.DWC,
-    'month': COMMUNITY_SCHEMA.DWC,
-    'day': COMMUNITY_SCHEMA.DWC,
+        'associatedReferences': COMMUNITY_SCHEMA.DWC, 
+        'associatedSequences': COMMUNITY_SCHEMA.DWC,
+        'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,
+        
+        'locality': COMMUNITY_SCHEMA.DWC,
+        'decimalLongitude': COMMUNITY_SCHEMA.DWC,
+        'decimalLatitude': COMMUNITY_SCHEMA.DWC,
+        'geodeticDatum': COMMUNITY_SCHEMA.DWC,
+        'year': COMMUNITY_SCHEMA.DWC,
+        'month': COMMUNITY_SCHEMA.DWC,
+        'day': COMMUNITY_SCHEMA.DWC,
     }
     
     @classmethod
@@ -577,15 +586,22 @@ class S2N_SCHEMA:
     def get_gbif_occurrence_mapping(cls):
         gname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            gname_stdname[fn] = '{}:{}'.format(comschem['code'], fn)
+            std_name = '{}:{}'.format(comschem['code'], fn)
+            if fn == 'gbif_issues':
+                gname_stdname['issues'] = std_name
+            else:
+                gname_stdname[fn] = std_name
         return gname_stdname
 
     @classmethod
     def get_idb_occurrence_mapping(cls):
         iname_stdname = {}
-        stdnames = cls.get_s2n_occurrence_fields()
-        for fldname in stdnames:
-            iname_stdname[fldname] = fldname
+        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+            stdname = '{}:{}'.format(comschem['code'], fn)
+            if fn == 'idigbio_flags':
+                iname_stdname['flags'] = stdname
+            else:
+                iname_stdname[stdname] = stdname
         return iname_stdname
 
     @classmethod
@@ -596,6 +612,18 @@ class S2N_SCHEMA:
             newfldname = '{}:{}'.format(comschem['code'], fn)
             sname_stdname[spfldname] = newfldname
         return sname_stdname
+
+    @classmethod
+    def get_mopho_occurrence_mapping(cls):
+        dwc = COMMUNITY_SCHEMA.DWC['code']
+        idb = COMMUNITY_SCHEMA.IDB['code']
+        mapping = {
+            'specimen.catalog_number': '{}:catalogNumber'.format(dwc),
+            'specimen.institution_code': '{}:institutionCode'.format(dwc),
+            'specimen.occurrence_id': '{}:occurrenceID'.format(dwc), 
+            'specimen.uuid': '{}:uuid'.format(idb)
+            }
+        return mapping
 
 # .............................................................................
 class Itis:

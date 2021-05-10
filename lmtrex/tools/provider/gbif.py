@@ -145,19 +145,20 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_occurrence_record(cls, rec):
         newrec = {}
+        # Fieldname modification from no namespace to S2N
+        orignames = ['issues']
+
         for fldname, val in rec.items():
-            if fldname == 'issues':
-                try:
-                    newrec['s2n:providerIssues'] = val
-                except:
-                    pass
-            elif fldname in cls.PROVIDER_S2N_MAPPING.keys():
+            if fldname in cls.PROVIDER_S2N_MAPPING.keys():
                 newfldname = cls.PROVIDER_S2N_MAPPING[fldname]
                 if fldname in ('associatedSequences', 'associatedReferences'):
                     if val:
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[newfldname] = elts
+                elif fldname in orignames:
+                    stdname = cls.PROVIDER_S2N_MAPPING[fldname]
+                    newrec[stdname] =  val
                 else:
                     newrec[newfldname] =  val
         return newrec

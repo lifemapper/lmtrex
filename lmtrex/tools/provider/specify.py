@@ -35,25 +35,20 @@ class SpecifyPortalAPI(APIQuery):
         if err is not None:
             errmsgs.append(err)
         # Count
-        try:
-            rec = output['core']
-        except Exception as e:
-            errmsgs.append(cls._get_error_message(err=e))
-        else:
-            total = 1
-        # Records
-        if not count_only:
+        if output:
             try:
-                stdrecs.append(cls._standardize_record(rec))
+                rec = output['core']
             except Exception as e:
-                msg = cls._get_error_message(err=e)
-                errmsgs.append(msg)
-
-        # TODO: make sure Specify is using full DWC              
-#         out = cls._standardize_output(
-#             total, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, 
-#             Idigbio.RECORD_FORMAT, occid, APIService.Occurrence, 
-#             count_only=count_only, err=api.error)
+                errmsgs.append(cls._get_error_message(err=e))
+            else:
+                total = 1
+                # Records
+                if not count_only:
+                    try:
+                        stdrecs.append(cls._standardize_record(rec))
+                    except Exception as e:
+                        msg = cls._get_error_message(err=e)
+                        errmsgs.append(msg)
         std_output = S2nOutput(
             total, query_term, service, cls.PROVIDER, 
             provider_query=provider_query, record_format=DWC.SCHEMA, 
@@ -75,10 +70,9 @@ class SpecifyPortalAPI(APIQuery):
             database.  URLs returned for these records begin with 'unknown_url'.
         """
         if url is None:
-            recs = []
             std_output = cls._standardize_output(
-                recs, occid, APIService.Occurrence, provider_query=[], 
-                count_only=count_only)
+                {}, occid, APIService.Occurrence, provider_query=[], 
+                count_only=count_only, err='No URL to Specify record')
         elif url.startswith('http'):
             api = APIQuery(url, headers=JSON_HEADERS, logger=logger)
     
@@ -91,9 +85,4 @@ class SpecifyPortalAPI(APIQuery):
                 api.output, occid, APIService.Occurrence, 
                 provider_query=[url], count_only=count_only, err=api.error)
         
-#         full_out = S2nOutput(
-#             count=out.count, record_format=out.record_format, 
-#             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-#             provider_query=[url], query_term=occid, 
-#             service=APIService.Occurrence)
         return std_output
