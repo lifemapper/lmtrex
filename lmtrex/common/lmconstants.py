@@ -13,7 +13,7 @@ TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
 SPECIFY7_RECORD_ENDPOINT = 'export/record'
-
+SPECIFY_CACHE_API = 'https://notyeti-195.lifemapper.org/api/v1/sp_cache'
 SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 
 DATA_DUMP_DELIMITER = '\t'
@@ -125,6 +125,7 @@ class APIService:
     Map = 'map'
     Heartbeat = 'heartbeat'
     Resolve = 'resolve'
+    Address = 'address'
 
 # .............................................................................
 class ServiceProvider:
