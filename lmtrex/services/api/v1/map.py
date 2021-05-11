@@ -28,7 +28,7 @@ class MapSvc(_S2nService):
         else:
             for rec in nm_output.records:
                 try:
-                    scinames.append(rec['scientificName'])
+                    scinames.append(rec['s2n:scientific_name'])
                 except Exception as e:
                     print('No scientificName element in GBIF record {} for {}'
                           .format(rec, namestr))
@@ -56,7 +56,7 @@ class MapSvc(_S2nService):
         query_term = 'namestr={}; is_accepted={}; scenariocodes={}; color={}'.format(
             namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
-            len(stdrecs), query_term, self.SERVICE_TYPE, lout.provider, 
+            len(stdrecs), query_term, self.SERVICE_TYPE, LifemapperAPI.PROVIDER, 
             provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
             records=stdrecs, errors=errmsgs)
         return full_out.response
@@ -87,7 +87,7 @@ class MapSvc(_S2nService):
 
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, namestr=None, provider=None, gbif_parse=True, gbif_accepted=True, 
+    def GET(self, namestr=None, provider=None, gbif_parse=True, is_accepted=True, 
             scenariocode=None, color=None, **kwargs):
         """Get one or more taxon records for a scientific name string from each
         available name service.
@@ -106,7 +106,7 @@ class MapSvc(_S2nService):
         try:
             usr_params = self._standardize_params(
                 namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
-                gbif_accepted=gbif_accepted, scenariocode=scenariocode, color=color)
+                is_accepted=is_accepted, scenariocode=scenariocode, color=color)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term=namestr, errors=[traceback])
@@ -141,6 +141,7 @@ if __name__ == '__main__':
     # test    
     names = TST_VALUES.NAMES[5:9]
     names = ['Tulipa sylvestris']
+#     names = ['Plagioecia patina']
     names = ['Phlox longifolia Nutt']
     svc = MapSvc()
     for namestr in names:

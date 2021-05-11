@@ -522,7 +522,6 @@ class COMMUNITY_SCHEMA:
 
 # .............................................................................
 class S2N_SCHEMA:
-    MAP = {}
     NAME = {
         # S2n standardization of common elements
         'status': COMMUNITY_SCHEMA.S2N,
@@ -531,12 +530,12 @@ class S2N_SCHEMA:
         'common_names': COMMUNITY_SCHEMA.S2N,
         'kingdom': COMMUNITY_SCHEMA.S2N,
         'rank': COMMUNITY_SCHEMA.S2N,
-        'synonyms': COMMUNITY_SCHEMA.S2N,
+        'synonyms': COMMUNITY_SCHEMA.S2N, # list of strings
         'name_status': COMMUNITY_SCHEMA.S2N,
         
         # GBIF-specific fields
         'gbif_confidence': COMMUNITY_SCHEMA.S2N,
-        'gbif_hierarchy': COMMUNITY_SCHEMA.S2N,
+        'gbif_hierarchy': COMMUNITY_SCHEMA.S2N,  # list of dictionaries
         'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
@@ -544,9 +543,23 @@ class S2N_SCHEMA:
         # ITIS-specific fields
         'itis_tsn': COMMUNITY_SCHEMA.S2N,
         'itis_credibility': COMMUNITY_SCHEMA.S2N,
-        'itis_hierarchy': COMMUNITY_SCHEMA.S2N,
+        'itis_hierarchy': COMMUNITY_SCHEMA.S2N,  # list of dictionaries
         }
-    
+    MAP = {
+        'endpoint': COMMUNITY_SCHEMA.S2N,
+        'data_link': COMMUNITY_SCHEMA.S2N,
+#         'point_link': COMMUNITY_SCHEMA.S2N,
+#         'sdm_projection_link': COMMUNITY_SCHEMA.S2N,
+        'sdm_projection_scenario_code': COMMUNITY_SCHEMA.S2N,
+        'sdm_projection_scenario_link': COMMUNITY_SCHEMA.S2N,
+        'layer_type': COMMUNITY_SCHEMA.S2N,
+        'layer_name': COMMUNITY_SCHEMA.S2N,
+        'point_count': COMMUNITY_SCHEMA.S2N,
+        'point_bbox': COMMUNITY_SCHEMA.S2N,
+        'species_name': COMMUNITY_SCHEMA.S2N,
+        'status': COMMUNITY_SCHEMA.S2N,
+        'modtime': COMMUNITY_SCHEMA.S2N
+        }
     OCCURRENCE = {
         # S2n resolution of non-standard contents
         'idigbio_flags': COMMUNITY_SCHEMA.S2N,
@@ -559,7 +572,8 @@ class S2N_SCHEMA:
         # iDigBio-specific field
         'uuid': COMMUNITY_SCHEMA.IDB,
 
-        # MorphoSource extension?
+        # MorphoS#         'point_link': COMMUNITY_SCHEMA.S2N,
+#         'sdm_projection_link': COMMUNITY_SCHEMA.S2N,ource extension?
 
         'accessRights': COMMUNITY_SCHEMA.DCT,
         'language': COMMUNITY_SCHEMA.DCT,
@@ -698,6 +712,24 @@ class S2N_SCHEMA:
             # parsed into lists
             'synonyms': '{}:synonyms'.format(s2n),
             'hierarchySoFarWRanks': '{}:itis_hierarchy'.format(s2n),
+            }
+        return mapping
+    
+    @classmethod
+    def get_lifemapper_map_map(cls):
+        s2n = COMMUNITY_SCHEMA.S2N['code']
+        mapping = {
+        'endpoint': '{}:endpoint'.format(s2n),
+        'data_link': '{}:data_link'.format(s2n),
+        'sdm_projection_scenario_code': '{}:sdm_projection_scenario_code'.format(s2n),
+        'sdm_projection_scenario_link': '{}:sdm_projection_scenario_link'.format(s2n),
+        'layer_type': '{}:layer_type'.format(s2n),
+        'layer_name': '{}:layer_name'.format(s2n),
+        'point_count': '{}:point_count'.format(s2n),
+        'point_bbox': '{}:point_bbox'.format(s2n),
+        'speciesName': '{}:species_name'.format(s2n),
+        'status': '{}:lm_status_code'.format(s2n),
+        'statusModTime': '{}:modtime'.format(s2n),
             }
         return mapping
         
