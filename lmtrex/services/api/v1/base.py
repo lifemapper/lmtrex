@@ -210,8 +210,8 @@ class _S2nService:
     # ...............................................
 #     @cherrypy.tools.json_out()
     def _standardize_params(
-            self, provider=None, namestr=None, gbif_accepted=False, gbif_parse=False,  
-            gbif_count=False, itis_match=False, itis_accepted=False, kingdom=None, 
+            self, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
+            gbif_count=False, itis_match=False, kingdom=None, 
             occid=None, dataset_key=None, count_only=False, url=None,
             scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
             layers=None, request=None, frmat=None, srs=None, transparent=None, 
@@ -229,8 +229,8 @@ class _S2nService:
             provider: string containing a comma delimited list of provider 
                 codes indicating which providers to query.  If the string is not present
                 or 'all', all providers of this service will be queried.
-            gbif_accepted: flag to indicate whether to limit to "Accepted" 
-                taxa in the GBIF Backbone Taxonomy
+            is_accepted: flag to indicate whether to limit to 'valid' or 
+                'accepted' taxa in the ITIS Taxonomy or GBIF Backbone Taxonomy
             gbif_parse: flag to indicate whether to first use the GBIF parser 
                 to parse a scientific name into canonical name
             gbif_count: flag to indicate whether to count occurrences in 
@@ -238,8 +238,6 @@ class _S2nService:
             itis_match: flag to indicate whether to first use the ITIS solr 
                 service to match a scientific name to an ITIS accepted name,
                 used with BISON
-            itis_accepted: flag to indicate whether to limit to 'valid' or 
-                'accepted' taxa in the ITIS Taxonomy
             kingdom: filter for ITIS records from this kingdom
             occid: a Specify occurrence GUID, mapped to the 
                 dwc:occurrenceId field
@@ -279,11 +277,10 @@ class _S2nService:
             #    other values are of the required type
             # For name services
             'provider': (None, empty_str),
-            'gbif_accepted': False, 
+            'is_accepted': False, 
             'gbif_parse': False, 
             'gbif_count': False, 
             'itis_match': False, 
-            'itis_accepted': False, 
             'kingdom': (None, empty_str),
             # For occurrence services
             'occid': (None, empty_str), 
@@ -303,11 +300,10 @@ class _S2nService:
             'width': 600}
         user_kwargs = {
             'provider': provider,
-            'gbif_accepted': gbif_accepted, 
+            'is_accepted': is_accepted, 
             'gbif_parse': gbif_parse, 
             'gbif_count': gbif_count, 
             'itis_match': itis_match, 
-            'itis_accepted': itis_accepted, 
             'kingdom': kingdom, 
             'occid': occid, 
             'dataset_key': dataset_key, 
@@ -349,14 +345,6 @@ class _S2nService:
                 if scen in Lifemapper.valid_scenario_codes():
                     scens.append(scen)
         usr_params['scenariocode'] = scens
-        # Remove 'gbif_accepted' flag and replace with 'gbif_status' filter for GBIF
-        # GBIF Taxonomic Constants at:
-        # https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/TaxonomicStatus.html
-        gbif_accepted = usr_params.pop('gbif_accepted')
-        if gbif_accepted is True:
-            usr_params['gbif_status'] = 'accepted'
-        else:
-            usr_params['gbif_status'] = None
         # Remove 'gbif_parse' and itis_match flags
         gbif_parse = usr_params.pop('gbif_parse')
         itis_match = usr_params.pop('itis_match')

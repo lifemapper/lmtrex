@@ -7,7 +7,7 @@ from lmtrex.tools.provider.api import APIQuery
 class SpecifyPortalAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
     PROVIDER = ServiceProvider.Specify[S2nKey.NAME]
-    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_specify_occurrence_mapping()
+    OCCURRENCE_MAP = S2N_SCHEMA.get_specify_occurrence_map()
     # ...............................................
     def __init__(self, url=None, logger=None):
         """Constructor for SpecifyPortalAPI class"""
@@ -20,8 +20,9 @@ class SpecifyPortalAPI(APIQuery):
     def _standardize_record(cls, rec):
         newrec = {}
         for fldname, val in rec:
-            if fldname in cls.PROVIDER_S2N_MAPPING.keys():
-                newfldname = cls.PROVIDER_S2N_MAPPING[fldname]
+            # Leave out fields without value
+            if val and fldname in cls.OCCURRENCE_MAP.keys():
+                newfldname = cls.OCCURRENCE_MAP[fldname]
                 newrec[newfldname] = val
         return newrec
                 
@@ -64,7 +65,8 @@ class SpecifyPortalAPI(APIQuery):
         Args:
             url: direct url endpoint for source Specify occurrence record
             
-        Note:
+        Note:                # Leave out fields without value
+
             Specify records/datasets without a server endpoint may be cataloged
             in the Solr Specify Resolver but are not resolvable to the host 
             database.  URLs returned for these records begin with 'unknown_url'.

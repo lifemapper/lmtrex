@@ -15,7 +15,7 @@ class IdigbioAPI(APIQuery):
     """Class to query iDigBio APIs and return results"""
     
     PROVIDER = ServiceProvider.iDigBio[S2nKey.NAME]
-    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_idb_occurrence_mapping()
+    OCCURRENCE_MAP = S2N_SCHEMA.get_idb_occurrence_map()
 
     # ...............................................
     def __init__(self, q_filters=None, other_filters=None, filter_string=None,
@@ -78,8 +78,8 @@ class IdigbioAPI(APIQuery):
             pass
         else:
             for fldname, val in stripped_rec.items():
-                # flags field is contained within 
-                if fldname in cls.PROVIDER_S2N_MAPPING.keys():
+                # Leave out fields without value
+                if val and fldname in cls.OCCURRENCE_MAP.keys():
                     if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
                         if val:
                             lst = val.split('|')
@@ -89,18 +89,15 @@ class IdigbioAPI(APIQuery):
                         newrec[fldname] =  val
             # Pull optional 'flags' element from 'indexTerms' field
             try:
-                elt = rec['indexTerms']
-            except Exception as e:
+                flags = rec['indexTerms']['flags']
+            except Exception:
                 pass
             else:
-                # Fieldname modification from no namespace to S2N, contained within indexTerms
-                flags_origname = 'flags'
-                flags_stdname = cls.PROVIDER_S2N_MAPPING[flags_origname]
-                try:
-                    newrec[flags_stdname] = elt[flags_origname]
-                except:
-                    pass
-                
+                # Leave out fields without value
+                if flags:
+                    # Fieldname modification
+                    flags_stdname = cls.OCCURRENCE_MAP['flags']
+                    newrec[flags_stdname] = flags
         return newrec
     
 

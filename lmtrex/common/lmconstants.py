@@ -1,5 +1,6 @@
 import os
 from lmtrex.services.api.v1.s2n_type import S2nKey        
+from ctypes.test import test_returnfuncptrs
 
 # .............................................................................
 # hierarchySoFarWRanks <class 'list'>: ['41107:$Kingdom:Plantae$Subkingdom:Viridiplantae$Infrakingdom:Streptophyta$Superdivision:Embryophyta$Division:Tracheophyta$Subdivision:Spermatophytina$Class:Magnoliopsida$Superorder:Lilianae$Order:Poales$Family:Poaceae$Genus:Poa$Species:Poa annua$']
@@ -521,6 +522,31 @@ class COMMUNITY_SCHEMA:
 
 # .............................................................................
 class S2N_SCHEMA:
+    MAP = {}
+    NAME = {
+        # S2n standardization of common elements
+        'status': COMMUNITY_SCHEMA.S2N,
+        'scientific_name': COMMUNITY_SCHEMA.S2N,
+        'canonical_name': COMMUNITY_SCHEMA.S2N,
+        'common_names': COMMUNITY_SCHEMA.S2N,
+        'kingdom': COMMUNITY_SCHEMA.S2N,
+        'rank': COMMUNITY_SCHEMA.S2N,
+        'synonyms': COMMUNITY_SCHEMA.S2N,
+        'name_status': COMMUNITY_SCHEMA.S2N,
+        
+        # GBIF-specific fields
+        'gbif_confidence': COMMUNITY_SCHEMA.S2N,
+        'gbif_hierarchy': COMMUNITY_SCHEMA.S2N,
+        'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
+        S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
+        S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
+
+        # ITIS-specific fields
+        'itis_tsn': COMMUNITY_SCHEMA.S2N,
+        'itis_credibility': COMMUNITY_SCHEMA.S2N,
+        'itis_hierarchy': COMMUNITY_SCHEMA.S2N,
+        }
+    
     OCCURRENCE = {
         # S2n resolution of non-standard contents
         'idigbio_flags': COMMUNITY_SCHEMA.S2N,
@@ -576,6 +602,18 @@ class S2N_SCHEMA:
     }
     
     @classmethod
+    def get_gbif_taxonkey_fld(cls):
+        return '{}:gbif_taxon_key'.format(COMMUNITY_SCHEMA.S2N['code'])
+    
+    @classmethod
+    def get_gbif_occcount_fld(cls):
+        return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_COUNT)
+    
+    @classmethod
+    def get_gbif_occurl_fld(cls):
+        return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
+    
+    @classmethod
     def get_s2n_occurrence_fields(cls):
         stdnames = []
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
@@ -583,7 +621,7 @@ class S2N_SCHEMA:
         return stdnames
 
     @classmethod
-    def get_gbif_occurrence_mapping(cls):
+    def get_gbif_occurrence_map(cls):
         gname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -594,7 +632,7 @@ class S2N_SCHEMA:
         return gname_stdname
 
     @classmethod
-    def get_idb_occurrence_mapping(cls):
+    def get_idb_occurrence_map(cls):
         iname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             stdname = '{}:{}'.format(comschem['code'], fn)
@@ -605,7 +643,7 @@ class S2N_SCHEMA:
         return iname_stdname
 
     @classmethod
-    def get_specify_occurrence_mapping(cls):
+    def get_specify_occurrence_map(cls):
         sname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             spfldname = '{}/{}'.format(comschem['url'], fn)
@@ -614,7 +652,7 @@ class S2N_SCHEMA:
         return sname_stdname
 
     @classmethod
-    def get_mopho_occurrence_mapping(cls):
+    def get_mopho_occurrence_map(cls):
         dwc = COMMUNITY_SCHEMA.DWC['code']
         idb = COMMUNITY_SCHEMA.IDB['code']
         mapping = {
@@ -624,7 +662,45 @@ class S2N_SCHEMA:
             'specimen.uuid': '{}:uuid'.format(idb)
             }
         return mapping
+    
+    @classmethod
+    def get_gbif_name_map(cls):
+        s2n = COMMUNITY_SCHEMA.S2N['code']
+        mapping = {
+            'scientificName': '{}:scientific_name'.format(s2n),
+            'canonicalName': '{}:canonical_name'.format(s2n), 
+            'kingdom': '{}:kingdom'.format(s2n),
+            'rank': '{}:rank'.format(s2n),
+            'status': '{}:name_status'.format(s2n),
+            # GBIF-specific
+            'matchType': '{}:gbif_match_type'.format(s2n),            
+            'confidence': '{}:gbif_confidence'.format(s2n),
+            'taxonKey': '{}:gbif_taxon_key'.format(s2n),
+            'status': '{}:gbif_name_status'.format(s2n),
+            # parsed into lists
+            'synonyms': '{}:synonyms'.format(s2n),
+            'hierarchy': '{}:gbif_hierarchy'.format(s2n),
+            }
+        return mapping
 
+    @classmethod
+    def get_itis_name_map(cls):
+        s2n = COMMUNITY_SCHEMA.S2N['code']
+        mapping = {
+            'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
+            'nameWOInd': '{}:canonical_name'.format(s2n), 
+            'kingdom': '{}:kingdom'.format(s2n),
+            'rank': '{}:rank'.format(s2n),
+            'usage': '{}:name_status'.format(s2n),
+            # ITIS-specific
+            'tsn': '{}:itis_tsn'.format(s2n),
+            'credibilityRating': '{}:itis_credibility'.format(s2n),            
+            # parsed into lists
+            'synonyms': '{}:synonyms'.format(s2n),
+            'hierarchySoFarWRanks': '{}:itis_hierarchy'.format(s2n),
+            }
+        return mapping
+        
 # .............................................................................
 class Itis:
     """ITIS constants enumeration

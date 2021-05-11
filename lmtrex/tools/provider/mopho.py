@@ -9,7 +9,7 @@ class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
     
     PROVIDER = ServiceProvider.MorphoSource[S2nKey.NAME]
-    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_mopho_occurrence_mapping()
+    OCCURRENCE_MAP = S2N_SCHEMA.get_mopho_occurrence_map()
     
     # ...............................................
     def __init__(
@@ -27,8 +27,9 @@ class MorphoSourceAPI(APIQuery):
     def _standardize_record(cls, rec):
         newrec = {}
         for fldname, val in rec.items():
-            if fldname in cls.PROVIDER_S2N_MAPPING.keys():
-                stdfld = cls.PROVIDER_S2N_MAPPING[fldname]
+            # Leave out fields without value
+            if val and fldname in cls.OCCURRENCE_MAP.keys():
+                stdfld = cls.OCCURRENCE_MAP[fldname]
                 newrec[stdfld] =  val
         return newrec
     

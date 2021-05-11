@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    ServiceProvider, APIService, TST_VALUES)
+    S2N_SCHEMA, ServiceProvider, APIService, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -14,10 +14,9 @@ class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
     
     # ...............................................
-    def _get_gbif_records(self, namestr, gbif_status, gbif_count):
+    def _get_gbif_records(self, namestr, is_accepted, gbif_count):
         try:
-            # Get name from Gbif        
-            output = GbifAPI.match_name(namestr, status=gbif_status)
+            output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
@@ -27,9 +26,12 @@ class NameSvc(_S2nService):
             prov_query_list = output.provider_query
             # Add occurrence count to name records
             if gbif_count is True:
+                keyfld = S2N_SCHEMA.get_gbif_taxonkey_fld()
+                cntfld = S2N_SCHEMA.get_gbif_occcount_fld()
+                urlfld = S2N_SCHEMA.get_gbif_occurl_fld()
                 for namerec in output.records:
                     try:
-                        taxon_key = namerec['usageKey']
+                        taxon_key = namerec[keyfld]
                     except Exception as e:
                         print('No usageKey for counting {} records'.format(namestr))
                     else:
@@ -40,18 +42,18 @@ class NameSvc(_S2nService):
                             traceback = get_traceback()
                             print(traceback)
                         else:
-                            namerec[S2nKey.OCCURRENCE_COUNT] = outdict[S2nKey.COUNT]
-                            namerec[S2nKey.OCCURRENCE_URL] = outdict[S2nKey.OCCURRENCE_URL]
+                            namerec[cntfld] = outdict[S2nKey.COUNT]
+                            namerec[urlfld] = outdict[S2nKey.OCCURRENCE_URL]
                             prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
      
                 output.set_value(S2nKey.PROVIDER_QUERY, prov_query_list)
         return output.response
 
     # ...............................................
-    def _get_itis_records(self, namestr, itis_accepted, kingdom):
+    def _get_itis_records(self, namestr, is_accepted, kingdom):
         try:
             output = ItisAPI.match_name(
-                namestr, itis_accepted=itis_accepted, kingdom=kingdom)
+                namestr, is_accepted=is_accepted, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
@@ -61,7 +63,7 @@ class NameSvc(_S2nService):
 
     # ...............................................
     def get_records(
-            self, namestr, req_providers, gbif_status, gbif_count, itis_accepted, kingdom):
+            self, namestr, req_providers, is_accepted, gbif_count, kingdom):
         allrecs = []
         # for response metadata
         query_term = ''
@@ -74,18 +76,18 @@ class NameSvc(_S2nService):
             if namestr is not None:
                 # GBIF
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    goutput = self._get_gbif_records(namestr, gbif_status, gbif_count)
+                    goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
                     allrecs.append(goutput)
                     provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
-                    query_term = '{}; gbif_status={}; gbif_count={}'.format(
-                        query_term, gbif_status, gbif_count)
+                    query_term = '{}; is_accepted={}; gbif_count={}'.format(
+                        query_term, is_accepted, gbif_count)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
-                    isoutput = self._get_itis_records(namestr, itis_accepted, kingdom)
+                    isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
                     allrecs.append(isoutput)
                     provnames.append(ServiceProvider.ITISSolr[S2nKey.NAME])
-                    query_term = '{}; itis_accepted={}; kingdom={}'.format(
-                        query_term, itis_accepted, kingdom)
+                    query_term = '{}; is_accepted={}; kingdom={}'.format(
+                        query_term, is_accepted, kingdom)
             # TODO: enable filter parameters
             
         # Assemble
@@ -98,21 +100,19 @@ class NameSvc(_S2nService):
 
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, namestr=None, provider=None, gbif_accepted=True, gbif_parse=True, 
-            gbif_count=True, itis_accepted=None, kingdom=None, **kwargs):
+    def GET(self, namestr=None, provider=None, is_accepted=True, gbif_parse=True, 
+            gbif_count=True, kingdom=None, **kwargs):
         """Get one or more taxon records for a scientific name string from each
         available name service.
         
         Args:
             namestr: a scientific name
-            gbif_accepted: flag to indicate whether to limit to 'valid' or 
-                'accepted' taxa in the GBIF Backbone Taxonomy
+            is_accepted: flag to indicate whether to limit to 'valid' or 
+                'accepted' taxa in the ITIS or GBIF Backbone Taxonomy
             gbif_parse: flag to indicate whether to first use the GBIF parser 
                 to parse a scientific name into canonical name
             gbif_count: flag to indicate whether to count GBIF occurrences of 
                 this taxon
-            itis_accepted: flag to indicate whether to limit to 'valid' or 
-                'accepted' taxa in the ITIS Taxonomy
             kingdom: not yet implemented
             kwargs: any additional keyword arguments are ignored
 
@@ -125,9 +125,8 @@ class NameSvc(_S2nService):
         # No filter_params defined for Name service yet
         try:
             usr_params = self._standardize_params(
-                namestr=namestr, provider=provider, gbif_accepted=gbif_accepted, 
-                gbif_parse=gbif_parse, gbif_count=gbif_count, itis_accepted=itis_accepted, 
-                kingdom=kingdom)
+                namestr=namestr, provider=provider, is_accepted=is_accepted, 
+                gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term=namestr, errors=[traceback])
@@ -145,9 +144,8 @@ class NameSvc(_S2nService):
                 else:
                     # Query
                     output = self.get_records(
-                        namestr, valid_req_providers, usr_params['gbif_status'], 
-                        usr_params['gbif_count'], usr_params['itis_accepted'], 
-                        usr_params['kingdom'])
+                        namestr, valid_req_providers, usr_params['is_accepted'], 
+                        usr_params['gbif_count'], usr_params['kingdom'])
                     if invalid_providers:
                         msg = 'Invalid providers requested: {}'.format(
                             ','.join(invalid_providers))
@@ -170,13 +168,13 @@ if __name__ == '__main__':
         for gparse in [True]:
             for prov in svc.get_providers():
                 out = svc.GET(
-                    namestr=namestr, provider=prov, gbif_accepted=False, gbif_parse=gparse, 
-                    gbif_count=True, itis_accepted=True, kingdom=None)
+                    namestr=namestr, provider=prov, is_accepted=False, gbif_parse=gparse, 
+                    gbif_count=True, kingdom=None)
                 print_s2n_output(out)
     # Try once with all providers
     out = svc.GET(
-        namestr=namestr, provider=None, gbif_accepted=False, gbif_parse=True, 
-        gbif_count=True, itis_accepted=True, kingdom=None)
+        namestr=namestr, provider=None, is_accepted=False, gbif_parse=True, 
+        gbif_count=True, kingdom=None)
     print_s2n_output(out)
                 
 """
@@ -192,12 +190,14 @@ from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.tools.utils import get_traceback
 from lmtrex.services.api.v1.name import NameSvc
 
+ss = '41107:$Poa annua aquatica$Poa annua reptans$Aira pumila$Catabrosa pumila$Ochlopoa annua$Poa aestivalis$Poa algida$Poa annua annua$Poa annua eriolepis$Poa annua rigidiuscula$Poa annua reptans$'
+
 
 namestr = TST_VALUES.NAMES[4]
 svc = NameSvc()
 gparse = True
 prov = 'gbif'
-out = svc.GET(namestr=namestr, provider=prov, gbif_accepted=False, gbif_parse=gparse,gbif_count=True, itis_accepted=True, kingdom=None)
+out = svc.GET(namestr=namestr, provider=prov, is_accepted=False, gbif_parse=gparse,gbif_count=True, kingdom=None)
 print_s2n_output(out)
 
 """

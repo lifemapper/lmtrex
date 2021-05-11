@@ -19,8 +19,8 @@ class S2nKey:
     # input request multiple services
     SERVICES = 'services'
     PARAM = 'param'
-    OCCURRENCE_COUNT = 'occurrence_count'
-    OCCURRENCE_URL = 'occurrence_url'
+    OCCURRENCE_COUNT = 'gbif_occurrence_count'
+    OCCURRENCE_URL = 'gbif_occurrence_url'
     
     @classmethod
     def response_keys(cls):

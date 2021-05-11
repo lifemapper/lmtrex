@@ -14,7 +14,8 @@ from lmtrex.tools.provider.api import APIQuery
 class GbifAPI(APIQuery):
     """Class to query GBIF APIs and return results"""
     PROVIDER = ServiceProvider.GBIF[S2nKey.NAME]
-    PROVIDER_S2N_MAPPING = S2N_SCHEMA.get_gbif_occurrence_mapping()
+    OCCURRENCE_MAP = S2N_SCHEMA.get_gbif_occurrence_map()
+    NAME_MAP = S2N_SCHEMA.get_gbif_name_map()
     
     # ...............................................
     def __init__(self, service=GBIF.SPECIES_SERVICE, key=None,
@@ -149,15 +150,16 @@ class GbifAPI(APIQuery):
         orignames = ['issues']
 
         for fldname, val in rec.items():
-            if fldname in cls.PROVIDER_S2N_MAPPING.keys():
-                newfldname = cls.PROVIDER_S2N_MAPPING[fldname]
+            # Leave out fields without value
+            if val and fldname in cls.OCCURRENCE_MAP.keys():
+                newfldname = cls.OCCURRENCE_MAP[fldname]
                 if fldname in ('associatedSequences', 'associatedReferences'):
                     if val:
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[newfldname] = elts
                 elif fldname in orignames:
-                    stdname = cls.PROVIDER_S2N_MAPPING[fldname]
+                    stdname = cls.OCCURRENCE_MAP[fldname]
                     newrec[stdname] =  val
                 else:
                     newrec[newfldname] =  val
@@ -166,8 +168,28 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_name_record(cls, rec):
-        # todo: standardize gbif output
-        return rec
+        newrec = {}
+        for fldname, val in rec.items():
+            # Leave out fields without value
+            if val:
+                if fldname in ('usageKey'):
+                    newfldname = cls.NAME_MAP['taxonKey']
+                    newrec[newfldname] =  val
+                elif fldname in cls.NAME_MAP.keys():
+                    newfldname = cls.NAME_MAP[fldname]
+                    newrec[newfldname] =  val
+        hierarchy = {}
+        for rnk in ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species'):
+            try:
+                val = rec[rnk]
+            except:
+                pass
+            else:
+                hierarchy[rnk] = val
+        if hierarchy:
+            newfldname = cls.NAME_MAP['hierarchy']
+            newrec[newfldname] = [hierarchy]
+        return newrec
     
     # ...............................................
     @classmethod
@@ -327,14 +349,13 @@ class GbifAPI(APIQuery):
 
     # ...............................................
     @classmethod
-    def match_name(cls, namestr, status=None, logger=None):
+    def match_name(cls, namestr, is_accepted=False, logger=None):
         """Return closest accepted species in GBIF backbone taxonomy,
         
         Args:
             namestr: A scientific namestring possibly including author, year, 
                 rank marker or other name information.
-            status: optional constant to match the TaxonomicStatus in the GBIF
-                record
+            is_accepted: match the ACCEPTED TaxonomicStatus in the GBIF record
                 
         Returns:
             Either a dictionary containing a matching record with status 
@@ -344,7 +365,14 @@ class GbifAPI(APIQuery):
 
         Note:
             This function uses the name search API, 
+        Note:
+            GBIF TaxonomicStatus enum at:
+            https://gbif.github.io/gbif-api/apidocs/org/gbif/api/vocabulary/TaxonomicStatus.html
+
         """
+        status = None
+        if is_accepted:
+            status = 'accepted'
         name_clean = namestr.strip()
         other_filters = {'name': name_clean, 'verbose': 'true'}
 #         if rank:

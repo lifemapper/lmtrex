@@ -14,12 +14,12 @@ class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
     
     # ...............................................
-    def _match_gbif_names(self, namestr, gbif_status):
+    def _match_gbif_names(self, namestr, is_accepted):
         scinames = []
         errmsgs = []
         try:
             # Get name from Gbif        
-            nm_output = GbifAPI.match_name(namestr, status=gbif_status)
+            nm_output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
             errmsgs.append('Failed to match {} to GBIF accepted name'.format(namestr))
             traceback = get_traceback()
@@ -35,13 +35,13 @@ class MapSvc(_S2nService):
         return scinames, errmsgs
 
     # ...............................................
-    def _get_lifemapper_records(self, namestr, gbif_status, scenariocodes, color):
+    def _get_lifemapper_records(self, namestr, is_accepted, scenariocodes, color):
         errmsgs = []
         # First: get name(s)
-        if gbif_status is False:
+        if is_accepted is False:
             scinames = [namestr] 
         else:
-            scinames, errmsgs = self._match_gbif_names(namestr, gbif_status)
+            scinames, errmsgs = self._match_gbif_names(namestr, is_accepted=is_accepted)
         # Second: get completed Lifemapper projections (map layers)
         stdrecs = []
         queries = []
@@ -53,8 +53,8 @@ class MapSvc(_S2nService):
                 stdrecs.extend(lout.records)
                 errmsgs.extend(lout.errors)
                 queries.extend(lout.provider_query)
-        query_term = 'namestr={}; gbif_status={}; scenariocodes={}; color={}'.format(
-            namestr, gbif_status, scenariocodes, color)
+        query_term = 'namestr={}; is_accepted={}; scenariocodes={}; color={}'.format(
+            namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
             len(stdrecs), query_term, self.SERVICE_TYPE, lout.provider, 
             provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
@@ -63,7 +63,7 @@ class MapSvc(_S2nService):
 
     # ...............................................
     def get_records(
-            self, namestr, req_providers, gbif_status, scenariocodes, color):
+            self, namestr, req_providers, is_accepted, scenariocodes, color):
         allrecs = []
         # for response metadata
         common_query = ''
@@ -75,7 +75,7 @@ class MapSvc(_S2nService):
             # Lifemapper
             if pr == ServiceProvider.Lifemapper[S2nKey.PARAM]:
                 lmoutput = self._get_lifemapper_records(
-                    namestr, gbif_status, scenariocodes, color)
+                    namestr, is_accepted, scenariocodes, color)
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble
@@ -125,7 +125,7 @@ class MapSvc(_S2nService):
                 else:
                     # Query
                     output = self.get_records(
-                        namestr, valid_req_providers, usr_params['gbif_status'], 
+                        namestr, valid_req_providers, usr_params['is_accepted'], 
                         scencodes, usr_params['color'])
                     if invalid_providers:
                         msg = 'Invalid providers requested: {}'.format(

@@ -1,7 +1,7 @@
 import urllib
 
 from lmtrex.common.lmconstants import (
-    APIService, Itis, ServiceProvider, URL_ESCAPES, TST_VALUES)
+    APIService, Itis, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
 from lmtrex.fileop.logtools import (log_info, log_error)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
@@ -13,6 +13,8 @@ class ItisAPI(APIQuery):
         https://www.itis.gov/web_service.html
     """
     PROVIDER = ServiceProvider.ITISSolr[S2nKey.NAME]
+    NAME_MAP = S2N_SCHEMA.get_itis_name_map()
+    
     # ...............................................
     def __init__(
             self, base_url, service=None, q_filters={}, other_filters={}, 
@@ -167,15 +169,75 @@ class ItisAPI(APIQuery):
             
     # ...............................................
     @classmethod
-    def _standardize_record(cls, rec):
-        # todo: standardize gbif output to DWC, DSO, etc
-        return rec
+    def _parse_value_to_dict(cls, val):
+        items = {}
+        lst = val.split('$')
+        for elt in lst:
+            parts = elt.split(':')
+            k = parts[0]
+            try:
+                v = parts[1]
+            except:
+                pass
+            else:
+                if not v:
+                    try:
+                        tsn = int(k)
+                    except:
+                        pass
+                    else:
+                        items['tsn'] = tsn
+                else:
+                    items[k] = v
+        return items
+
+    # ...............................................
+    @classmethod
+    def _parse_value_to_list(cls, val):
+        items = []
+        lst = val.split('$')
+        for elt in lst:
+            parts = elt.split(':')
+            if len(parts) == 1:
+                items.append(parts[0])
+            if len(parts) == 2:
+                try:
+                    tsn = int(parts[0])
+                except:
+                    print('Unexpected 2-part element in $-delimited list {}'.format(elt))
+                else:
+                    items.insert(0, tsn)
+        return items
+
+    # ...............................................
+    @classmethod
+    def _standardize_record(cls, rec, is_accepted=False):
+        newrec = {}
+        usage = rec['usage'].lower()
+        if (is_accepted is False or (is_accepted is True 
+                                       and usage in ('accepted', 'valid')) ):
+            for fldname, val in rec.items():
+                # Leave out fields without value
+                if val and fldname in cls.NAME_MAP.keys():
+                    stdfld = cls.NAME_MAP[fldname]
+                    if fldname in ('hierarchySoFarWRanks', 'synonyms'):
+                        val_lst = []
+                        if fldname == 'hierarchySoFarWRanks':
+                            for elt in val:
+                                val_lst.extend(cls._parse_value_to_dict(elt))
+                        else:
+                            for elt in val:
+                                val_lst.extend(cls._parse_value_to_list(elt))
+                        newrec[stdfld] =  val_lst
+                    else:
+                        newrec[stdfld] =  val
+        return newrec
     
     # ...............................................
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, record_format, query_term, 
-            service, provider_query=[], itis_accepted=False, err=None):
+            service, provider_query=[], is_accepted=False, err=None):
         total = 0
         stdrecs = []
         errmsgs = []
@@ -192,12 +254,9 @@ class ItisAPI(APIQuery):
             errmsgs.append(cls._get_error_message(err=e))
         else:
             for doc in docs:
-                if itis_accepted is False:
-                    stdrecs.append(cls._standardize_record(doc))
-                else:
-                    usage = doc['usage'].lower()
-                    if usage in ('accepted', 'valid'):
-                        stdrecs.append(cls._standardize_record(doc))
+                newrec = cls._standardize_record(doc, is_accepted=is_accepted)
+                if newrec:
+                    stdrecs.append(newrec)
         std_output = S2nOutput(
             total, query_term, service, cls.PROVIDER, 
             provider_query=provider_query, record_format=record_format, 
@@ -207,7 +266,7 @@ class ItisAPI(APIQuery):
     
 # ...............................................
     @classmethod
-    def match_name(cls, sciname, itis_accepted=None, kingdom=None, logger=None):
+    def match_name(cls, sciname, is_accepted=False, kingdom=None, logger=None):
         """Return an ITIS record for a scientific name using the 
         ITIS Solr service.
         
@@ -251,13 +310,7 @@ class ItisAPI(APIQuery):
                 std_output = cls._standardize_output(
                     output, Itis.COUNT_KEY, Itis.RECORDS_KEY, Itis.RECORD_FORMAT, 
                     sciname, APIService.Name, provider_query=[api.url], 
-                    itis_accepted=itis_accepted, err=api.error)
-
-#         full_out = S2nOutput(
-#             count=out.count, record_format=out.record_format, 
-#             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-#             provider_query=[api.url], query_term=sciname, 
-#             service=APIService.Name)
+                    is_accepted=is_accepted, err=api.error)
         return std_output
 
 # ...............................................
@@ -284,7 +337,7 @@ class ItisAPI(APIQuery):
             std_output = cls._standardize_output(
                 output, Itis.COUNT_KEY, Itis.RECORDS_KEY, Itis.RECORD_FORMAT, 
                 tsn, APIService.Name, provider_query=[apiq.url], 
-                itis_accepted=True, err=apiq.error)
+                is_accepted=True, err=apiq.error)
 
         return std_output
 
@@ -402,3 +455,6 @@ if __name__ == '__main__':
                 n['nameWOInd'], n['kingdom'], n['usage'], n['rank']))
         log_info ('')
  
+"""
+https://services.itis.gov/?wt=json&q=nameWInd:Plagioecia\%20patina
+"""
