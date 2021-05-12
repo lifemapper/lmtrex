@@ -523,6 +523,10 @@ class COMMUNITY_SCHEMA:
 
 # .............................................................................
 class S2N_SCHEMA:
+    """
+    Note: 
+        All field values are strings unless otherwise indicated
+    """
     NAME = {
         # S2n standardization of common elements
         'status': COMMUNITY_SCHEMA.S2N,
@@ -531,12 +535,12 @@ class S2N_SCHEMA:
         'common_names': COMMUNITY_SCHEMA.S2N,
         'kingdom': COMMUNITY_SCHEMA.S2N,
         'rank': COMMUNITY_SCHEMA.S2N,
-        'synonyms': COMMUNITY_SCHEMA.S2N, # list of strings
+        'synonyms': COMMUNITY_SCHEMA.S2N,           # list of strings
         'name_status': COMMUNITY_SCHEMA.S2N,
         
         # GBIF-specific fields
         'gbif_confidence': COMMUNITY_SCHEMA.S2N,
-        'gbif_hierarchy': COMMUNITY_SCHEMA.S2N,  # list of dictionaries
+        'gbif_hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
         'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
@@ -544,27 +548,30 @@ class S2N_SCHEMA:
         # ITIS-specific fields
         'itis_tsn': COMMUNITY_SCHEMA.S2N,
         'itis_credibility': COMMUNITY_SCHEMA.S2N,
-        'itis_hierarchy': COMMUNITY_SCHEMA.S2N,  # list of dictionaries
+        'itis_hierarchy': COMMUNITY_SCHEMA.S2N,     # list of dictionaries containing rank: name
+                                                    #     each dict will also contain 'tsn': <tsn>
         }
     MAP = {
         'endpoint': COMMUNITY_SCHEMA.S2N,
         'data_link': COMMUNITY_SCHEMA.S2N,
-#         'point_link': COMMUNITY_SCHEMA.S2N,
-#         'sdm_projection_link': COMMUNITY_SCHEMA.S2N,
         'sdm_projection_scenario_code': COMMUNITY_SCHEMA.S2N,
         'sdm_projection_scenario_link': COMMUNITY_SCHEMA.S2N,
         'layer_type': COMMUNITY_SCHEMA.S2N,
         'layer_name': COMMUNITY_SCHEMA.S2N,
-        'point_count': COMMUNITY_SCHEMA.S2N,
-        'point_bbox': COMMUNITY_SCHEMA.S2N,
+        'point_count': COMMUNITY_SCHEMA.S2N,        # integer
+        'point_bbox': COMMUNITY_SCHEMA.S2N,         # list of 4 float values: minX, minY, maxX, maxY
         'species_name': COMMUNITY_SCHEMA.S2N,
-        'status': COMMUNITY_SCHEMA.S2N,
-        'modtime': COMMUNITY_SCHEMA.S2N
+        'status': COMMUNITY_SCHEMA.S2N,             # integer
+        'modtime': COMMUNITY_SCHEMA.S2N,
+        # Lifemapper allows query_parameter 'color' with options:
+        #    for Vector: RGB values as hexidecimal string #RRGGBB
+        #    for Raster: gray, red, green, blue, yellow, fuschia, aqua, bluered, bluegreen, greenred
+        'vendor_specific_parameters': COMMUNITY_SCHEMA.S2N,     # dictionary with queryparameter/value
         }
     OCCURRENCE = {
         # S2n resolution of non-standard contents
-        'idigbio_flags': COMMUNITY_SCHEMA.S2N,
-        'gbif_issues': COMMUNITY_SCHEMA.S2N,
+        'idigbio_flags': COMMUNITY_SCHEMA.S2N,      # list of strings
+        'gbif_issues': COMMUNITY_SCHEMA.S2N,        # list of strings
 
         # GBIF-specific field
         'gbifID': COMMUNITY_SCHEMA.GBIF,
@@ -572,9 +579,6 @@ class S2N_SCHEMA:
 
         # iDigBio-specific field
         'uuid': COMMUNITY_SCHEMA.IDB,
-
-        # MorphoS#         'point_link': COMMUNITY_SCHEMA.S2N,
-#         'sdm_projection_link': COMMUNITY_SCHEMA.S2N,ource extension?
 
         'accessRights': COMMUNITY_SCHEMA.DCT,
         'language': COMMUNITY_SCHEMA.DCT,
@@ -603,9 +607,9 @@ class S2N_SCHEMA:
         'preparations': COMMUNITY_SCHEMA.DWC,
         'datasetName': COMMUNITY_SCHEMA.DWC,
     
-        'associatedReferences': COMMUNITY_SCHEMA.DWC, 
-        'associatedSequences': COMMUNITY_SCHEMA.DWC,
-        'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,
+        'associatedReferences': COMMUNITY_SCHEMA.DWC,       # list of strings 
+        'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
+        'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
         
         'locality': COMMUNITY_SCHEMA.DWC,
         'decimalLongitude': COMMUNITY_SCHEMA.DWC,
