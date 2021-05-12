@@ -19,11 +19,16 @@ class SpecifyPortalAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
+        to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
         for fldname, val in rec:
             # Leave out fields without value
             if val and fldname in cls.OCCURRENCE_MAP.keys():
                 newfldname = cls.OCCURRENCE_MAP[fldname]
-                newrec[newfldname] = val
+                # Modify int date elements to string (to match iDigBio)
+                if newfldname in to_str_fields:
+                    newrec[newfldname] = str(val)
+                else:
+                    newrec[newfldname] = val
         return newrec
                 
     # ...............................................

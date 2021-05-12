@@ -148,19 +148,27 @@ class GbifAPI(APIQuery):
         newrec = {}
         # Fieldname modification from no namespace to S2N
         orignames = ['issues']
+        to_list_fields = ['associatedSequences', 'associatedReferences']
+        to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
 
         for fldname, val in rec.items():
             # Leave out fields without value
             if val and fldname in cls.OCCURRENCE_MAP.keys():
+                # simple name mapping
                 newfldname = cls.OCCURRENCE_MAP[fldname]
-                if fldname in ('associatedSequences', 'associatedReferences'):
+                # parse into list
+                if fldname in to_list_fields:
                     if val:
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[newfldname] = elts
+                # modify name
                 elif fldname in orignames:
                     stdname = cls.OCCURRENCE_MAP[fldname]
                     newrec[stdname] =  val
+                # Modify int date elements to string (to match iDigBio)
+                elif fldname in to_str_fields:
+                    newrec[fldname] = str(val)
                 else:
                     newrec[newfldname] =  val
         return newrec

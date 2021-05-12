@@ -81,10 +81,16 @@ class IdigbioAPI(APIQuery):
                 # Leave out fields without value
                 if val and fldname in cls.OCCURRENCE_MAP.keys():
                     if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
-                        if val:
-                            lst = val.split('|')
-                            elts = [l.strip() for l in lst]
-                            newrec[fldname] = elts
+                        lst = val.split('|')
+                        elts = [l.strip() for l in lst]
+                        newrec[fldname] = elts
+                        # Modify string date elements to int like GBIF and Specify?
+#                     elif fldname in ('dwc:year', 'dwc:month', 'dwc:day'):
+#                         try:
+#                             newrec[fldname] = int(val)
+#                         except ValueError as ve:
+#                             print('iDigBio returned non-integer value for {}: {}'.format(
+#                                 fldname, ve))
                     else:
                         newrec[fldname] =  val
             # Pull optional 'flags' element from 'indexTerms' field
