@@ -515,7 +515,7 @@ class GBIF:
 # .............................................................................
 class COMMUNITY_SCHEMA:
     DWC = {'code': 'dwc', 'url': 'http://rs.tdwg.org/dwc/terms'}
-    GBIF = {'code': 'gbif', 'url': 'http://rs.gbif.org/terms/1.0'}
+    GBIF = {'code': 'gbif', 'url': 'https://gbif.github.io/dwc-api/apidocs/org/gbif/dwc/terms/GbifTerm.html'}
     DCT = {'code': 'dcterms', 'url': 'http://purl.org/dc/terms'}
     IDB = {'code': 'idigbio', 'url': ''}
     MS = {'code': 'mopho', 'url': ''}
