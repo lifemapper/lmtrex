@@ -132,6 +132,7 @@ src/web/.DS_Store
 # Eclipse/PyDev
 .pydevproject
 .settings/org.eclipse.core.resources.prefs
+.project
 
 # PyCharm
 .idea
