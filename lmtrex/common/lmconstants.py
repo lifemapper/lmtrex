@@ -1,5 +1,5 @@
 import os
-from lmtrex.services.api.v1.s2n_type import S2nKey        
+from lmtrex.services.api.v1.s2n_type import S2nKey
 from ctypes.test import test_returnfuncptrs
 
 # .............................................................................
