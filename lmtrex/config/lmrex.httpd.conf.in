@@ -23,13 +23,16 @@ ErrorLog  @LMSCRATCHDISK@/log/apache/lmrex_error
 # Root for lifemapper content
 RewriteEngine on
 
-# Specify resolver
-Alias /api "@LMHOME@/LmRex/api/"
-<Directory "@LMHOME@/LmRex/api">
-   Options FollowSymLinks Indexes
-   AllowOverride None
-   Require all granted
-</Directory>
+    # Broker WSGI
+    WSGIDaemonProcess lmtrex threads=5
+    WSGIScriptAlias /api/v1 /var/www/lmtrex/lmtrex.wsgi
+
+    <Directory /var/www/lmtrex>
+        WSGIProcessGroup lmtrex
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
 
 # Favicon.ico and robots.txt
 
