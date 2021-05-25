@@ -63,11 +63,9 @@ def start_cherrypy_services():
     cherrypy.tree.mount(OccurrenceSvc(), OccurrenceSvc.endpoint(), conf)
     # Map services
     cherrypy.tree.mount(MapSvc(), MapSvc.endpoint(), conf)
-#     # Name services
+    # Name services
     cherrypy.tree.mount(NameSvc(), NameSvc.endpoint(), conf)
     
-    cherrypy.engine.start()
-    cherrypy.engine.block()
 
 # .............................................................................
 if __name__ == '__main__':
@@ -78,3 +76,6 @@ if __name__ == '__main__':
     """
     start_cherrypy_services()
     
+    # If we are starting cherrypy directly...
+    cherrypy.engine.start()
+    cherrypy.engine.block()
