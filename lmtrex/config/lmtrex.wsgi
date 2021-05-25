@@ -1,5 +1,9 @@
 """WSGI script that sits between Apache and CherryPy"""
 import os
+import sys
+# TODO: Do this either through .in file or another config file
+sys.path.append('/opt/lifemapper/')
+sys.path.append('/var/www/lmtrex/')
 
 import cherrypy
 
@@ -19,6 +23,7 @@ def application(environ, start_response):
         os.environ[var] = environ[var]
 
     # Note: Must import after we have set environment variables or it will fail
-    from lmtrex.services.api.v1.root import start_cherrypy_services
+    #from lmtrex.services.api.v1.root import start_cherrypy_services
+    from broker import start_cherrypy_services
     start_cherrypy_services()
     return cherrypy.tree(environ, start_response)
