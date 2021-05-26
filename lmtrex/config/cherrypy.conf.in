@@ -3,7 +3,6 @@
 
 [global]
 server.socket_port: 80
-server.socket_host: @FQDN@
 log.error_file: '@LMSCRATCHDISK@/log/cherrypyErrors.log'
 log.access_file: '@LMSCRATCHDISK@/log/cherrypyAccess.log'
 response.timeout: 1000000

@@ -2,7 +2,6 @@
 """
 import cherrypy
 # import cherrypy_cors
-# from lmtrex.services.api.v1.dataset import DatasetSvc
 from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.occ import OccurrenceSvc
@@ -36,11 +35,10 @@ def start_cherrypy_services():
     # .............................................................................
     # Tell CherryPy to add headers needed for CORS
 #     cherrypy_cors.install()
-    cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
 #     cherrypy.config.update(CHERRYPY_CONFIG_FILE)
+    cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
     cherrypy.config.update(
         {'server.socket_port': 80,
-         'server.socket_host': '@FQDN@',
          'log.error_file': '@LMSCRATCHDISK@/log/cherrypyErrors.log',
          'log.access_file': '@LMSCRATCHDISK@/log/cherrypyAccess.log',
          'response.timeout': 1000000,
@@ -57,12 +55,16 @@ def start_cherrypy_services():
              }
          })
     cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+
     # ARK service
     cherrypy.tree.mount(AddressSvc(), AddressSvc.endpoint(), conf)
+
     # Occurrence services, by GUID, by parameters (i.e. dataset_key, ...)
     cherrypy.tree.mount(OccurrenceSvc(), OccurrenceSvc.endpoint(), conf)
+
     # Map services
     cherrypy.tree.mount(MapSvc(), MapSvc.endpoint(), conf)
+
     # Name services
     cherrypy.tree.mount(NameSvc(), NameSvc.endpoint(), conf)
     
@@ -71,7 +73,6 @@ def start_cherrypy_services():
 if __name__ == '__main__':
     """
     Example calls:
-        curl http://129.237.201.192/sparks/2c1becd5-e641-4e83-b3f5-76a55206539a
         curl http://129.237.201.192/api/v1/occ/2c1becd5-e641-4e83-b3f5-76a55206539a
     """
     start_cherrypy_services()
