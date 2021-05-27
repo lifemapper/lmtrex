@@ -25,7 +25,7 @@ RewriteEngine on
 
     # Broker WSGI
     WSGIDaemonProcess lmtrex threads=5
-    WSGIScriptAlias /api/v1 /var/www/lmtrex/lmtrex.wsgi process-group=lmtrex application-group=${GLOBAL}
+    WSGIScriptAlias /api/v1 /var/www/lmtrex/broker.wsgi process-group=lmtrex application-group=${GLOBAL}
 
     <Directory /var/www/lmtrex>
         WSGIProcessGroup lmtrex
