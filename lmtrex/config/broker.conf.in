@@ -1,17 +1,3 @@
-# Apache config, fill vars, rename, and place in /etc/httpd/conf.d/
-# Link primary API dir under /var/html
-
-# prefork MPM
-<IfModule prefork.c>
-    StartServers       3
-    MinSpareServers    1
-    MaxSpareServers    3
-    ServerLimit       15
-    MaxClients        10
-    MaxRequestsPerChild  50
-</IfModule>
-
-# For t-rex roll
 <VirtualHost *:80>
     ServerName @FQDN@
     # Redirect HTTP traffic to HTTPS
@@ -26,17 +12,13 @@
     Include @SSL_OPTIONS_FILE@
     SSLCertificateChainFile @CHAIN_FILE@
 
+    WSGIDaemonProcess lmtrex threads=5
+    WSGIScriptAlias /api/v1 /var/www/lmtrex/broker.wsgi
+
     # Custom logs
     LogLevel debug
     CustomLog @LMSCRATCHDISK@/log/apache/lmrex_access combined
     ErrorLog  @LMSCRATCHDISK@/log/apache/lmrex_error
-
-    # Root for lifemapper content
-    RewriteEngine on
-
-    # Broker WSGI
-    WSGIDaemonProcess lmtrex threads=5
-    WSGIScriptAlias /api/v1 /var/www/lmtrex/broker.wsgi process-group=lmtrex application-group=${GLOBAL}
 
     <Directory /var/www/lmtrex>
         WSGIProcessGroup lmtrex
@@ -44,7 +26,5 @@
         Order deny,allow
         Allow from all
     </Directory>
-
-# Favicon.ico and robots.txt
 
 </VirtualHost>
