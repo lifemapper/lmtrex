@@ -426,7 +426,7 @@ class Lifemapper:
 
 # ......................................................
 class MorphoSource:
-    URL = 'http://www.morphosource.org/api/v1'
+    URL = 'https://ms1.morphosource.org/api/v1'
     FROZEN_URL = 'https://ea-boyerlab-morphosource-01.oit.duke.edu/api/v1'
     OCC_RESOURCE = 'specimens'
     MEDIA_RESOURCE = 'media'
