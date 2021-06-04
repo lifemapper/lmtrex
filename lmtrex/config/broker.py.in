@@ -68,6 +68,9 @@ def start_cherrypy_services():
     # Name services
     cherrypy.tree.mount(NameSvc(), NameSvc.endpoint(), conf)
     
+    # Badge services
+    cherrypy.tree.mount(BadgeSvc(), BadgeSvc.endpoint(), conf)
+    
 
 # .............................................................................
 if __name__ == '__main__':
