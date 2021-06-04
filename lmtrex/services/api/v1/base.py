@@ -1,7 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider)
+    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, ICON_OPTIONS)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
@@ -215,7 +215,7 @@ class _S2nService:
             occid=None, dataset_key=None, count_only=False, url=None,
             scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
             layers=None, request=None, frmat=None, srs=None, transparent=None, 
-            width=None, do_match=True):
+            width=None, do_match=True, icon_status=None):
         """Standardize the parameters for all Name Services into a dictionary 
         with all keys as standardized parameter names and values as 
         correctly-typed user values or defaults. 
@@ -267,6 +267,8 @@ class _S2nService:
             width: The width (in pixels) of the returned map
             do_match: Flag indicating whether to query GBIF for the 'accepted' 
                 scientific name
+            icon_status: string indicating which version of the icon to return, valid options are:
+                active, inactive, hover 
         Return:
             a dictionary containing keys and properly formated values for the
                 user specified parameters.
@@ -297,7 +299,8 @@ class _S2nService:
             'format': None, 
             'srs': 'epsg:4326', 
             'transparent': None, 
-            'width': 600}
+            'width': 600, 
+            'icon_status': ICON_OPTIONS}
         user_kwargs = {
             'provider': provider,
             'is_accepted': is_accepted, 
@@ -319,7 +322,8 @@ class _S2nService:
             'format': frmat, 
             'srs': srs, 
             'transparent': transparent, 
-            'width': width}
+            'width': width, 
+            'icon_status': icon_status}
         
         usr_params = self._process_params(kwarg_defaults, user_kwargs)
         # Do not edit namestr, maintain capitalization
