@@ -6,7 +6,6 @@ from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import S2nKey
-from inspect import trace
 
 # .............................................................................
 @cherrypy.expose
@@ -16,7 +15,6 @@ class BadgeSvc(_S2nService):
 
     # ...............................................
     def get_icon(self, provider, icon_status):
-        allrecs = []
         # GBIF
         if provider == ServiceProvider.GBIF[S2nKey.PARAM]:
             fname = ServiceProvider.GBIF['icon'][icon_status]
