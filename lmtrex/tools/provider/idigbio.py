@@ -3,7 +3,7 @@ import os
 
 from lmtrex.common.lmconstants import (
     APIService, GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, S2N_SCHEMA,
-    DATA_DUMP_DELIMITER, COMMUNITY_SCHEMA)
+    DATA_DUMP_DELIMITER, COMMUNITY_SCHEMA, ISSUE_DEFINITIONS)
 from lmtrex.fileop.logtools import (log_info)
 from lmtrex.fileop.ready_file import ready_filename
 
@@ -71,6 +71,8 @@ class IdigbioAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
+        issue_field = 'flags'
+        issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio][S2nKey.PARAM]
         # Must contain 'data' field
         try:
             stripped_rec = rec['data']
@@ -92,21 +94,28 @@ class IdigbioAPI(APIQuery):
 #                             print('iDigBio returned non-integer value for {}: {}'.format(
 #                                 fldname, ve))
                     else:
+                        # Also use ID field to construct URLs
+                        if fldname == Idigbio.ID_FIELD:
+                            newrec['view_url'] = Idigbio.get_occurrence_view(val)
+                            newrec['api_url'] = Idigbio.get_occurrence_data(val)
                         newrec[fldname] =  val
             # Pull optional 'flags' element from 'indexTerms' field
             try:
-                flags = rec['indexTerms']['flags']
+                val = rec['indexTerms'][issue_field]
+                issue_codes = val.split('|')
             except Exception:
                 pass
             else:
-                # Leave out fields without value
-                if flags:
+                if issue_codes:
                     # Fieldname modification
-                    flags_stdname = cls.OCCURRENCE_MAP['flags']
-                    newrec[flags_stdname] = flags
+                    stdname = cls.OCCURRENCE_MAP['flags']
+                    issue_dict = {}
+                    for tmp in issue_codes:
+                        code = tmp.strip()
+                        # return a dictionary with code: description
+                        issue_dict[code] = issue_map[code]
+                    newrec[stdname] = issue_dict
         return newrec
-    
-
 
     # ...............................................
     def query_by_gbif_taxon_id(self, taxon_key):

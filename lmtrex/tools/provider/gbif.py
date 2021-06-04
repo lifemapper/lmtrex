@@ -2,6 +2,7 @@ import os
 import requests
 import urllib
 
+from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
     APIService, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING, 
     TST_VALUES)
@@ -147,9 +148,11 @@ class GbifAPI(APIQuery):
     def _standardize_occurrence_record(cls, rec):
         newrec = {}
         # Fieldname modification from no namespace to S2N
+        issue_field = 'issues'
         orignames = ['issues']
         to_list_fields = ['associatedSequences', 'associatedReferences']
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
+        issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF][S2nKey.PARAM]
 
         for fldname, val in rec.items():
             # Leave out fields without value
@@ -162,14 +165,26 @@ class GbifAPI(APIQuery):
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[newfldname] = elts
-                # modify name
+                # standardize name
                 elif fldname in orignames:
                     stdname = cls.OCCURRENCE_MAP[fldname]
-                    newrec[stdname] =  val
+                    # expand fields to include code and definition
+                    if fldname == issue_field:
+                        issue_dict = {}
+                        issue_codes = val.split('|')
+                        for tmp in issue_codes:
+                            code = tmp.strip()
+                            # return a dictionary with code: description
+                            issue_dict[code] = issue_map[code]
+                        newrec[stdname] =  issue_dict
                 # Modify int date elements to string (to match iDigBio)
                 elif fldname in to_str_fields:
                     newrec[fldname] = str(val)
                 else:
+                    # Also use ID field to construct URLs
+                    if fldname == GBIF.OCC_ID_FIELD:
+                        newrec['view_url'] = GBIF.get_occurrence_view(val)
+                        newrec['api_url'] = GBIF.get_occurrence_data(val)
                     newrec[newfldname] =  val
         return newrec
     
@@ -184,6 +199,10 @@ class GbifAPI(APIQuery):
                     newfldname = cls.NAME_MAP['taxonKey']
                     newrec[newfldname] =  val
                 elif fldname in cls.NAME_MAP.keys():
+                    # Also use ID field to construct URLs
+                    if fldname == GBIF.SPECIES_ID_FIELD:
+                        newrec['view_url'] = GBIF.get_species_view(val)
+                        newrec['api_url'] = GBIF.get_species_data(val)
                     newfldname = cls.NAME_MAP[fldname]
                     newrec[newfldname] =  val
         hierarchy = {}
@@ -440,7 +459,7 @@ class GbifAPI(APIQuery):
                     simple_output[S2nKey.OCCURRENCE_URL] = None
                 else:
                     simple_output[S2nKey.OCCURRENCE_URL] = '{}/{}'.format(
-                        GBIF.SPECIES_URL, taxon_key)
+                        GBIF.species_url(), taxon_key)
         # TODO: standardize_record and provide schema link
         simple_output[S2nKey.COUNT] = total
         simple_output[S2nKey.QUERY_TERM] = taxon_key

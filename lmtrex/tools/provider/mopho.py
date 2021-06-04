@@ -7,7 +7,6 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
-    
     PROVIDER = ServiceProvider.MorphoSource[S2nKey.NAME]
     OCCURRENCE_MAP = S2N_SCHEMA.get_mopho_occurrence_map()
     
@@ -17,7 +16,7 @@ class MorphoSourceAPI(APIQuery):
             other_filters={}, logger=None):
         """Constructor for MorphoSourceAPI class"""
         url = '{}/{}/{}'.format(
-            MorphoSource.FROZEN_URL, MorphoSource.COMMAND, resource)
+            MorphoSource.REST_URL, MorphoSource.COMMAND, resource)
         APIQuery.__init__(
             self, url, q_filters=q_filters, 
             other_filters=other_filters, logger=logger)
@@ -29,6 +28,11 @@ class MorphoSourceAPI(APIQuery):
         for fldname, val in rec.items():
             # Leave out fields without value
             if val and fldname in cls.OCCURRENCE_MAP.keys():
+                # Also use DWC and local ID fields to construct URLs
+                if fldname == MorphoSource.DWC_ID_FIELD:
+                    newrec['api_url'] = MorphoSource.get_occurrence_data(val)
+                elif fldname == MorphoSource.LOCAL_ID_FIELD:
+                    newrec['view_url'] = MorphoSource.get_occurrence_view(val)
                 stdfld = cls.OCCURRENCE_MAP[fldname]
                 newrec[stdfld] =  val
         return newrec
@@ -43,7 +47,7 @@ class MorphoSourceAPI(APIQuery):
             other_filters={'start': start, 'limit': MorphoSource.LIMIT})
         # Handle bad SSL certificate on old MorphoSource API until v2 is working
         verify=True
-        if api.url.index(MorphoSource.FROZEN_URL) >= 0:
+        if api.url.index(MorphoSource.REST_URL) >= 0:
             verify=False
         try:
             api.query_by_get(verify=verify)
@@ -77,5 +81,6 @@ if __name__ == '__main__':
             log_info(msg)
 
 """
+https://ms1.morphosource.org/api/v1/find/specimens?start=0&limit=1000&q=occurrence_id%3Aed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5'
 url = 'https://ea-boyerlab-morphosource-01.oit.duke.edu/api/v1/find/specimens?start=0&limit=1000&q=occurrence_id%3Aed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5'
 """
