@@ -1,9 +1,10 @@
 import csv
 import os
 
+from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
     APIService, GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, S2N_SCHEMA,
-    DATA_DUMP_DELIMITER, COMMUNITY_SCHEMA, ISSUE_DEFINITIONS)
+    DATA_DUMP_DELIMITER, COMMUNITY_SCHEMA)
 from lmtrex.fileop.logtools import (log_info)
 from lmtrex.fileop.ready_file import ready_filename
 
