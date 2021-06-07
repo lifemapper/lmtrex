@@ -73,7 +73,7 @@ class IdigbioAPI(APIQuery):
     def _standardize_record(cls, rec):
         newrec = {}
         issue_field = 'flags'
-        issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio][S2nKey.PARAM]
+        issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]]
         # Must contain 'data' field
         try:
             stripped_rec = rec['data']
@@ -97,13 +97,14 @@ class IdigbioAPI(APIQuery):
                     else:
                         # Also use ID field to construct URLs
                         if fldname == Idigbio.ID_FIELD:
-                            newrec['view_url'] = Idigbio.get_occurrence_view(val)
-                            newrec['api_url'] = Idigbio.get_occurrence_data(val)
+                            newrec['{}:view_url'.format(
+                                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_view(val)
+                            newrec['{}:api_url'.format(
+                                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_data(val)
                         newrec[fldname] =  val
             # Pull optional 'flags' element from 'indexTerms' field
             try:
-                val = rec['indexTerms'][issue_field]
-                issue_codes = val.split('|')
+                issue_codes = rec['indexTerms'][issue_field]
             except Exception:
                 pass
             else:
@@ -114,7 +115,10 @@ class IdigbioAPI(APIQuery):
                     for tmp in issue_codes:
                         code = tmp.strip()
                         # return a dictionary with code: description
-                        issue_dict[code] = issue_map[code]
+                        try:
+                            issue_dict[code] = issue_map[code]
+                        except:
+                            issue_dict[code] = 'No description for {} provided'.format(code)
                     newrec[stdname] = issue_dict
         return newrec
 

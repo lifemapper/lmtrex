@@ -160,6 +160,8 @@ ISSUE_DEFINITIONS = {
             'Darwin Core Phylum (dwc:phylum) replaced with a standardized value from GBIF Backbone Taxonomy.',
         'dwc_scientificnameauthorship_added':
             'Darwin Core Scientific Name Authorship (dwc:scientificNameAuthorship) added where none was provided.',
+        '*** dwc_scientificnameauthorship_replaced':
+            'Darwin Core Scientific Name Authorship (dwc:scientificNameAuthorship) replaced with a standardized value from GBIF Backbone Taxonomy.',
         'dwc_specificepithet_added':
             'Darwin Core Specific Epithet (dwc:specificEpithet) added where none was provided.',
         'dwc_specificepithet_replaced':

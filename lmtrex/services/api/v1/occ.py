@@ -122,10 +122,10 @@ class OccurrenceSvc(_S2nService):
                     allrecs.append(mopho_output)
                     provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
                 # Specify
-                elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
-                    sp_output = self._get_specify_records(occid, count_only)
-                    allrecs.append(sp_output)
-                    provnames.append(ServiceProvider.Specify[S2nKey.NAME])
+                # elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
+                #     sp_output = self._get_specify_records(occid, count_only)
+                #     allrecs.append(sp_output)
+                #     provnames.append(ServiceProvider.Specify[S2nKey.NAME])
             # Filter by parameters
             elif dskey:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:

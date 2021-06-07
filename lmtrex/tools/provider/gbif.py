@@ -4,7 +4,7 @@ import urllib
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
-    APIService, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING, 
+    APIService, COMMUNITY_SCHEMA, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING, 
     TST_VALUES)
 from lmtrex.fileop.logtools import (log_info, log_error)
 
@@ -152,7 +152,7 @@ class GbifAPI(APIQuery):
         orignames = ['issues']
         to_list_fields = ['associatedSequences', 'associatedReferences']
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
-        issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF][S2nKey.PARAM]
+        issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
 
         for fldname, val in rec.items():
             # Leave out fields without value
@@ -175,7 +175,10 @@ class GbifAPI(APIQuery):
                         for tmp in issue_codes:
                             code = tmp.strip()
                             # return a dictionary with code: description
-                            issue_dict[code] = issue_map[code]
+                            try:
+                                issue_dict[code] = issue_map[code]
+                            except:
+                                issue_dict[code] = 'No description for {} provided'.format(code)
                         newrec[stdname] =  issue_dict
                 # Modify int date elements to string (to match iDigBio)
                 elif fldname in to_str_fields:
@@ -183,8 +186,10 @@ class GbifAPI(APIQuery):
                 else:
                     # Also use ID field to construct URLs
                     if fldname == GBIF.OCC_ID_FIELD:
-                        newrec['view_url'] = GBIF.get_occurrence_view(val)
-                        newrec['api_url'] = GBIF.get_occurrence_data(val)
+                        newrec['{}:view_url'.format(
+                                COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_view(val)
+                        newrec['{}:api_url'.format(
+                                COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_data(val)
                     newrec[newfldname] =  val
         return newrec
     
