@@ -174,9 +174,6 @@ class ServiceProvider:
     @classmethod
     def get_values(cls, param_or_name):
         if param_or_name in (
-            ServiceProvider.BISON[S2nKey.NAME], ServiceProvider.BISON[S2nKey.PARAM]):
-            return ServiceProvider.BISON
-        elif param_or_name in (
             ServiceProvider.GBIF[S2nKey.NAME], ServiceProvider.GBIF[S2nKey.PARAM]):
             return ServiceProvider.GBIF
         elif param_or_name in (
@@ -200,7 +197,7 @@ class ServiceProvider:
     @classmethod
     def is_valid_param(cls, param):
         if param in (
-            ServiceProvider.BISON[S2nKey.PARAM], ServiceProvider.GBIF[S2nKey.PARAM], 
+            ServiceProvider.GBIF[S2nKey.PARAM], 
             ServiceProvider.iDigBio[S2nKey.PARAM], 
             ServiceProvider.ITISSolr[S2nKey.PARAM], 
             ServiceProvider.Lifemapper[S2nKey.PARAM], 
@@ -230,46 +227,9 @@ class ServiceProvider:
     @classmethod
     def all(cls):
         return [
-            ServiceProvider.BISON, ServiceProvider.GBIF, ServiceProvider.iDigBio, 
+            ServiceProvider.GBIF, ServiceProvider.iDigBio, 
             ServiceProvider.ITISSolr, ServiceProvider.Lifemapper, 
             ServiceProvider.MorphoSource, ServiceProvider.Specify]
-
-# # .............................................................................
-# class ServiceProvider:
-#     S2N = {
-#         S2nKey.NAME: 'S2N', 'endpoint': '', 'services': [
-#             APIService.Occurrence, APIService.Name, APIService.Dataset, 
-#             APIService.Map]}
-#     BISON = {
-#         S2nKey.NAME: 'BISON', 'endpoint': 'bison', 'services': [APIService.Dataset]}
-#     GBIF = {
-#         S2nKey.NAME: 'GBIF', 'endpoint': 'gbif', 'service': [
-#             APIService.Occurrence, APIService.Name, APIService.Dataset]}
-#     iDigBio = {
-#         S2nKey.NAME: 'iDigBio', 'endpoint': 'idb', 'services': [
-#             APIService.Occurrence]}
-#     ITISSolr = {
-#         S2nKey.NAME: 'ITIS Solr Web Services', 'endpoint': 'itis', 'services': [
-#             APIService.Name]}
-#     ITISWebService = {
-#         S2nKey.NAME: 'ITIS Web Services', 'endpoint': 'itis2', 'services': [
-#             APIService.Name]}
-#     Lifemapper = {
-#         S2nKey.NAME: 'Lifemapper', 'endpoint': 'lm', 'services': [
-#             APIService.Map]}
-#     MorphoSource = {
-#         S2nKey.NAME: 'MorphoSource', 'endpoint': 'mopho', 'services': [
-#             APIService.Occurrence]}
-#     Specify = {
-#         S2nKey.NAME: 'Specify', 'endpoint': 'specify', 'services': [
-#             APIService.Occurrence, APIService.Resolve]}
-
-
-
-#     SpecifyArk = {
-#         'name': 'Specify Resolver', 'endpoint': 'sparks', 'services': [
-#             APIService.Resolver]}
-
 
  # .............................................................................
 
@@ -362,52 +322,6 @@ class BisonQuery:
     # Common Other Filters
     FILTERS = {'wt': 'json',
                'json.nl': 'arrarr'}
-#     RESPONSE_FIELDS = {
-#         'ITIScommonName': ('comname', OFTString),
-#         BISON.NAME_KEY: (DwcNames.SCIENTIFIC_NAME['SHORT'], OFTString),
-#         'ITIStsn': ('itistsn', OFTInteger),
-#         BISON.TSN_KEY: None,
-#         'ambiguous': None,
-#         DwcNames.BASIS_OF_RECORD['FULL']: (
-#             DwcNames.BASIS_OF_RECORD['SHORT'], OFTString),
-#         'calculatedCounty': ('county', OFTString),
-#         'calculatedState': ('state', OFTString),
-#         DwcNames.CATALOG_NUMBER['FULL']: (
-#             DwcNames.CATALOG_NUMBER['SHORT'], OFTString),
-#         'collectionID': ('coll_id', OFTString),
-#         'computedCountyFips': None,
-#         'computedStateFips': None,
-#         DwcNames.COUNTRY_CODE['FULL']: (
-#             DwcNames.COUNTRY_CODE['SHORT'], OFTString),
-#         DwcNames.DECIMAL_LATITUDE['FULL']: (
-#             DwcNames.DECIMAL_LATITUDE['SHORT'], OFTReal),
-#         DwcNames.DECIMAL_LONGITUDE['FULL']: (
-#             DwcNames.DECIMAL_LONGITUDE['SHORT'], OFTReal),
-#         'eventDate': ('date', OFTString),
-#         # Space delimited, same as latlon
-#         'geo': None,
-#         BISON.HIERARCHY_KEY: ('tsn_hier', OFTString),
-#         'institutionID': ('inst_id', OFTString),
-#         BISON.KINGDOM_KEY: ('kingdom', OFTString),
-#         # Comma delimited, same as geo
-#         'latlon': ('latlon', OFTString),
-#         DwcNames.OCCURRENCE_ID['FULL']: (
-#             DwcNames.OCCURRENCE_ID['SHORT'], OFTInteger),
-#         'ownerInstitutionCollectionCode': (PROVIDER_FIELD_COMMON, OFTString),
-#         'pointPath': None,
-#         'providedCounty': None,
-#         'providedScientificName': None,
-#         'providerID': None,
-#         DwcNames.RECORDED_BY['FULL']: (
-#             DwcNames.RECORDED_BY['SHORT'], OFTString),
-#         'resourceID': None,
-#         # Use ITIS Scientific Name
-#         'scientificName': None,
-#         'stateProvince': ('stprov', OFTString),
-#         DwcNames.YEAR['SHORT']: (DwcNames.YEAR['SHORT'], OFTInteger),
-#         # Very long integer
-#         '_version_': None
-#     }
 
 # ......................................................
 class Lifemapper:
@@ -449,7 +363,6 @@ class Lifemapper:
 class MorphoSource:
     REST_URL = 'https://ms1.morphosource.org/api/v1'
     VIEW_URL = 'https://www.morphosource.org/concern/biological_specimens'
-    # VIEW_URL = 'https://www.morphosource.org/concern/biological_specimens/000S31459?locale=en'
     # FROZEN_URL = 'https://ea-boyerlab-morphosource-01.oit.duke.edu/api/v1'
     DWC_ID_FIELD = 'occurrence_id'
     LOCAL_ID_FIELD = 'id'
@@ -544,7 +457,6 @@ class GBIF:
     # We are adding the 2 fields: LM_WKT_FIELD and LINK_FIELD
     LINK_FIELD = 'gbifurl'
     # Ends in / to allow appending unique id
-    # LINK_PREFIX = 'http://www.gbif.org/occurrence/'
     
     @classmethod
     def species_url(cls):
