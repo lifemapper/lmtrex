@@ -228,5 +228,6 @@ ISSUE_DEFINITIONS = {
         'scientificname_added':
             'Scientific Name (dwc:scientificName) added where none was provided with the value constructed by concatenation of stated genus and species.',
         'taxon_match_failed':
-            'Unable to match a taxon in GBIF Backbone Taxonomy. Inverse of gbif_taxon_corrected flag.',
+            'Unable to match a taxon in GBIF Backbone Taxonomy. Inverse of gbif_taxon_corrected flag.'
+  }
   }
