@@ -1,7 +1,7 @@
 import urllib
 
 from lmtrex.common.lmconstants import (
-    APIService, Itis, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
+    APIService, COMMUNITY_SCHEMA, ITIS, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
 from lmtrex.fileop.logtools import (log_info, log_error)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
@@ -30,7 +30,7 @@ class ItisAPI(APIQuery):
         Note:
             ITIS Solr service does not have nested services
         """
-        if base_url == Itis.SOLR_URL:
+        if base_url == ITIS.SOLR_URL:
             other_filters['wt'] = 'json'
         if service is not None:
             base_url = '{}/{}'.format(base_url, service)
@@ -47,7 +47,7 @@ class ItisAPI(APIQuery):
                 q_val = self._assemble_q_val(self._q_filters)
                 all_filters[self._q_key] = q_val
 
-            if self.base_url == Itis.SOLR_URL:
+            if self.base_url == ITIS.SOLR_URL:
                 kvpairs = []
                 for k, val in all_filters.items():
                     if isinstance(val, bool):
@@ -128,17 +128,17 @@ class ItisAPI(APIQuery):
         """
         tax_path = []
         for tax in self.output.iter(
-                # '{{}}{}'.format(Itis.DATA_NAMESPACE, Itis.HIERARCHY_TAG)):
-                '{}{}'.format(Itis.DATA_NAMESPACE, Itis.HIERARCHY_TAG)):
+                # '{{}}{}'.format(ITIS.DATA_NAMESPACE, ITIS.HIERARCHY_TAG)):
+                '{}{}'.format(ITIS.DATA_NAMESPACE, ITIS.HIERARCHY_TAG)):
             rank = tax.find(
-                # '{{}}{}'.format(Itis.DATA_NAMESPACE, Itis.RANK_TAG)).text
-                '{}{}'.format(Itis.DATA_NAMESPACE, Itis.RANK_TAG)).text
+                # '{{}}{}'.format(ITIS.DATA_NAMESPACE, ITIS.RANK_TAG)).text
+                '{}{}'.format(ITIS.DATA_NAMESPACE, ITIS.RANK_TAG)).text
             name = tax.find(
-                # '{{}}{}'.format(Itis.DATA_NAMESPACE, Itis.TAXON_TAG)).text
-                '{}{}'.format(Itis.DATA_NAMESPACE, Itis.TAXON_TAG)).text
+                # '{{}}{}'.format(ITIS.DATA_NAMESPACE, ITIS.TAXON_TAG)).text
+                '{}{}'.format(ITIS.DATA_NAMESPACE, ITIS.TAXON_TAG)).text
             tsn = tax.find(
-                # '{{}}{}'.format(Itis.DATA_NAMESPACE, Itis.TAXONOMY_KEY)).text
-                '{}{}'.format(Itis.DATA_NAMESPACE, Itis.TSN_KEY)).text
+                # '{{}}{}'.format(ITIS.DATA_NAMESPACE, ITIS.TAXONOMY_KEY)).text
+                '{}{}'.format(ITIS.DATA_NAMESPACE, ITIS.TSN_KEY)).text
             tax_path.append((rank, tsn, name))
         return tax_path
 
@@ -174,21 +174,18 @@ class ItisAPI(APIQuery):
         lst = val.split('$')
         for elt in lst:
             parts = elt.split(':')
-            k = parts[0]
+            key = parts[0]
             try:
-                v = parts[1]
+                val = parts[1]
             except:
                 pass
             else:
-                if not v:
-                    try:
-                        tsn = int(k)
-                    except:
-                        pass
-                    else:
-                        items['tsn'] = tsn
-                else:
-                    items[k] = v
+                try:
+                    tsn = int(key)
+                    items['tsn'] = tsn
+                except:
+                    rnk = key.lower()
+                    items[rnk] = val
         return items
 
     # ...............................................
@@ -224,12 +221,17 @@ class ItisAPI(APIQuery):
                         val_lst = []
                         if fldname == 'hierarchySoFarWRanks':
                             for elt in val:
-                                val_lst.extend(cls._parse_value_to_dict(elt))
+                                val_lst.append(cls._parse_value_to_dict(elt))
                         else:
                             for elt in val:
                                 val_lst.extend(cls._parse_value_to_list(elt))
                         newrec[stdfld] =  val_lst
                     else:
+                        if fldname == ITIS.TSN_KEY:
+                            newrec['{}:view_url'.format(
+                                    COMMUNITY_SCHEMA.S2N['code'])] = ITIS.get_taxon_view(val)
+                            newrec['{}:api_url'.format(
+                                    COMMUNITY_SCHEMA.S2N['code'])] = ITIS.get_taxon_data(val)
                         newrec[stdfld] =  val
         return newrec
     
@@ -285,10 +287,10 @@ class ItisAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
-        q_filters = {Itis.NAME_KEY: sciname}
+        q_filters = {ITIS.NAME_KEY: sciname}
         if kingdom is not None:
             q_filters['kingdom'] = kingdom
-        api = ItisAPI(Itis.SOLR_URL, q_filters=q_filters, logger=logger)
+        api = ItisAPI(ITIS.SOLR_URL, q_filters=q_filters, logger=logger)
 
         try:
             api.query()
@@ -308,7 +310,7 @@ class ItisAPI(APIQuery):
             else:
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    output, Itis.COUNT_KEY, Itis.RECORDS_KEY, Itis.RECORD_FORMAT, 
+                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
                     sciname, APIService.Name, provider_query=[api.url], 
                     is_accepted=is_accepted, err=api.error)
         return std_output
@@ -327,7 +329,7 @@ class ItisAPI(APIQuery):
         """
         output = {}
         apiq = ItisAPI(
-            Itis.SOLR_URL, q_filters={Itis.TSN_KEY: tsn}, logger=logger)
+            ITIS.SOLR_URL, q_filters={ITIS.TSN_KEY: tsn}, logger=logger)
         try:
             apiq.query()
         except Exception as e:
@@ -335,7 +337,7 @@ class ItisAPI(APIQuery):
         else:
             # Standardize output from provider response
             std_output = cls._standardize_output(
-                output, Itis.COUNT_KEY, Itis.RECORDS_KEY, Itis.RECORD_FORMAT, 
+                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
                 tsn, APIService.Name, provider_query=[apiq.url], 
                 is_accepted=True, err=apiq.error)
 
@@ -358,14 +360,14 @@ class ItisAPI(APIQuery):
 #         common_names = []
 #         if tsn is not None:
 #             url = '{}/{}?{}={}'.format(
-#                 Itis.WEBSVC_URL, Itis.VERNACULAR_QUERY, Itis.TSN_KEY, str(tsn))
+#                 ITIS.WEBSVC_URL, ITIS.VERNACULAR_QUERY, ITIS.TSN_KEY, str(tsn))
 #             root = self._getDataFromUrl(url, resp_type='xml')
 #         
-#             retElt = root.find('{}return'.format(Itis.NAMESPACE))
+#             retElt = root.find('{}return'.format(ITIS.NAMESPACE))
 #             if retElt is not None:
-#                 cnEltLst = retElt.findall('{}commonNames'.format(Itis.DATA_NAMESPACE))
+#                 cnEltLst = retElt.findall('{}commonNames'.format(ITIS.DATA_NAMESPACE))
 #                 for cnElt in cnEltLst:
-#                     nelt = cnElt.find('{}commonName'.format(Itis.DATA_NAMESPACE))
+#                     nelt = cnElt.find('{}commonName'.format(ITIS.DATA_NAMESPACE))
 #                     if nelt is not None and nelt.text is not None:
 #                         common_names.append(nelt.text)
 #         return common_names
@@ -374,17 +376,17 @@ class ItisAPI(APIQuery):
 #     @classmethod
 #     def get_tsn_hierarchy(cls, tsn, logger=None):
 #         """Retrieve taxon hierarchy"""
-#         url = '{}/{}'.format(Itis.WEBSVC_URL, Itis.TAXONOMY_HIERARCHY_QUERY)
+#         url = '{}/{}'.format(ITIS.WEBSVC_URL, ITIS.TAXONOMY_HIERARCHY_QUERY)
 #         apiq = APIQuery(
-#             url, other_filters={Itis.TSN_KEY: tsn}, 
+#             url, other_filters={ITIS.TSN_KEY: tsn}, 
 #             headers={'Content-Type': 'text/xml'}, logger=logger)
 #         apiq.query_by_get(output_type='xml')
 #         tax_path = apiq._return_hierarchy()
 #         hierarchy = {}
 #         for rank in (
-#                 Itis.KINGDOM_KEY, Itis.PHYLUM_DIVISION_KEY, Itis.CLASS_KEY,
-#                 Itis.ORDER_KEY, Itis.FAMILY_KEY, Itis.GENUS_KEY,
-#                 Itis.SPECIES_KEY):
+#                 ITIS.KINGDOM_KEY, ITIS.PHYLUM_DIVISION_KEY, ITIS.CLASS_KEY,
+#                 ITIS.ORDER_KEY, ITIS.FAMILY_KEY, ITIS.GENUS_KEY,
+#                 ITIS.SPECIES_KEY):
 #             hierarchy[rank] = apiq._get_rank_from_path(tax_path, rank)
 #         return hierarchy
 
@@ -401,13 +403,13 @@ class ItisAPI(APIQuery):
 #         output = {}
 #         errmsgs = []
 #         if outformat == 'json':
-#             url = Itis.JSONSVC_URL
+#             url = ITIS.JSONSVC_URL
 #         else:
-#             url = Itis.WEBSVC_URL
+#             url = ITIS.WEBSVC_URL
 #             outformat = 'xml'
 #         apiq = ItisAPI(
-#             url, service=Itis.ITISTERMS_FROM_SCINAME_QUERY, 
-#             other_filters={Itis.SEARCH_KEY: sciname}, logger=logger)
+#             url, service=ITIS.ITISTERMS_FROM_SCINAME_QUERY, 
+#             other_filters={ITIS.SEARCH_KEY: sciname}, logger=logger)
 #         apiq.query_by_get(output_type=outformat)
 #         
 #         recs = []
@@ -420,9 +422,9 @@ class ItisAPI(APIQuery):
 #                     msg='Missing `itisTerms` element'))
 #         else:
 #             root = apiq.output    
-#             retElt = root.find('{}return'.format(Itis.NAMESPACE))
+#             retElt = root.find('{}return'.format(ITIS.NAMESPACE))
 #             if retElt is not None:
-#                 termEltLst = retElt.findall('{}itisTerms'.format(Itis.DATA_NAMESPACE))
+#                 termEltLst = retElt.findall('{}itisTerms'.format(ITIS.DATA_NAMESPACE))
 #                 for tElt in termEltLst:
 #                     rec = {}
 #                     elts = tElt.getchildren()

@@ -200,10 +200,7 @@ class GbifAPI(APIQuery):
         for fldname, val in rec.items():
             # Leave out fields without value
             if val:
-                if fldname in ('usageKey'):
-                    newfldname = cls.NAME_MAP['taxonKey']
-                    newrec[newfldname] =  val
-                elif fldname in cls.NAME_MAP.keys():
+                if fldname in cls.NAME_MAP.keys():
                     # Also use ID field to construct URLs
                     if fldname == GBIF.SPECIES_ID_FIELD:
                         newrec['view_url'] = GBIF.get_species_view(val)

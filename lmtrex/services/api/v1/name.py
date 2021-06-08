@@ -166,11 +166,10 @@ if __name__ == '__main__':
     svc = NameSvc()
     for namestr in test_names:
         for gparse in [True]:
-            for prov in svc.get_providers():
-                out = svc.GET(
-                    namestr=namestr, provider=prov, is_accepted=False, gbif_parse=gparse, 
-                    gbif_count=True, kingdom=None)
-                print_s2n_output(out)
+            out = svc.GET(
+                namestr=namestr, is_accepted=False, gbif_parse=gparse, 
+                gbif_count=True, kingdom=None)
+            print_s2n_output(out)
     # Try once with all providers
     out = svc.GET(
         namestr=namestr, provider=None, is_accepted=False, gbif_parse=True, 
@@ -178,6 +177,8 @@ if __name__ == '__main__':
     print_s2n_output(out)
                 
 """
+https://broker-dev.spcoco.org/api/v1/name/Poa annua?provider=gbif
+
 import cherrypy
 import json
 

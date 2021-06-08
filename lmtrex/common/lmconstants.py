@@ -402,7 +402,7 @@ class GBIF:
     TAXON_NAME = 'sciname'
     PROVIDER = 'puborgkey'
     OCC_ID_FIELD = 'gbifID'
-    SPECIES_ID_FIELD = 'key'
+    SPECIES_ID_FIELD = 'usageKey'
     WAIT_TIME = 180
     LIMIT = 300
     VIEW_URL = 'https://www.gbif.org'
@@ -506,11 +506,10 @@ class S2N_SCHEMA:
         'kingdom': COMMUNITY_SCHEMA.S2N,
         'rank': COMMUNITY_SCHEMA.S2N,
         'synonyms': COMMUNITY_SCHEMA.S2N,           # list of strings
-        'name_status': COMMUNITY_SCHEMA.S2N,
+        'hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
         
         # GBIF-specific fields
         'gbif_confidence': COMMUNITY_SCHEMA.S2N,
-        'gbif_hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
         'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
@@ -518,8 +517,6 @@ class S2N_SCHEMA:
         # ITIS-specific fields
         'itis_tsn': COMMUNITY_SCHEMA.S2N,
         'itis_credibility': COMMUNITY_SCHEMA.S2N,
-        'itis_hierarchy': COMMUNITY_SCHEMA.S2N,     # list of dictionaries containing rank: name
-                                                    #     each dict will also contain 'tsn': <tsn>
         }
     MAP = {
         # Provider's URLs to this record
@@ -674,20 +671,22 @@ class S2N_SCHEMA:
     def get_gbif_name_map(cls):
         s2n = COMMUNITY_SCHEMA.S2N['code']
         mapping = {
-            'usageKey': '{}:provider_url'.format(s2n),
+            'view_url': '{}:view_url'.format(s2n),
+            'api_url': '{}:api_url'.format(s2n),
+            
+            'status': '{}:status'.format(s2n),
             'scientificName': '{}:scientific_name'.format(s2n),
             'canonicalName': '{}:canonical_name'.format(s2n), 
             'kingdom': '{}:kingdom'.format(s2n),
             'rank': '{}:rank'.format(s2n),
-            'status': '{}:name_status'.format(s2n),
-            # GBIF-specific
-            'matchType': '{}:gbif_match_type'.format(s2n),            
-            'confidence': '{}:gbif_confidence'.format(s2n),
-            'taxonKey': '{}:gbif_taxon_key'.format(s2n),
-            'status': '{}:gbif_name_status'.format(s2n),
             # parsed into lists
             'synonyms': '{}:synonyms'.format(s2n),
-            'hierarchy': '{}:gbif_hierarchy'.format(s2n),
+            'hierarchy': '{}:hierarchy'.format(s2n),
+            # GBIF-specific
+            'confidence': '{}:gbif_confidence'.format(s2n),
+            'usageKey': '{}:gbif_taxon_key'.format(s2n),
+            S2nKey.OCCURRENCE_COUNT: '{}:{}'.format(COMMUNITY_SCHEMA.S2N,S2nKey.OCCURRENCE_COUNT),
+            S2nKey.OCCURRENCE_URL: '{}:{}'.format(COMMUNITY_SCHEMA.S2N,S2nKey.OCCURRENCE_URL)
             }
         return mapping
 
@@ -695,17 +694,21 @@ class S2N_SCHEMA:
     def get_itis_name_map(cls):
         s2n = COMMUNITY_SCHEMA.S2N['code']
         mapping = {
+            'view_url': '{}:view_url'.format(s2n),
+            'api_url': '{}:api_url'.format(s2n),
+            
+            'usage': '{}:status'.format(s2n),
             'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
             'nameWOInd': '{}:canonical_name'.format(s2n), 
             'kingdom': '{}:kingdom'.format(s2n),
             'rank': '{}:rank'.format(s2n),
-            'usage': '{}:name_status'.format(s2n),
+            # parsed into list
+            'synonyms': '{}:synonyms'.format(s2n),
+            # parsed into dict
+            'hierarchySoFarWRanks': '{}:hierarchy'.format(s2n),
             # ITIS-specific
             'tsn': '{}:itis_tsn'.format(s2n),
             'credibilityRating': '{}:itis_credibility'.format(s2n),            
-            # parsed into lists
-            'synonyms': '{}:synonyms'.format(s2n),
-            'hierarchySoFarWRanks': '{}:itis_hierarchy'.format(s2n),
             }
         return mapping
     
@@ -728,16 +731,17 @@ class S2N_SCHEMA:
         return mapping
         
 # .............................................................................
-class Itis:
+class ITIS:
     """ITIS constants enumeration
     http://www.itis.gov/ITISWebService/services/ITISService/getAcceptedNamesFromTSN?tsn=183671
     @todo: for JSON output use jsonservice instead of ITISService
     """
     DATA_NAMESPACE = '{http://data.itis_service.itis.usgs.gov/xsd}'
     NAMESPACE = '{http://itis_service.itis.usgs.gov}'
+    VIEW_URL = 'https://www.itis.gov/servlet/SingleRpt/SingleRpt'
     # ...........
     # Solr Services
-    SOLR_URL = 'https://services.itis.gov/'
+    SOLR_URL = 'https://services.itis.gov'
     TAXONOMY_HIERARCHY_QUERY = 'getFullHierarchyFromTSN'
     VERNACULAR_QUERY = 'getCommonNamesFromTSN'    
     NAMES_FROM_TSN_QUERY = 'getAcceptedNamesFromTSN'
@@ -766,6 +770,14 @@ class Itis:
     GENUS_KEY = 'Genus'
     SPECIES_KEY = 'Species'
     URL_ESCAPES = [ [" ", "\%20"] ]
+    
+    @classmethod
+    def get_taxon_view(cls, tsn):
+        return '{}?search_topic=TSN&search_value={}'.format(ITIS.VIEW_URL, tsn)
+
+    @classmethod
+    def get_taxon_data(cls, tsn):
+        return '{}?q=tsn:{}'.format(ITIS.SOLR_URL, tsn)
 
 # .............................................................................
 # .                           iDigBio constants                               .
