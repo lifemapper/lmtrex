@@ -1,0 +1,109 @@
+:root {
+  --b1: #eee;
+  --b2: #fff;
+  --b3: #ccc;
+  --t1: #666;
+  --t2: #888;
+  --t3: #000;
+  --red: #f00;
+  --green: #0f0;
+}
+
+body {
+  margin: 1rem;
+  background: var(--b1);
+  font-family: "Calibri", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.checkbox-with-indicator input:checked ~ span::before {
+  content: "True";
+  color: var(--green);
+}
+
+.checkbox-with-indicator input:not(:checked) ~ span::before {
+  content: "False";
+  color: var(--red);
+}
+
+.collapsed {
+  cursor: pointer;
+}
+
+.collapsed .value::after {
+  content: "{...}";
+}
+
+.collapsed:hover > .value::after {
+  color: var(--t1);
+}
+
+.collapsed > .value > * {
+  display: none !important;
+}
+
+.list-of-fields {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-auto-rows: auto;
+  row-gap: 1rem;
+}
+
+.list-of-values > .field:not(:last-child) > * {
+  border-bottom: 1px solid var(--b3);
+  padding-bottom: 1rem;
+}
+
+.field {
+  display: contents;
+}
+
+.label {
+  line-height: 2rem;
+  padding-right: 1rem;
+}
+
+.string,
+.text {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--b3);
+  border-radius: 3px;
+}
+
+.text {
+  resize: vertical;
+}
+
+.value {
+  display: flex;
+  align-items: center;
+}
+
+.value > * {
+  flex: 1;
+}
+
+.dictionary-label {
+  cursor: pointer;
+}
+
+.dictionary-label::after {
+  content: "\25BC";
+  padding-left: 0.5rem;
+}
+
+.collapsed > .dictionary-label::after {
+  content: "\25BA";
+}
+
+.dictionary-label:hover::after {
+  color: var(--t1);
+}
