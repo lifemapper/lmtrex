@@ -5,6 +5,8 @@ from lmtrex.common.lmconstants import (ServiceProvider, APIService, ICON_OPTIONS
 
 from lmtrex.tools.utils import get_traceback
 
+from lmtrex.common.lmconstants import IMG_PATH
+
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import S2nKey
 
@@ -28,8 +30,10 @@ class BadgeSvc(_S2nService):
         # Lifemapper
         elif provider == ServiceProvider.Specify[S2nKey.PARAM]:
             fname = ServiceProvider.Specify['icon'][icon_status]
+            
+        full_filename = os.path.join(IMG_PATH, fname)
 
-        return fname
+        return full_filename
 
     # ...............................................
     # ...............................................
@@ -59,7 +63,7 @@ class BadgeSvc(_S2nService):
             valid_providers = self.get_providers()
             valid_req_providers, _ = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
-            provider = valid_req_providers[0]
+            provider = valid_req_providers.pop()
             
             # What to query: address one occurrence record, with optional filters
             icon_status = usr_params['icon_status']
@@ -85,6 +89,5 @@ if __name__ == '__main__':
     valid_providers = svc.get_providers()
     for pr in valid_providers:
         for stat in ICON_OPTIONS:
-            icon = svc.GET(provider=pr, icon_status=stat)
-            print 
+            svc.GET(provider=pr, icon_status=stat)
     
