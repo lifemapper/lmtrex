@@ -1,6 +1,7 @@
 import cherrypy
+import os
 
-from lmtrex.common.lmconstants import (ServiceProvider, APIService, ICON_OPTIONS)
+from lmtrex.common.lmconstants import (ServiceProvider, APIService, ICON_OPTIONS, ICON_CONTENT)
 
 from lmtrex.tools.utils import get_traceback
 
@@ -51,27 +52,30 @@ class BadgeSvc(_S2nService):
             usr_params = self._standardize_params(provider=provider, icon_status=icon_status)
         except Exception as e:
             traceback = get_traceback()
-            retval = traceback
+            return traceback
         else:
             # Who to query
+            # TODO: currently only allow one for now, default is first one in list
             valid_providers = self.get_providers()
-            valid_req_providers, invalid_providers = self.get_valid_requested_providers(
+            valid_req_providers, _ = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
             provider = valid_req_providers[0]
             
             # What to query: address one occurrence record, with optional filters
             icon_status = usr_params['icon_status']
             try:
-                if icon_status is None:
-                    output = self._show_online(providers=valid_req_providers)
-                    retval = output.response
-                else:
-                    icon_fname = self.get_icon(provider, icon_status)
-                    retval = icon_fname
+                icon_fname = self.get_icon(provider, icon_status)
             except Exception as e:
                 traceback = get_traceback()
-                retval = traceback
-        return retval
+                return traceback
+            else:
+                # cherrypy.response.headers['Content-Type'] = ICON_CONTENT
+                # cherrypy.response.headers['Content-Disposition'] = 'attachment; filename={}'.format(icon_fname)
+                cherrypy.lib.static.serve_file(icon_fname, 'application/x-download',
+                                 'attachment', os.path.basename(icon_fname))
+            return 
+
+        # return retval
     
 
 # .............................................................................

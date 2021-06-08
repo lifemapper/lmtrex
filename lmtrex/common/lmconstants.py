@@ -18,7 +18,8 @@ SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 DATA_DUMP_DELIMITER = '\t'
 GBIF_MISSING_KEY = 'unmatched_gbif_ids'
 
-ICON_OPTIONS = ('active', 'inactive', 'hover')
+ICON_OPTIONS = ('default', 'active', 'disabled')
+ICON_CONTENT = "image/png"
     
 # .............................................................................
 class DWC:
