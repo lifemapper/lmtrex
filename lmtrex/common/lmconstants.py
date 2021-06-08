@@ -19,7 +19,7 @@ DATA_DUMP_DELIMITER = '\t'
 GBIF_MISSING_KEY = 'unmatched_gbif_ids'
 
 ICON_OPTIONS = ('active', 'inactive', 'hover')
-IMG_PATH = '/opt/lifemapper'
+IMG_PATH = '/var/www'
 ICON_CONTENT = "image/png"
     
 # .............................................................................

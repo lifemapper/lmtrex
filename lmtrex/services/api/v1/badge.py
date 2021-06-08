@@ -24,10 +24,13 @@ class BadgeSvc(_S2nService):
         # iDigBio
         elif provider == ServiceProvider.iDigBio[S2nKey.PARAM]:
             fname = ServiceProvider.iDigBio['icon'][icon_status]
+        # iDigBio
+        elif provider == ServiceProvider.Lifemapper[S2nKey.PARAM]:
+            fname = ServiceProvider.Lifemapper['icon'][icon_status]
         # MorphoSource
         elif provider == ServiceProvider.MorphoSource[S2nKey.PARAM]:
             fname = ServiceProvider.MorphoSource['icon'][icon_status]
-        # Lifemapper
+        # Specify
         elif provider == ServiceProvider.Specify[S2nKey.PARAM]:
             fname = ServiceProvider.Specify['icon'][icon_status]
             
