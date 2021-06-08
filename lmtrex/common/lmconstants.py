@@ -637,9 +637,8 @@ class S2N_SCHEMA:
             stdname = '{}:{}'.format(comschem['code'], fn)
             if fn == 'idigbio_flags':
                 iname_stdname['flags'] = stdname
-            # # these will be computed with UUID
-            # elif fn in ('view_url', 'data_url'):
-            #     iname_stdname[fn] = stdname
+            elif fn == 'uuid':
+                iname_stdname[fn] = stdname
             else:
                 iname_stdname[stdname] = stdname
         return iname_stdname

@@ -74,6 +74,18 @@ class IdigbioAPI(APIQuery):
         newrec = {}
         issue_field = 'flags'
         issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]]
+        # Should contain 'uuid' field
+        try:
+            uuid = rec[Idigbio.ID_FIELD]
+        except Exception as e:
+            print('Record missing uuid field')
+        else:
+            newrec['{}:view_url'.format(
+                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_view(uuid)
+            newrec['{}:api_url'.format(
+                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_data(uuid)
+            stdname = cls.OCCURRENCE_MAP[Idigbio.ID_FIELD]
+            newrec[stdname] = uuid
         # Must contain 'data' field
         try:
             stripped_rec = rec['data']
@@ -87,20 +99,9 @@ class IdigbioAPI(APIQuery):
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[fldname] = elts
-                        # Modify string date elements to int like GBIF and Specify?
-#                     elif fldname in ('dwc:year', 'dwc:month', 'dwc:day'):
-#                         try:
-#                             newrec[fldname] = int(val)
-#                         except ValueError as ve:
-#                             print('iDigBio returned non-integer value for {}: {}'.format(
-#                                 fldname, ve))
+                    # elif fldname in ('dwc:year', 'dwc:month', 'dwc:day'):
+                    #     # Modify string date elements to int like GBIF and Specify?
                     else:
-                        # Also use ID field to construct URLs
-                        if fldname == Idigbio.ID_FIELD:
-                            newrec['{}:view_url'.format(
-                                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_view(val)
-                            newrec['{}:api_url'.format(
-                                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_data(val)
                         newrec[fldname] =  val
             # Pull optional 'flags' element from 'indexTerms' field
             try:
