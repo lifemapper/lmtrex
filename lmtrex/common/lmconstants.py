@@ -364,8 +364,8 @@ class MorphoSource:
     REST_URL = 'https://ms1.morphosource.org/api/v1'
     VIEW_URL = 'https://www.morphosource.org/concern/biological_specimens'
     # FROZEN_URL = 'https://ea-boyerlab-morphosource-01.oit.duke.edu/api/v1'
-    DWC_ID_FIELD = 'occurrence_id'
-    LOCAL_ID_FIELD = 'id'
+    DWC_ID_FIELD = 'specimen.occurrence_id'
+    LOCAL_ID_FIELD = 'specimen.specimen_id'
     OCC_RESOURCE = 'specimens'
     MEDIA_RESOURCE = 'media'
     OTHER_RESOURCES = ['taxonomy', 'projects', 'facilities']
@@ -555,7 +555,7 @@ class S2N_SCHEMA:
         'uuid': COMMUNITY_SCHEMA.IDB,
         
         # MorphoSource-specific field
-        'specimen_id': COMMUNITY_SCHEMA.MS,
+        'specimen.specimen_id': COMMUNITY_SCHEMA.MS,
 
         'accessRights': COMMUNITY_SCHEMA.DCT,
         'language': COMMUNITY_SCHEMA.DCT,
@@ -654,17 +654,20 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_mopho_occurrence_map(cls):
-        dwc = COMMUNITY_SCHEMA.DWC['code']
-        idb = COMMUNITY_SCHEMA.IDB['code']
-        s2n = COMMUNITY_SCHEMA.S2N['code']
-        mapping = {
-            'specimen.specimen_id': '{}:view_url'.format(s2n),
-            'specimen.catalog_number': '{}:catalogNumber'.format(dwc),
-            'specimen.institution_code': '{}:institutionCode'.format(dwc),
-            'specimen.occurrence_id': '{}:occurrenceID'.format(dwc), 
-            'specimen.uuid': '{}:uuid'.format(idb)
-            }
-        return mapping
+        mopho_stdname = {}
+        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+            std_name = '{}:{}'.format(comschem['code'], fn)
+            if fn == 'catalogNumber':
+                mopho_stdname['specimen.catalog_number'] = std_name
+            elif fn == 'institutionCode':
+                mopho_stdname['specimen.institution_code'] = std_name
+            elif fn == 'occurrenceID':
+                mopho_stdname['specimen.occurrence_id'] = std_name
+            elif fn == 'uuid':
+                mopho_stdname['specimen.uuid'] = std_name
+            elif fn in ['specimen.specimen_id', 'view_url', 'api_url']:
+                mopho_stdname[fn] = std_name
+        return mopho_stdname
     
     @classmethod
     def get_gbif_name_map(cls):

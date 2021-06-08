@@ -27,7 +27,7 @@ class MorphoSourceAPI(APIQuery):
         newrec = {}
         for fldname, val in rec.items():
             # Leave out fields without value
-            if val and fldname in cls.OCCURRENCE_MAP.keys():
+            if fldname in cls.OCCURRENCE_MAP.keys():
                 # Also use DWC and local ID fields to construct URLs
                 if fldname == MorphoSource.DWC_ID_FIELD:
                     newrec['api_url'] = MorphoSource.get_occurrence_data(val)
@@ -66,7 +66,6 @@ class MorphoSourceAPI(APIQuery):
 if __name__ == '__main__':
     # test
     
-    log_info('Mopho records:')
     for guid in TST_VALUES.GUIDS_WO_SPECIFY_ACCESS:
         moutput = MorphoSourceAPI.get_occurrences_by_occid_page1(guid)
         for r in moutput[S2nKey.RECORDS]:

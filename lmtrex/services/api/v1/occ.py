@@ -198,14 +198,15 @@ class OccurrenceSvc(_S2nService):
 # .............................................................................
 if __name__ == '__main__':
     from lmtrex.common.lmconstants import TST_VALUES
-    occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[-1], TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0]]
+    occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[-1]] 
+    occids = [TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0]]
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
 
     # Get all providers
     for occid in occids:
-        out = svc.GET(occid=occid, count_only=False)
+        out = svc.GET(occid=occid, provider='mopho', count_only=False)
         outputs = out['records']
         print_s2n_output(out)
         for pout in outputs:
