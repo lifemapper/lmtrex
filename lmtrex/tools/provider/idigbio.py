@@ -72,7 +72,6 @@ class IdigbioAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        issue_field = 'flags'
         issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]]
         # Should contain 'uuid' field
         try:
@@ -105,13 +104,13 @@ class IdigbioAPI(APIQuery):
                         newrec[fldname] =  val
             # Pull optional 'flags' element from 'indexTerms' field
             try:
-                issue_codes = rec['indexTerms'][issue_field]
+                issue_codes = rec['indexTerms']['flags']
             except Exception:
                 pass
             else:
                 if issue_codes:
                     # Fieldname modification
-                    stdname = cls.OCCURRENCE_MAP['flags']
+                    stdname = cls.OCCURRENCE_MAP['s2n:issues']
                     issue_dict = {}
                     for tmp in issue_codes:
                         code = tmp.strip()
@@ -119,7 +118,7 @@ class IdigbioAPI(APIQuery):
                         try:
                             issue_dict[code] = issue_map[code]
                         except:
-                            issue_dict[code] = 'No description for {} provided'.format(code)
+                            issue_dict[code] = 'TBD'
                     newrec[stdname] = issue_dict
         return newrec
 

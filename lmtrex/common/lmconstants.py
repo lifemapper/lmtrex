@@ -384,8 +384,8 @@ class MorphoSource:
 
     @classmethod
     def get_occurrence_data(cls, occurrence_id):
-        return '{}/find/specimens?start=0&limit=1000&q={}%3A{}'.format(
-            MorphoSource.REST_URL, MorphoSource.LOCAL_ID_FIELD, occurrence_id)
+        return '{}/find/specimens?start=0&limit=1000&q=occurrence_id%3A{}'.format(
+            MorphoSource.REST_URL, occurrence_id)
     
 # ......................................................
 class SPECIFY:
@@ -546,8 +546,7 @@ class S2N_SCHEMA:
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
         # S2n resolution of non-standard contents
-        'idigbio_flags': COMMUNITY_SCHEMA.S2N,      # dictionary of codes: descriptions
-        'gbif_issues': COMMUNITY_SCHEMA.S2N,        # dictionary of codes: descriptions
+        'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
 
         # GBIF-specific field
         'gbifID': COMMUNITY_SCHEMA.GBIF,
@@ -623,13 +622,7 @@ class S2N_SCHEMA:
         gname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'gbif_issues':
-                gname_stdname['issues'] = std_name
-            # # these will be computed with key
-            # elif fn in ('view_url', 'data_url'):
-            #     gname_stdname[fn] = std_name
-            else:
-                gname_stdname[fn] = std_name
+            gname_stdname[fn] = std_name
         return gname_stdname
 
     @classmethod
@@ -637,9 +630,7 @@ class S2N_SCHEMA:
         iname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             stdname = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'idigbio_flags':
-                iname_stdname['flags'] = stdname
-            elif fn == 'uuid':
+            if fn == 'uuid':
                 iname_stdname[fn] = stdname
             else:
                 iname_stdname[stdname] = stdname
@@ -677,7 +668,6 @@ class S2N_SCHEMA:
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
             'api_url': '{}:api_url'.format(s2n),
-            
             'status': '{}:status'.format(s2n),
             'scientificName': '{}:scientific_name'.format(s2n),
             'canonicalName': '{}:canonical_name'.format(s2n), 
@@ -700,7 +690,6 @@ class S2N_SCHEMA:
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
             'api_url': '{}:api_url'.format(s2n),
-            
             'usage': '{}:status'.format(s2n),
             'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
             'nameWOInd': '{}:canonical_name'.format(s2n), 

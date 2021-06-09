@@ -149,7 +149,6 @@ class GbifAPI(APIQuery):
         newrec = {}
         # Fieldname modification from no namespace to S2N
         issue_field = 'issues'
-        orignames = ['issues']
         to_list_fields = ['associatedSequences', 'associatedReferences']
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
         issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
@@ -165,21 +164,18 @@ class GbifAPI(APIQuery):
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[newfldname] = elts
-                # standardize name
-                elif fldname in orignames:
+                # expand fields to include code and definition
+                elif fldname == issue_field:
                     stdname = cls.OCCURRENCE_MAP[fldname]
-                    # expand fields to include code and definition
-                    if fldname == issue_field:
-                        issue_dict = {}
-                        issue_codes = val.split('|')
-                        for tmp in issue_codes:
-                            code = tmp.strip()
-                            # return a dictionary with code: description
-                            try:
-                                issue_dict[code] = issue_map[code]
-                            except:
-                                issue_dict[code] = 'No description for {} provided'.format(code)
-                        newrec[stdname] =  issue_dict
+                    issue_dict = {}
+                    for tmp in val:
+                        code = tmp.strip()
+                        # return a dictionary with code: description
+                        try:
+                            issue_dict[code] = issue_map[code]
+                        except:
+                            issue_dict[code] = 'No description for {} provided'.format(code)
+                    newrec[stdname] =  issue_dict
                 # Modify int date elements to string (to match iDigBio)
                 elif fldname in to_str_fields:
                     newrec[fldname] = str(val)
