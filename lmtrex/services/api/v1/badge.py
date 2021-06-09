@@ -41,7 +41,7 @@ class BadgeSvc(_S2nService):
     # ...............................................
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, provider=None, icon_status=None, **kwargs):
+    def GET(self, provider=None, icon_status=None, stream=True, **kwargs):
         """Get one icon to indicate a provider in a GUI
         
         Args:
@@ -50,6 +50,8 @@ class BadgeSvc(_S2nService):
                 or 'all', the first provider in the default list of providers will be returned.
             icon_status: string indicating which version of the icon to return, valid options are:
                 lmtrex.common.lmconstants.ICON_OPTIONS (active, inactive, hover) 
+            stream: If true, return a generator for streaming output, else return
+                file contents
             kwargs: any additional keyword arguments are ignored
 
         Return:
@@ -66,7 +68,8 @@ class BadgeSvc(_S2nService):
             valid_providers = self.get_providers()
             valid_req_providers, _ = self.get_valid_requested_providers(
                 usr_params['provider'], valid_providers)
-            provider = valid_req_providers.pop()
+            if len(valid_req_providers) > 0:
+                provider = valid_req_providers.pop()
             
             # What to query: address one occurrence record, with optional filters
             icon_status = usr_params['icon_status']
@@ -76,11 +79,16 @@ class BadgeSvc(_S2nService):
                 traceback = get_traceback()
                 return traceback
             else:
-                # cherrypy.response.headers['Content-Type'] = ICON_CONTENT
-                # cherrypy.response.headers['Content-Disposition'] = 'attachment; filename={}'.format(icon_fname)
-                cherrypy.lib.static.serve_file(icon_fname, 'application/x-download',
-                                 'attachment', os.path.basename(icon_fname))
-            return 
+                cherrypy.response.headers[
+                    'Content-Disposition'] = 'attachment; filename="{}"'.format(icon_fname)
+                cherrypy.response.headers['Content-Type'] = ICON_CONTENT
+            
+                # cherrypy.lib.static.serve_file(icon_fname, 'application/x-download',
+                #                  'attachment', os.path.basename(icon_fname))
+                # # If we should stream the output, use the CherryPy file generator
+                # if stream:
+                #     return cherrypy.lib.file_generator(content_flo)
+                return icon_fname
 
         # return retval
     
