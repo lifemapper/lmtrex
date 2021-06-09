@@ -1,4 +1,5 @@
 import cherrypy
+from io import BytesIO
 import os
 
 from lmtrex.common.lmconstants import (ServiceProvider, APIService, ICON_OPTIONS, ICON_CONTENT)
@@ -62,35 +63,38 @@ class BadgeSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             return traceback
-        else:
-            # Who to query
-            # TODO: currently only allow one for now, default is first one in list
-            valid_providers = self.get_providers()
-            valid_req_providers, _ = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-            if len(valid_req_providers) > 0:
-                provider = valid_req_providers.pop()
-            
-            # What to query: address one occurrence record, with optional filters
-            icon_status = usr_params['icon_status']
-            try:
-                icon_fname = self.get_icon(provider, icon_status)
-            except Exception as e:
-                traceback = get_traceback()
-                return traceback
-            else:
-                cherrypy.response.headers[
-                    'Content-Disposition'] = 'attachment; filename="{}"'.format(icon_fname)
-                cherrypy.response.headers['Content-Type'] = ICON_CONTENT
-            
-                # cherrypy.lib.static.serve_file(icon_fname, 'application/x-download',
-                #                  'attachment', os.path.basename(icon_fname))
-                # # If we should stream the output, use the CherryPy file generator
-                # if stream:
-                #     return cherrypy.lib.file_generator(content_flo)
-                return icon_fname
+        
+        # Who to query
+        # TODO: currently only allow one for now, default is first one in list
+        valid_providers = self.get_providers()
+        valid_req_providers, _ = self.get_valid_requested_providers(
+            usr_params['provider'], valid_providers)
+        if len(valid_req_providers) > 0:
+            provider = valid_req_providers.pop()
+        
+        # Find file
+        icon_status = usr_params['icon_status']
+        try:
+            icon_fname = self.get_icon(provider, icon_status)
+        except Exception as e:
+            traceback = get_traceback()
+            return traceback
 
-        # return retval
+        ifile = open(icon_fname, mode='r')
+        ret_file_name = os.path.basename(icon_fname)
+        cherrypy.response.headers[
+            'Content-Disposition'] = 'attachment; filename="{}"'.format(ret_file_name)
+        cherrypy.response.headers['Content-Type'] = ICON_CONTENT
+        
+        if stream:
+            return cherrypy.lib.file_generator(ifile)
+        else:
+            icontent = ifile.read()
+            ifile.close()
+            return icontent
+    
+        # cherrypy.lib.static.serve_file(icon_fname, 'application/x-download',
+        #                  'attachment', os.path.basename(icon_fname))
     
 
 # .............................................................................
