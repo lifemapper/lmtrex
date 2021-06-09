@@ -28,11 +28,15 @@ class MorphoSourceAPI(APIQuery):
         for fldname, val in rec.items():
             # Leave out fields without value
             if fldname in cls.OCCURRENCE_MAP.keys():
-                # Also use DWC and local ID fields to construct URLs
+                # Use DWC field to also construct api URL
                 if fldname == MorphoSource.DWC_ID_FIELD:
-                    newrec['api_url'] = MorphoSource.get_occurrence_data(val)
+                    url_stdfld = cls.OCCURRENCE_MAP['api_url']
+                    newrec[url_stdfld] = MorphoSource.get_occurrence_data(val)
+                # Use local ID field to also construct webpage url
                 elif fldname == MorphoSource.LOCAL_ID_FIELD:
-                    newrec['view_url'] = MorphoSource.get_occurrence_view(val)
+                    url_stdfld = cls.OCCURRENCE_MAP['view_url']
+                    newrec[url_stdfld] = MorphoSource.get_occurrence_view(val)
+                    
                 stdfld = cls.OCCURRENCE_MAP[fldname]
                 newrec[stdfld] =  val
         return newrec
