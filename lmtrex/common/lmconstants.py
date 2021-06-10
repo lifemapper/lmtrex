@@ -365,6 +365,8 @@ class Lifemapper:
 class MorphoSource:
     REST_URL = 'https://ms1.morphosource.org/api/v1'
     VIEW_URL = 'https://www.morphosource.org/concern/biological_specimens'
+    NEW_VIEW_URL = 'https://www.morphosource.org/catalog/objects'
+    NEW_API_URL = 'https://www.morphosource.org/catalog/objects.json'
     # FROZEN_URL = 'https://ea-boyerlab-morphosource-01.oit.duke.edu/api/v1'
     DWC_ID_FIELD = 'specimen.occurrence_id'
     LOCAL_ID_FIELD = 'specimen.specimen_id'
