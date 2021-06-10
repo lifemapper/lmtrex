@@ -41,7 +41,7 @@ class BadgeSvc(_S2nService):
 
     # ...............................................
     # ...............................................
-    @cherrypy.tools.json_out()
+    # @cherrypy.tools.json_out()
     def GET(self, provider=None, icon_status=None, stream=True, **kwargs):
         """Get one icon to indicate a provider in a GUI
         
@@ -62,24 +62,32 @@ class BadgeSvc(_S2nService):
             usr_params = self._standardize_params(provider=provider, icon_status=icon_status)
         except Exception as e:
             traceback = get_traceback()
-            return traceback
+            output = self.get_failure(query_term='provider={}, icon_status={}'.format(
+                provider, icon_status), errors=[traceback])
+            return output.response
         
         # Who to query
-        # TODO: currently only allow one for now, default is first one in list
         valid_providers = self.get_providers()
         valid_req_providers, _ = self.get_valid_requested_providers(
             usr_params['provider'], valid_providers)
-        if len(valid_req_providers) > 0:
-            provider = valid_req_providers.pop()
         
-        # Find file
+        # Without a provider, send online status
+        if len(valid_req_providers) == 0:
+            output = self._show_online(providers=valid_req_providers)
+            return output.response
+        
+        # Only first provider is used
+        provider = valid_req_providers.pop()
         icon_status = usr_params['icon_status']
         try:
             icon_fname = self.get_icon(provider, icon_status)
         except Exception as e:
             traceback = get_traceback()
-            return traceback
+            output = self.get_failure(query_term='provider={}, icon_status={}'.format(
+                provider, icon_status), errors=[traceback])
+            return output.response
 
+        # Whew
         ifile = open(icon_fname, mode='r')
         ret_file_name = os.path.basename(icon_fname)
         cherrypy.response.headers[

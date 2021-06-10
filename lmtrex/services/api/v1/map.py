@@ -149,3 +149,8 @@ if __name__ == '__main__':
             for prov in svc.get_providers():
                 out = svc.GET(namestr=namestr, scenariocode=scodes, provider=prov)
                 print_s2n_output(out, do_print_rec=True)
+
+"""
+http://broker-dev.spcoco.org/api/v1/map/?provider=lm&namestr=test
+
+"""
