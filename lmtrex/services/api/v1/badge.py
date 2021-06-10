@@ -41,7 +41,6 @@ class BadgeSvc(_S2nService):
 
     # ...............................................
     # ...............................................
-    # @cherrypy.tools.json_out()
     def GET(self, provider=None, icon_status=None, stream=True, **kwargs):
         """Get one icon to indicate a provider in a GUI
         
@@ -88,10 +87,10 @@ class BadgeSvc(_S2nService):
             return output.response
 
         # Whew
-        ifile = open(icon_fname, mode='r')
-        ret_file_name = os.path.basename(icon_fname)
-        cherrypy.response.headers[
-            'Content-Disposition'] = 'attachment; filename="{}"'.format(ret_file_name)
+        ifile = open(icon_fname, mode='rb')
+        # ret_file_name = os.path.basename(icon_fname)
+        # cherrypy.response.headers[
+        #     'Content-Disposition'] = 'attachment; filename="{}"'.format(ret_file_name)
         cherrypy.response.headers['Content-Type'] = ICON_CONTENT
         
         if stream:
