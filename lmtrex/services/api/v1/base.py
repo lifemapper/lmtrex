@@ -218,17 +218,11 @@ class _S2nService:
             if provided_val not in options:
                 valid_options = options
                 usr_val = default_val
-                
+            
         # Cast values to correct type. Failed conversions return default value
-        if isinstance(type_val, bool):                
-            if provided_val in (0, '0', 'n', 'no', 'f', 'false'):
-                usr_val = False
-            elif provided_val in (1, '1', 'y', 'yes', 't', 'true'):
-                usr_val = True
-            else:
-                valid_options = (True, False)
-                usr_val = default_val
-                
+        if isinstance(type_val, str) and not options:                
+            usr_val = str(provided_val)
+
         elif isinstance(type_val, float):
             try:             
                 usr_val = float(provided_val)
@@ -240,9 +234,15 @@ class _S2nService:
                 usr_val = int(provided_val)
             except:
                 usr_val = default_val
-                
-        elif isinstance(type_val, str):                
-            usr_val = str(provided_val)
+
+        elif isinstance(type_val, bool):                
+            if provided_val in (0, '0', 'n', 'no', 'f', 'false'):
+                usr_val = False
+            elif provided_val in (1, '1', 'y', 'yes', 't', 'true'):
+                usr_val = True
+            else:
+                valid_options = (True, False)
+                usr_val = default_val                    
                 
         return usr_val, valid_options
 

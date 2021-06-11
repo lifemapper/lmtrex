@@ -100,8 +100,9 @@ if __name__ == '__main__':
     svc = BadgeSvc()
     # Get all providers
     valid_providers = svc.get_valid_providers()
-    for pr in valid_providers:
-        for stat in VALID_ICON_OPTIONS:
-            retval = svc.GET(provider=pr, icon_status=stat)
-            print(retval)
+    retval = svc.GET(provider='gbif', icon_status='activex')
+    # for pr in valid_providers:
+    #     for stat in VALID_ICON_OPTIONS:
+    #         retval = svc.GET(provider=pr, icon_status=stat)
+    #         print(retval)
     
