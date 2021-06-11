@@ -215,7 +215,9 @@ class _S2nService:
             options = None
         else:
             # Invalid option returns default value
-            if provided_val not in options:
+            if provided_val in options:
+                usr_val = provided_val
+            else:
                 valid_options = options
                 usr_val = default_val
             
