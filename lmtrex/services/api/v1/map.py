@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    ServiceProvider, APIService, Lifemapper, TST_VALUES)
+    ServiceProvider, APIService, APIServiceNew, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -12,6 +12,7 @@ from lmtrex.tools.utils import get_traceback
 @cherrypy.expose
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
+    PARAMETER_KEYS = APIServiceNew.Map['params']
     
     # ...............................................
     def _match_gbif_names(self, namestr, is_accepted):
@@ -104,6 +105,52 @@ class MapSvc(_S2nService):
         """
         # No filter_params defined for Map service yet
         try:
+            good_params, info_valid_options = self._standardize_params_new(
+                namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
+                is_accepted=is_accepted, scenariocode=scenariocode, color=color)
+        except Exception as e:
+            traceback = get_traceback()
+            output = self.get_failure(query_term=namestr, errors=[traceback])
+        else:            
+            # What to query
+            namestr = good_params['namestr']
+            try:
+                if namestr is None:
+                    output = self._show_online(providers=good_params['valid_providers'])
+                else:
+                    # Query
+                    output = self.get_records(
+                        namestr, good_params['provider'], good_params['is_accepted'], 
+                        good_params['scenariocode'], good_params['color'])
+                    
+                    # Add message on invalid parameters to output
+                    for key, options in info_valid_options.items():
+                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
+                        output.append_value(S2nKey.ERRORS, msg)
+                        
+            except Exception as e:
+                output = self.get_failure(query_term=namestr, errors=[str(e)])
+        return output.response
+
+    # ...............................................
+    @cherrypy.tools.json_out()
+    def GETOLD(self, namestr=None, provider=None, gbif_parse=True, is_accepted=True, 
+            scenariocode=None, color=None, **kwargs):
+        """Get one or more taxon records for a scientific name string from each
+        available name service.
+        
+        Args:
+            namestr: a scientific name
+            gbif_parse: flag to indicate whether to first use the GBIF parser 
+                to parse a scientific name into canonical name 
+        Return:
+            a dictionary with keys for each service queried.  Values contain 
+            lmtrex.services.api.v1.S2nOutput object with records as a 
+            list of dictionaries of Lifemapper records corresponding to 
+            maps with URLs and their layers in the Lifemapper archive
+        """
+        # No filter_params defined for Map service yet
+        try:
             usr_params = self._standardize_params(
                 namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                 is_accepted=is_accepted, scenariocode=scenariocode, color=color)
@@ -134,7 +181,6 @@ class MapSvc(_S2nService):
             except Exception as e:
                 output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
-
 
 # .............................................................................
 if __name__ == '__main__':

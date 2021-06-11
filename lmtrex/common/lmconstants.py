@@ -138,6 +138,32 @@ class APIService:
     Badge = 'badge'
 
 # .............................................................................
+class APIServiceNew:
+    Root = {'endpoint': '/api/v1', 'params': None}
+    # Service types
+    Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only']}
+    # TODO: Consider an Extension service for Digital Object Architecture
+    SpecimenExtension = {'endpoint': 'occext', 'params': None}
+    Name = {
+        'endpoint': 'name', 
+        'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom']}
+    Map = {
+        'endpoint': 'map', 
+        'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color']}
+    Heartbeat = {'endpoint': 'heartbeat', 'params': None}
+    # Specify guid resolver
+    Resolve = {
+        'endpoint': 'resolve', 
+        'params': ['provider', 'occid']}
+    # Direct access to syftorium upload
+    Address = {'endpoint': 'address', 'params': None}
+    # Icons for service providers
+    Badge = {
+        'endpoint': 'badge', 
+        'params': ['provider', 'icon_status']}
+            
+
+# .............................................................................
 class ServiceProvider:
     GBIF = {
         S2nKey.NAME: 'GBIF', S2nKey.PARAM: 'gbif', S2nKey.SERVICES: [
@@ -369,11 +395,12 @@ class Lifemapper:
 
 BrokerParameters = {
     'provider': {
-        'type': '', 'default': None, 'option': [
+        'type': '', 'default': None, 'options': [
             ServiceProvider.GBIF[S2nKey.PARAM], ServiceProvider.iDigBio[S2nKey.PARAM],
             ServiceProvider.ITISSolr[S2nKey.PARAM], ServiceProvider.Lifemapper[S2nKey.PARAM], 
             ServiceProvider.MorphoSource[S2nKey.PARAM], ServiceProvider.Specify[S2nKey.PARAM]]
         },
+    'namestr': {'type': '', 'default': None},
     'is_accepted': {'type': False, 'default': False},
     'gbif_parse': {'type': False, 'default': False},
     'gbif_count': {'type': False, 'default': False},

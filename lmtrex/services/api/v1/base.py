@@ -1,7 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
+    APIService, APIServiceNew, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
     VALID_ICON_OPTIONS)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
@@ -303,24 +303,26 @@ class _S2nService:
     @classmethod
     def get_valid_requested_providers_new(cls, user_provider_string, valid_providers):
         valid_requested_providers = set()
-        invalid_providers = set()
+        contains_invalid_option = False
         
         if user_provider_string:
             user_provider_string = user_provider_string.lower()
             tmpprovs = user_provider_string.split(',')
             user_provs = set([tp.strip() for tp in tmpprovs])
+            invalid_providers = set()
             for prov in user_provs:
                 if prov in valid_providers:
                     valid_requested_providers.add(prov)
                 else:
-                    invalid_providers.add(prov)
+                    contains_invalid_option = True
 
         if not valid_requested_providers: 
             valid_requested_providers = valid_providers
-        return valid_requested_providers, invalid_providers
+            
+        return valid_requested_providers, contains_invalid_option
 
     # ...............................................
-    def _process_params_new(self, user_kwargs):
+    def _process_params_new(self, user_kwargs, valid_providers):
         """
         Modify all user provided key/value pairs to change keys to lower case, 
         and change values to the expected type (string, int, float, boolean).
@@ -336,19 +338,28 @@ class _S2nService:
         Todo:
             Do we need not_in_valid_options for error message?
         """
-        not_in_valid_options = {}
-        valid_providers = user_kwargs['valid_providers']
+        good_params = {}
+        info_valid_options = {}
+        
         # Allows None or comma-delimited list
-        valid_requested_providers, invalid_providers = self.get_valid_requested_providers_new(
+        valid_requested_providers, contains_invalid_option = self.get_valid_requested_providers_new(
             user_kwargs['provider'], valid_providers)
+        if contains_invalid_option:
+            info_valid_options['provider'] = valid_providers
 
-        good_params = {'invalid_providers': invalid_providers}
         # Correct all parameter keys/values present
-        for key, val in user_kwargs.items():
+        for key in self.PARAMETER_KEYS:
+            val = user_kwargs[key]
+        # for key, val in user_kwargs.items():
+            # Add valid providers to parameters
             if key == 'provider':
                 good_params[key] = valid_requested_providers
-            elif key == 'valid_providers':
-                good_params[key] = val
+                good_params['valid_providers'] = valid_providers
+                
+            # Do not edit namestr, maintain capitalization
+            elif key == 'namestr':
+                good_params['namestr'] = val
+                
             elif val is not None:
                 # Allows None or comma-delimited list
                 if key == 'scenariocode':
@@ -362,24 +373,26 @@ class _S2nService:
                     if scens:
                         good_params[key] = scens
                     else:
-                        not_in_valid_options[key] = BrokerParameters[key]['options']
+                        info_valid_options[key] = BrokerParameters[key]['options']
                         good_params[key] = BrokerParameters[key]['options']
                 # All other parameters have single value
                 else:
                     usr_val, valid_options = self._fix_type_new(key, val)
-                    # TODO: Do we need this not_in_valid_options to correct user?
-                    if valid_options is not None:
-                        not_in_valid_options[key] = not_in_valid_options
+                    # TODO: Do we need this info_valid_options to correct user?
+                    if valid_options is not None and val not in valid_options:
+                        info_valid_options[key] = valid_options
                     good_params[key] = usr_val
                 
         # Add defaults for missing parameters
-        for dkey, param_meta in BrokerParameters.items():
+        for key in self.PARAMETER_KEYS:
+            param_meta = BrokerParameters[key]
+        # for dkey, param_meta in BrokerParameters.items():
             try:
-                val = good_params[dkey]
+                val = good_params[key]
             except:
-                good_params[dkey] = param_meta['default']
+                good_params[key] = param_meta['default']
             
-        return good_params
+        return good_params, info_valid_options
 
     # ...............................................
     def _standardize_params(
@@ -553,10 +566,9 @@ class _S2nService:
             filter_params is present to distinguish between providers for occ service by 
             occurrence_id or by dataset_id.
         """
-        all_valid_providers = self.get_valid_providers(filter_params=filter_params)
         user_kwargs = {
-            'valid_providers': all_valid_providers,
             'provider': provider,
+            'namestr': namestr,
             'is_accepted': is_accepted, 
             'gbif_parse': gbif_parse, 
             'gbif_count': gbif_count, 
@@ -579,20 +591,24 @@ class _S2nService:
             'width': width, 
             'icon_status': icon_status}
         
-        usr_params = self._process_params_new(user_kwargs)
-        # Do not edit namestr, maintain capitalization
-        usr_params['namestr'] = namestr
-        # Remove 'gbif_parse' and itis_match flags
-        gbif_parse = usr_params.pop('gbif_parse')
-        itis_match = usr_params.pop('itis_match')
+        valid_providers = self.get_valid_providers(filter_params=filter_params)
+        usr_params, info_valid_options = self._process_params_new(user_kwargs, valid_providers)
+
+        # Remove gbif_parse and itis_match flags
+        gbif_parse = itis_match = False
+        try:
+            gbif_parse = usr_params.pop('gbif_parse')
+        except:
+            pass
+        try:
+            itis_match = usr_params.pop('itis_match')
+        except:
+            pass
         # Replace namestr with GBIF-parsed namestr
-        if namestr:
-            if gbif_parse: 
-                usr_params['namestr'] = self.parse_name_with_gbif(namestr)
-            elif itis_match:
-                usr_params['namestr'] = self.parse_name_with_gbif(namestr)
+        if namestr and (gbif_parse or itis_match):
+            usr_params['namestr'] = self.parse_name_with_gbif(namestr)
                 
-        return usr_params
+        return usr_params, info_valid_options
 
     # ..........................
     @staticmethod

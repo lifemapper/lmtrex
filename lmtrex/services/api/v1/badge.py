@@ -1,11 +1,10 @@
 import cherrypy
 import os
 
-from lmtrex.common.lmconstants import (ServiceProvider, APIService, VALID_ICON_OPTIONS, ICON_CONTENT)
+from lmtrex.common.lmconstants import (
+    IMG_PATH, ServiceProvider, APIService, APIServiceNew, ICON_CONTENT)
 
 from lmtrex.tools.utils import get_traceback
-
-from lmtrex.common.lmconstants import IMG_PATH
 
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import S2nKey
@@ -15,6 +14,7 @@ from lmtrex.services.api.v1.s2n_type import S2nKey
 # @cherrypy.popargs('path_occ_id')
 class BadgeSvc(_S2nService):
     SERVICE_TYPE = APIService.Badge
+    PARAMETER_KEYS = APIServiceNew.Badge['params']
 
     # ...............................................
     def get_icon(self, provider, icon_status):
@@ -57,7 +57,8 @@ class BadgeSvc(_S2nService):
             a file containing the requested icon
         """
         try:
-            usr_params = self._standardize_params_new(provider=provider, icon_status=icon_status)
+            usr_params, info_valid_options = self._standardize_params_new(
+                provider=provider, icon_status=icon_status)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term='provider={}, icon_status={}'.format(
