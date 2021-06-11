@@ -1,8 +1,7 @@
 import cherrypy
-from io import BytesIO
 import os
 
-from lmtrex.common.lmconstants import (ServiceProvider, APIService, ICON_OPTIONS, ICON_CONTENT)
+from lmtrex.common.lmconstants import (ServiceProvider, APIService, VALID_ICON_OPTIONS, ICON_CONTENT)
 
 from lmtrex.tools.utils import get_traceback
 
@@ -49,7 +48,7 @@ class BadgeSvc(_S2nService):
                 for only the first provider will be returned.  If the string is not present
                 or 'all', the first provider in the default list of providers will be returned.
             icon_status: string indicating which version of the icon to return, valid options are:
-                lmtrex.common.lmconstants.ICON_OPTIONS (active, inactive, hover) 
+                lmtrex.common.lmconstants.VALID_ICON_OPTIONS (active, inactive, hover) 
             stream: If true, return a generator for streaming output, else return
                 file contents
             kwargs: any additional keyword arguments are ignored
@@ -58,25 +57,20 @@ class BadgeSvc(_S2nService):
             a file containing the requested icon
         """
         try:
-            usr_params = self._standardize_params(provider=provider, icon_status=icon_status)
+            usr_params = self._standardize_params_new(provider=provider, icon_status=icon_status)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term='provider={}, icon_status={}'.format(
                 provider, icon_status), errors=[traceback])
             return output.response
         
-        # Who to query
-        valid_providers = self.get_providers()
-        valid_req_providers, _ = self.get_valid_requested_providers(
-            usr_params['provider'], valid_providers)
-        
         # Without a provider, send online status
-        if len(valid_req_providers) == 0:
-            output = self._show_online(providers=valid_req_providers)
+        if len(usr_params['provider']) == 0:
+            output = self._show_online(providers=valid_providers)
             return output.response
-        
+
         # Only first provider is used
-        provider = valid_req_providers.pop()
+        provider = usr_params['provider'].pop()
         icon_status = usr_params['icon_status']
         try:
             icon_fname = self.get_icon(provider, icon_status)
@@ -100,16 +94,14 @@ class BadgeSvc(_S2nService):
             ifile.close()
             return icontent
     
-        # cherrypy.lib.static.serve_file(icon_fname, 'application/x-download',
-        #                  'attachment', os.path.basename(icon_fname))
-    
 
 # .............................................................................
 if __name__ == '__main__':
     svc = BadgeSvc()
     # Get all providers
-    valid_providers = svc.get_providers()
+    valid_providers = svc.get_valid_providers()
     for pr in valid_providers:
-        for stat in ICON_OPTIONS:
-            svc.GET(provider=pr, icon_status=stat)
+        for stat in VALID_ICON_OPTIONS:
+            retval = svc.GET(provider=pr, icon_status=stat)
+            print(retval)
     

@@ -18,9 +18,13 @@ SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 DATA_DUMP_DELIMITER = '\t'
 GBIF_MISSING_KEY = 'unmatched_gbif_ids'
 
-ICON_OPTIONS = ('active', 'inactive', 'hover')
+# VALID broker parameter options, must be list
+VALID_MAP_REQUESTS = ['getmap', 'getlegendgraphic']
+VALID_ICON_OPTIONS = ['active', 'inactive', 'hover']
+ICON_DIR='lmtrex/static/img'
+
 IMG_PATH = '/var/www'
-ICON_CONTENT = "image/png"
+ICON_CONTENT = 'image/png'
     
 # .............................................................................
 class DWC:
@@ -57,7 +61,6 @@ class DWCA:
 JSON_HEADERS = {'Content-Type': 'application/json'}
 CHERRYPY_CONFIG_FILE = os.path.join(APP_PATH, CONFIG_DIR, 'cherrypy.conf')
 
-VALID_MAP_REQUESTS = ['getmap', 'getlegendgraphic']
 
 # .............................................................................
 class TST_VALUES:
@@ -134,7 +137,6 @@ class APIService:
     # Icons for service providers
     Badge = 'badge'
 
-ICON_DIR='lmtrex/static/img'
 # .............................................................................
 class ServiceProvider:
     GBIF = {
@@ -324,7 +326,7 @@ class BisonQuery:
     # Common Other Filters
     FILTERS = {'wt': 'json',
                'json.nl': 'arrarr'}
-
+    
 # ......................................................
 class Lifemapper:
     URL = 'http://client.lifemapper.org/api/v2'
@@ -347,6 +349,10 @@ class Lifemapper:
     PROJECTION_METADATA_KEYS = [
         'modelScenario', 'projectionScenario', 'algorithm', 'spatialRaster']
     COMMANDS = ['count']
+    # VALID broker parameter options must be list
+    VALID_MAPLAYER_TYPES = ['occ', 'prj', 'bmng']
+    VALID_MAP_FORMAT = ['image/png', 'image/gif', 'image/jpeg', 'image/tiff', 'image/x-aaigrid']
+    VALID_SRS = ['epsg:4326', 'epsg:3857', 'AUTO:42003']
     VALID_COLORS = [
         'red', 'gray', 'green', 'blue', 'safe', 'pretty', 'yellow', 
         'fuschia', 'aqua', 'bluered', 'bluegreen', 'greenred']
@@ -360,6 +366,58 @@ class Lifemapper:
         valid_scenario_codes.extend(Lifemapper.PAST_SCENARIO_CODES)
         valid_scenario_codes.extend(Lifemapper.FUTURE_SCENARIO_CODES)
         return valid_scenario_codes
+
+BrokerParameters = {
+    'provider': {
+        'type': '', 'default': None, 'option': [
+            ServiceProvider.GBIF[S2nKey.PARAM], ServiceProvider.iDigBio[S2nKey.PARAM],
+            ServiceProvider.ITISSolr[S2nKey.PARAM], ServiceProvider.Lifemapper[S2nKey.PARAM], 
+            ServiceProvider.MorphoSource[S2nKey.PARAM], ServiceProvider.Specify[S2nKey.PARAM]]
+        },
+    'is_accepted': {'type': False, 'default': False},
+    'gbif_parse': {'type': False, 'default': False},
+    'gbif_count': {'type': False, 'default': False},
+    'itis_match': {'type': False, 'default': False},
+    'kingdom': {'type': '', 'default': None},
+    'occid': {'type': '', 'default': None},
+    'dataset_key': {'type': '', 'default': None},
+    'count_only': {'type': False, 'default': False},
+    'url': {'type': '', 'default': None},
+    'scenariocode': {
+        'type': '', 
+        'options': Lifemapper.valid_scenario_codes(), 
+        'default': Lifemapper.valid_scenario_codes()[0]},
+    'url': {'type': '', 'default': None},
+    'bbox': {'type': '', 'default': '-180,-90,180,90'},
+    'color': {
+        'type': '', 
+        'options': Lifemapper.VALID_COLORS, 
+        'default': Lifemapper.VALID_COLORS[0]},
+    'exceptions': {'type': '', 'default': None},
+    'height': {'type': 300, 'default': 300},
+    'width': {'type': 600, 'default': 600},
+    'layers': {
+        'type': '', 
+        'options': Lifemapper.VALID_MAPLAYER_TYPES, 
+        'default': Lifemapper.VALID_MAPLAYER_TYPES[0]},
+    'request': {
+        'type': '', 
+        'options': VALID_MAP_REQUESTS, 
+        'default': VALID_MAP_REQUESTS[0]},
+    'format': {
+        'type': '', 
+        'options': Lifemapper.VALID_MAP_FORMAT,
+        'default': Lifemapper.VALID_MAP_FORMAT[0]},
+    'srs': {
+        'type': '', 
+        'options': Lifemapper.VALID_SRS,
+        'default': Lifemapper.VALID_SRS[0]},
+    'transparent': {'type': True, 'default': True},
+    'icon_status': {
+        'type': '', 
+        'options': VALID_ICON_OPTIONS, 
+        'default': VALID_ICON_OPTIONS[0]}
+    }
 
 # ......................................................
 class MorphoSource:

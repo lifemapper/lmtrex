@@ -1,7 +1,8 @@
 import typing
 
 from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, ICON_OPTIONS)
+    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
+    VALID_ICON_OPTIONS)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
@@ -15,6 +16,18 @@ class _S2nService:
     # ...............................................
     @classmethod
     def get_providers(cls, filter_params=None):
+        """ Return a set of strings indicating all providers valid for this service. """
+        provnames = set()
+        # Ignore as-yet undefined filter_params
+        for p in ServiceProvider.all():
+            if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
+                provnames.add(p[S2nKey.PARAM])
+        return provnames
+
+    # ...............................................
+    @classmethod
+    def get_valid_providers(cls, filter_params=None):
+        """ Return a set of strings indicating all providers valid for this service. """
         provnames = set()
         # Ignore as-yet undefined filter_params
         for p in ServiceProvider.all():
@@ -69,6 +82,25 @@ class _S2nService:
             if len(valid_req_providers) == 0:
                 valid_req_providers = valid_providers
         return valid_req_providers, invalid_providers
+
+    # # .............................................................................
+    # @classmethod
+    # def get_valid_requested_providers_new(cls, requested_providers, valid_providers):
+    #     invalid_providers = set()
+    #     # valid_providers = cls.get_valid_providers(filter_params=filter_params)
+    #
+    #     if requested_providers is None: 
+    #         valid_req_providers = valid_providers
+    #     else:
+    #         # Who to query
+    #         req_providers = set([prov.lower() for prov in requested_providers])
+    #         # Note invalid providers
+    #         invalid_providers = req_providers.difference(valid_providers)
+    #         valid_req_providers = valid_providers.intersection(req_providers)
+    #         # No providers --> all providers
+    #         if len(valid_req_providers) == 0:
+    #             valid_req_providers = valid_providers
+    #     return valid_req_providers, invalid_providers
 
     # .............................................................................
     @classmethod
@@ -159,6 +191,62 @@ class _S2nService:
         return usr_val
 
     # ...............................................
+    def _fix_type_new(self, key, provided_val):
+        """Correct parameter by 
+            * casting to correct type 
+            * if there are limited options, make sure it valid.
+           If the parameter is invalid (type or value), return the default.
+        """
+        valid_options = None
+        if provided_val is None:
+            return None
+        # all strings are lower case
+        try:
+            provided_val = provided_val.lower()
+        except:
+            pass
+        
+        default_val = BrokerParameters[key]['default']
+        type_val = BrokerParameters[key]['type']
+        # If restricted options, check
+        try:
+            options = BrokerParameters[key]['options']
+        except:
+            options = None
+        else:
+            # Invalid option returns default value
+            if provided_val not in options:
+                valid_options = options
+                usr_val = default_val
+                
+        # Cast values to correct type. Failed conversions return default value
+        if isinstance(type_val, bool):                
+            if provided_val in (0, '0', 'n', 'no', 'f', 'false'):
+                usr_val = False
+            elif provided_val in (1, '1', 'y', 'yes', 't', 'true'):
+                usr_val = True
+            else:
+                valid_options = (True, False)
+                usr_val = default_val
+                
+        elif isinstance(type_val, float):
+            try:             
+                usr_val = float(provided_val)
+            except:
+                usr_val = default_val
+                
+        elif isinstance(type_val, int):                
+            try:             
+                usr_val = int(provided_val)
+            except:
+                usr_val = default_val
+                
+        elif isinstance(type_val, str):                
+            usr_val = str(provided_val)
+                
+        return usr_val, valid_options
+
+    # ...............................................
     def _get_def_val(self, default_val):
         # Sequences containing None have that as default value, or first value
         if isinstance(default_val, list) or isinstance(default_val, tuple):
@@ -199,18 +287,101 @@ class _S2nService:
                 pass
             else:
                 usr_val = self._fix_type(provided_val, default_val)
-                good_params[key] = usr_val
+                if usr_val is not None:
+                    good_params[key] = usr_val
                 
         # Add missing defaults
         for dkey, dval in kwarg_defaults.items():
             if good_params[dkey] is None:
                 good_params[dkey] = self._get_def_val(dval)
+            
+        return good_params
+
+    # .............................................................................
+    @classmethod
+    def get_valid_requested_providers_new(cls, user_provider_string, valid_providers):
+        valid_requested_providers = set()
+        invalid_providers = set()
+        
+        if user_provider_string:
+            user_provider_string = user_provider_string.lower()
+            tmpprovs = user_provider_string.split(',')
+            user_provs = set([tp.strip() for tp in tmpprovs])
+            for prov in user_provs:
+                if prov in valid_providers:
+                    valid_requested_providers.add(prov)
+                else:
+                    invalid_providers.add(prov)
+
+        if not valid_requested_providers: 
+            valid_requested_providers = valid_providers
+        return valid_requested_providers, invalid_providers
+
+    # ...............................................
+    def _process_params_new(self, user_kwargs):
+        """
+        Modify all user provided key/value pairs to change keys to lower case, 
+        and change values to the expected type (string, int, float, boolean).
+        
+        Args:
+            user_kwargs: dictionary of keywords and values sent by the user for 
+                the current service.
+                
+        Note:
+            A list of valid values for a keyword can include None as a default 
+                if user-provided value is invalid
+                
+        Todo:
+            Do we need not_in_valid_options for error message?
+        """
+        not_in_valid_options = {}
+        valid_providers = user_kwargs['valid_providers']
+        # Allows None or comma-delimited list
+        valid_requested_providers, invalid_providers = self.get_valid_requested_providers_new(
+            user_kwargs['provider'], valid_providers)
+
+        good_params = {'invalid_providers': invalid_providers}
+        # Correct all parameter keys/values present
+        for key, val in user_kwargs.items():
+            if key == 'provider':
+                good_params[key] = valid_requested_providers
+            elif key == 'valid_providers':
+                good_params[key] = val
+            elif val is not None:
+                # Allows None or comma-delimited list
+                if key == 'scenariocode':
+                    scens = set()
+                    val = val.lower() 
+                    tmpscens = val.split(',') 
+                    for ts in tmpscens:
+                        scen = ts.strip()
+                        if scen in BrokerParameters[key]['options']:
+                            scens.add(scen)
+                    if scens:
+                        good_params[key] = scens
+                    else:
+                        not_in_valid_options[key] = BrokerParameters[key]['options']
+                        good_params[key] = BrokerParameters[key]['options']
+                # All other parameters have single value
+                else:
+                    usr_val, valid_options = self._fix_type_new(key, val)
+                    # TODO: Do we need this not_in_valid_options to correct user?
+                    if valid_options is not None:
+                        not_in_valid_options[key] = not_in_valid_options
+                    good_params[key] = usr_val
+                
+        # Add defaults for missing parameters
+        for dkey, param_meta in BrokerParameters.items():
+            try:
+                val = good_params[dkey]
+            except:
+                good_params[dkey] = param_meta['default']
+            
         return good_params
 
     # ...............................................
-#     @cherrypy.tools.json_out()
     def _standardize_params(
-            self, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
+            self, valid_providers=None, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
             gbif_count=False, itis_match=False, kingdom=None, 
             occid=None, dataset_key=None, count_only=False, url=None,
             scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
@@ -274,11 +445,13 @@ class _S2nService:
                 user specified parameters.
         """
         empty_str = ''
+        if valid_providers is None:
+            valid_providers = (None, empty_str)
         kwarg_defaults = {
             # Sequences denote value options, the first is the default, 
             #    other values are of the required type
             # For name services
-            'provider': (None, empty_str),
+            'provider': valid_providers,
             'is_accepted': False, 
             'gbif_parse': False, 
             'gbif_count': False, 
@@ -294,13 +467,14 @@ class _S2nService:
             'color': Lifemapper.VALID_COLORS,
             'exceptions': (None, empty_str), 
             'height': 300, 
-            'layers': (None, 'prj', 'occ', 'bmng'),
+            # VALID broker parameter options, must be list
+            'layers': Lifemapper.VALID_MAPLAYER_TYPES,
             'request': VALID_MAP_REQUESTS, 
             'format': None, 
             'srs': 'epsg:4326', 
             'transparent': None, 
             'width': 600, 
-            'icon_status': ICON_OPTIONS}
+            'icon_status': VALID_ICON_OPTIONS}
         user_kwargs = {
             'provider': provider,
             'is_accepted': is_accepted, 
@@ -325,7 +499,7 @@ class _S2nService:
             'width': width, 
             'icon_status': icon_status}
         
-        usr_params = self._process_params(kwarg_defaults, user_kwargs)
+        usr_params, bad_params = self._process_params(kwarg_defaults, user_kwargs)
         # Do not edit namestr, maintain capitalization
         usr_params['namestr'] = namestr
         # Allow for None or comma-delimited list of providers
@@ -349,6 +523,63 @@ class _S2nService:
                 if scen in Lifemapper.valid_scenario_codes():
                     scens.append(scen)
         usr_params['scenariocode'] = scens
+        # Remove 'gbif_parse' and itis_match flags
+        gbif_parse = usr_params.pop('gbif_parse')
+        itis_match = usr_params.pop('itis_match')
+        # Replace namestr with GBIF-parsed namestr
+        if namestr:
+            if gbif_parse: 
+                usr_params['namestr'] = self.parse_name_with_gbif(namestr)
+            elif itis_match:
+                usr_params['namestr'] = self.parse_name_with_gbif(namestr)
+                
+        return usr_params, bad_params
+
+    # ...............................................
+    def _standardize_params_new(
+            self, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
+            gbif_count=False, itis_match=False, kingdom=None, 
+            occid=None, dataset_key=None, count_only=False, url=None,
+            scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
+            layers=None, request=None, frmat=None, srs=None, transparent=None, 
+            width=None, do_match=True, icon_status=None, filter_params=None):
+        """
+        Return:
+            a dictionary containing keys and properly formated values for the
+                user specified parameters.
+        Note: 
+            filter_params is present to distinguish between providers for occ service by 
+            occurrence_id or by dataset_id.
+        """
+        all_valid_providers = self.get_valid_providers(filter_params=filter_params)
+        user_kwargs = {
+            'valid_providers': all_valid_providers,
+            'provider': provider,
+            'is_accepted': is_accepted, 
+            'gbif_parse': gbif_parse, 
+            'gbif_count': gbif_count, 
+            'itis_match': itis_match, 
+            'kingdom': kingdom, 
+            'occid': occid, 
+            'dataset_key': dataset_key, 
+            'count_only': count_only, 
+            'url': url,
+            'scenariocode': scenariocode,
+            'bbox': bbox, 
+            'color': color, 
+            'exceptions': exceptions, 
+            'height': height, 
+            'layers': layers, 
+            'request': request, 
+            'format': frmat, 
+            'srs': srs, 
+            'transparent': transparent, 
+            'width': width, 
+            'icon_status': icon_status}
+        
+        usr_params = self._process_params_new(user_kwargs)
+        # Do not edit namestr, maintain capitalization
+        usr_params['namestr'] = namestr
         # Remove 'gbif_parse' and itis_match flags
         gbif_parse = usr_params.pop('gbif_parse')
         itis_match = usr_params.pop('itis_match')
