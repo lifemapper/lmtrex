@@ -81,15 +81,15 @@ class NameSvc(_S2nService):
                     goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
                     allrecs.append(goutput)
                     provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
-                    query_term = '{}; is_accepted={}; gbif_count={}'.format(
-                        query_term, is_accepted, gbif_count)
+                    query_term = 'namestr={}; is_accepted={}; gbif_count={}'.format(
+                        namestr, is_accepted, gbif_count)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
                     allrecs.append(isoutput)
                     provnames.append(ServiceProvider.ITISSolr[S2nKey.NAME])
-                    query_term = '{}; is_accepted={}; kingdom={}'.format(
-                        query_term, is_accepted, kingdom)
+                    query_term = 'namestr={}; is_accepted={}; kingdom={}'.format(
+                        namestr, is_accepted, kingdom)
             # TODO: enable filter parameters
             
         # Assemble
@@ -124,32 +124,34 @@ class NameSvc(_S2nService):
             dictionaries of records corresponding to names in the provider 
             taxonomy.
         """
-        # No filter_params defined for Name service yet
-        try:
-            good_params, info_valid_options = self._standardize_params_new(
-                namestr=namestr, provider=provider, is_accepted=is_accepted, 
-                gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term=namestr, errors=[traceback])
-        else:
-            # What to query
-            namestr = good_params['namestr']
+        if namestr is None:
+            valid_providers = self.get_valid_providers()
+            output = self._show_online(providers=valid_providers)
+        else:   
+            # No filter_params defined for Name service yet
             try:
-                if namestr is None:
-                    output = self._show_online(providers=good_params['valid_providers'])
-                else:
+                good_params, info_valid_options = self._standardize_params_new(
+                    namestr=namestr, provider=provider, is_accepted=is_accepted, 
+                    gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
+            except Exception as e:
+                traceback = get_traceback()
+                output = self.get_failure(query_term=namestr, errors=[traceback])
+            else:
+                # What to query
+                namestr = good_params['namestr']
+                try:
                     # Query
                     output = self.get_records(
                         namestr, good_params['provider'], good_params['is_accepted'], 
                         good_params['gbif_count'], good_params['kingdom'])
+
                     # Add message on invalid parameters to output
                     for key, options in info_valid_options.items():
                         msg = 'Valid {} options: {}'.format(key, ','.join(options))
                         output.append_value(S2nKey.ERRORS, msg)
-
-            except Exception as e:
-                output = self.get_failure(query_term=namestr, errors=[str(e)])
+    
+                except Exception as e:
+                    output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
             
 
