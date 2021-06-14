@@ -14,7 +14,7 @@ from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_o
 
 # .............................................................................
 @cherrypy.expose
-# @cherrypy.popargs('path_occ_id')
+@cherrypy.popargs('occid')
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
 
@@ -141,6 +141,53 @@ class OccurrenceSvc(_S2nService):
         return full_out
 
     # ...............................................
+    def get_records_new(self, occid, req_providers, count_only, dataset_key=None):
+        allrecs = []
+        # for response metadata
+        query_term = ''
+        dskey = None
+        if occid is not None:
+            query_term = 'occid={}; count_only={}'.format(occid, count_only)
+        elif dataset_key:
+            try:
+                query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
+            except:
+                query_term = 'invalid query term'
+                
+        provnames = []
+        for pr in req_providers:
+            # Address single record
+            if occid is not None:
+                # GBIF
+                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
+                    gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
+                    allrecs.append(gbif_output)
+                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
+                # iDigBio
+                elif pr == ServiceProvider.iDigBio[S2nKey.PARAM]:
+                    idb_output = self._get_idb_records(occid, count_only)
+                    allrecs.append(idb_output)
+                    provnames.append(ServiceProvider.iDigBio[S2nKey.NAME])
+                # MorphoSource
+                elif pr == ServiceProvider.MorphoSource[S2nKey.PARAM]:
+                    mopho_output = self._get_mopho_records(occid, count_only)
+                    allrecs.append(mopho_output)
+                    provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
+            # Filter by parameters
+            elif dskey:
+                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
+                    gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
+                    allrecs.append(gbif_output)
+                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
+
+        # Assemble
+        provstr = ','.join(provnames)
+        full_out = S2nOutput(
+            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
+            record_format=S2n.RECORD_FORMAT)
+        return full_out
+
+    # ...............................................
     # ...............................................
     @cherrypy.tools.json_out()
     def GET(self, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
@@ -160,38 +207,32 @@ class OccurrenceSvc(_S2nService):
             list of dictionaries of records corresponding to specimen 
             occurrences in the provider database
         """
-        filter_params = dskey = None
-            
-        try:
-            usr_params = self._standardize_params(
+        if occid is None and dataset_key is None:
+            valid_providers = self.get_valid_providers()
+            output = self._show_online(providers=valid_providers)
+        else:   
+            # No filter_params defined for Name service yet
+            try:
+                good_params, info_valid_options = self._standardize_params_new(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term=occid, errors=[traceback])
-        else:
-            # Who to query
-            valid_providers = self.get_providers(filter_params=filter_params)
-            valid_req_providers, invalid_providers = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-
-            # What to query: address one occurrence record, with optional filters
-            occid = usr_params['occid']
-            dskey = usr_params['dataset_key']
-            try:
-                if occid is None and dskey is None:
-                    output = self._show_online(providers=valid_req_providers)
-                else:
-                    output = self.get_records(
-                        occid, valid_req_providers, usr_params['count_only'], 
-                        filter_params={'dataset_key': dskey})
-                    if invalid_providers:
-                        msg = 'Invalid providers requested: {}'.format(
-                            ','.join(invalid_providers))
-                        output.append_value(S2nKey.ERRORS, msg)
             except Exception as e:
                 traceback = get_traceback()
                 output = self.get_failure(query_term=occid, errors=[traceback])
+            else:    
+                # What to query
+                try:
+                    output = self.get_records(
+                        good_params['occid'], good_params['provider'], good_params['count_only'], 
+                        dataset_key=good_params['dataset_key'])
+
+                    # Add message on invalid parameters to output
+                    for key, options in info_valid_options.items():
+                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
+                        output.append_value(S2nKey.ERRORS, msg)
+                except Exception as e:
+                    traceback = get_traceback()
+                    output = self.get_failure(query_term=good_params['occid'], errors=[traceback])
         return output.response
     
 
