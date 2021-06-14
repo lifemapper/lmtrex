@@ -131,10 +131,17 @@ class _S2nService:
     def parse_name_with_gbif(self, namestr):
         output = GbifAPI.parse_name(namestr)
         try:
-            namestr = output['record']['canonicalName']
+            rec = output['record']
         except:
             # Default to original namestring if parsing fails
             pass
+        else:
+            success = rec['parsed']
+            namestr = rec['canonicalName']
+            
+            if success:
+                if namestr.startswith('? '):
+                    namestr = rec['scientificName']
         return namestr
 
     # ...............................................

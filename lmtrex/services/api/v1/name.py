@@ -137,12 +137,10 @@ class NameSvc(_S2nService):
                 traceback = get_traceback()
                 output = self.get_failure(query_term=namestr, errors=[traceback])
             else:
-                # What to query
-                namestr = good_params['namestr']
                 try:
                     # Query
                     output = self.get_records(
-                        namestr, good_params['provider'], good_params['is_accepted'], 
+                        good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
                         good_params['gbif_count'], good_params['kingdom'])
 
                     # Add message on invalid parameters to output
@@ -161,7 +159,7 @@ if __name__ == '__main__':
     # test
     test_names = TST_VALUES.NAMES[0:4]
     test_names = ['Tulipa sylvestris']
-    test_names = ['Plagioecia patina']
+    test_names = ['poa']
     
     
     svc = NameSvc()
