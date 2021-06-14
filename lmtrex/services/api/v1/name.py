@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    S2N_SCHEMA, ServiceProvider, APIService, TST_VALUES)
+    S2N_SCHEMA, ServiceProvider, APIService, APIServiceNew, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -13,6 +13,7 @@ from lmtrex.tools.utils import get_traceback
 @cherrypy.popargs('namestr')
 class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
+    PARAMETER_KEYS = APIServiceNew.Name['params']
     
     # ...............................................
     def _get_gbif_records(self, namestr, is_accepted, gbif_count):

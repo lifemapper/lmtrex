@@ -10,6 +10,7 @@ from lmtrex.tools.utils import get_traceback
 
 # .............................................................................
 @cherrypy.expose
+@cherrypy.popargs('namestr')
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
     PARAMETER_KEYS = APIServiceNew.Map['params']
