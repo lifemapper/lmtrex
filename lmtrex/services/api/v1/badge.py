@@ -11,7 +11,6 @@ from lmtrex.services.api.v1.s2n_type import S2nKey
 
 # .............................................................................
 @cherrypy.expose
-# @cherrypy.popargs('path_occ_id')
 class BadgeSvc(_S2nService):
     SERVICE_TYPE = APIService.Badge
     PARAMETER_KEYS = APIServiceNew.Badge['params']

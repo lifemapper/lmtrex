@@ -10,6 +10,7 @@ from lmtrex.tools.utils import get_traceback
 
 # .............................................................................
 @cherrypy.expose
+@cherrypy.popargs('namestr')
 class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
     
@@ -124,32 +125,28 @@ class NameSvc(_S2nService):
         """
         # No filter_params defined for Name service yet
         try:
-            usr_params = self._standardize_params(
+            good_params, info_valid_options = self._standardize_params_new(
                 namestr=namestr, provider=provider, is_accepted=is_accepted, 
                 gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term=namestr, errors=[traceback])
         else:
-            # Who to query
-            valid_providers = self.get_providers()
-            valid_req_providers, invalid_providers = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-
             # What to query
-            namestr = usr_params['namestr']
+            namestr = good_params['namestr']
             try:
                 if namestr is None:
-                    output = self._show_online(providers=valid_providers)
+                    output = self._show_online(providers=good_params['valid_providers'])
                 else:
                     # Query
                     output = self.get_records(
-                        namestr, valid_req_providers, usr_params['is_accepted'], 
-                        usr_params['gbif_count'], usr_params['kingdom'])
-                    if invalid_providers:
-                        msg = 'Invalid providers requested: {}'.format(
-                            ','.join(invalid_providers))
-                        output.append_value(S2nKey.ERRORS, msg)    
+                        namestr, good_params['provider'], good_params['is_accepted'], 
+                        good_params['gbif_count'], good_params['kingdom'])
+                    # Add message on invalid parameters to output
+                    for key, options in info_valid_options.items():
+                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
+                        output.append_value(S2nKey.ERRORS, msg)
+
             except Exception as e:
                 output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
@@ -179,6 +176,7 @@ if __name__ == '__main__':
                 
 """
 https://broker-dev.spcoco.org/api/v1/name/Poa annua?provider=gbif
+https://broker-dev.spcoco.org/api/v1/name/occ/Plagioecia%20patina
 
 import cherrypy
 import json
