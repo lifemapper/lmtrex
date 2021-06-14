@@ -104,24 +104,23 @@ class MapSvc(_S2nService):
             list of dictionaries of Lifemapper records corresponding to 
             maps with URLs and their layers in the Lifemapper archive
         """
-        # No filter_params defined for Map service yet
-        try:
-            good_params, info_valid_options = self._standardize_params_new(
-                namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
-                is_accepted=is_accepted, scenariocode=scenariocode, color=color)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term=namestr, errors=[traceback])
-        else:            
-            # What to query
-            namestr = good_params['namestr']
+        if namestr is None:
+            valid_providers = self.get_valid_providers()
+            output = self._show_online(providers=valid_providers)
+        else:   
             try:
-                if namestr is None:
-                    output = self._show_online(providers=good_params['valid_providers'])
-                else:
+                good_params, info_valid_options = self._standardize_params_new(
+                    namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
+                    is_accepted=is_accepted, scenariocode=scenariocode, color=color)
+            except Exception as e:
+                traceback = get_traceback()
+                output = self.get_failure(query_term=namestr, errors=[traceback])
+            else:            
+                # What to query
+                try:
                     # Query
                     output = self.get_records(
-                        namestr, good_params['provider'], good_params['is_accepted'], 
+                        good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
                         good_params['scenariocode'], good_params['color'])
                     
                     # Add message on invalid parameters to output
@@ -129,8 +128,8 @@ class MapSvc(_S2nService):
                         msg = 'Valid {} options: {}'.format(key, ','.join(options))
                         output.append_value(S2nKey.ERRORS, msg)
                         
-            except Exception as e:
-                output = self.get_failure(query_term=namestr, errors=[str(e)])
+                except Exception as e:
+                    output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
 
     # ...............................................

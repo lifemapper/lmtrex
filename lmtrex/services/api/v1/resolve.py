@@ -11,6 +11,7 @@ solr_location = 'notyeti-192.lifemapper.org'
 
 # .............................................................................
 @cherrypy.expose
+@cherrypy.popargs('occid')
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
@@ -106,23 +107,28 @@ class ResolveSvc(_S2nService):
         Note: 
             There will never be more than one record returned.
         """
-        try:
-            usr_params = self._standardize_params(occid=occid, provider=provider)
-            # Who to query
-            valid_providers = self.get_providers()
-            req_providers = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-            
-            # What to query: address one occurrence record, with optional filters
-            occid = usr_params['occid']
-            if occid is None:
-                output = self._show_online()
-            else:
-                # What to query: common filters
-                output = self.get_records(occid, req_providers)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term=occid, errors=[traceback])
+        if occid is None:
+            valid_providers = self.get_valid_providers()
+            output = self._show_online(providers=valid_providers)
+        else:   
+            try:
+                good_params, info_valid_options = self._standardize_params_new(
+                    occid=occid, provider=provider)
+            except Exception as e:
+                traceback = get_traceback()
+                output = self.get_failure(query_term=occid, errors=[traceback])
+            else:    
+                # What to query: address one occurrence record, with optional filters
+                try:
+                    output = self.get_records(good_params['occid'], good_params['provider'])
+
+                    # Add message on invalid parameters to output
+                    for key, options in info_valid_options.items():
+                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
+                        output.append_value(S2nKey.ERRORS, msg)
+                except Exception as e:
+                    traceback = get_traceback()
+                    output = self.get_failure(query_term=occid, errors=[traceback])
         return output.response
 
 
