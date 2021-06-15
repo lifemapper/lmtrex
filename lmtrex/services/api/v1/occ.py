@@ -211,11 +211,7 @@ class OccurrenceSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in [
-            APIServiceNew.Name['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
-            APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-            APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
-            APIServiceNew.Badge['endpoint']]:
+        elif occid.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:   
             # No filter_params defined for Name service yet
@@ -250,22 +246,22 @@ if __name__ == '__main__':
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
-
+    occids.insert(0, None)
     # Get all providers
     for occid in occids:
         out = svc.GET(occid=occid, count_only=False)
         outputs = out['records']
         print_s2n_output(out)
-        for pout in outputs:
-            if pout['count'] > 0:
-                if pout['provider'] == 'Specify':
-                    specify_occ = pout['records'][0]
-                elif pout['provider'] == 'GBIF':
-                    gbif_occ = pout['records'][0]
-                elif pout['provider'] == 'iDigBio':
-                    idig_occ = pout['records'][0]
-                elif pout['provider'] == 'MorphoSource':
-                    mopho_occ = pout['records'][0]
+        # for pout in outputs:
+        #     if pout['count'] > 0:
+        #         if pout['provider'] == 'Specify':
+        #             specify_occ = pout['records'][0]
+        #         elif pout['provider'] == 'GBIF':
+        #             gbif_occ = pout['records'][0]
+        #         elif pout['provider'] == 'iDigBio':
+        #             idig_occ = pout['records'][0]
+        #         elif pout['provider'] == 'MorphoSource':
+        #             mopho_occ = pout['records'][0]
      
 #     # Query by datasetid
 #     for dskey in dskeys:

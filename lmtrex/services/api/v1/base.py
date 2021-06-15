@@ -118,20 +118,21 @@ class _S2nService:
     def _show_online(self, providers):
         param_lst = []
         for p in self.PARAMETER_KEYS:
-            pinfo = BrokerParameters[p]
-            pstr = 'parameter: {}, type: {}, default: {}'.format(
-                p, type(pinfo['type']), pinfo['default'])
-            try:
-                pstr += 'valid options: {}'.format(pinfo['options'])
-            except:
-                pass
-            param_lst.append(pstr)
-            
+            if p != 'provider':
+                pinfo = BrokerParameters[p]
+                pstr = 'parameter: \'{}\'; {}; default: {}'.format(
+                    p, type(pinfo['type']), pinfo['default'])
+                try:
+                    pstr += '; valid options: {}'.format(pinfo['options'])
+                except:
+                    pass
+                param_lst.append(pstr)
+        pinfo = BrokerParameters['provider']
         prov_str = ','.join(providers)
-        param_lst.append('parameter: provider, type: string, default: {}, valid options: {}'.format(
-            prov_str, providers))
+        param_lst.append('parameter: provider; \'{}\'; default: \'{}\'; valid options: {}'.format(
+            type(BrokerParameters['provider']['type']), prov_str, providers))
             
-        msg = 'S^n {} service is online for parameters: \n'.format(
+        msg = 'S^n {} service is online for parameters: \n{}'.format(
                     self.SERVICE_TYPE, '\n'.join(param_lst))
         
         output = S2nOutput(

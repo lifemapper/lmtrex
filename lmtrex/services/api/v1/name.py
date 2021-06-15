@@ -127,11 +127,7 @@ class NameSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
-        elif namestr.lower() in [
-            APIServiceNew.Occurrence['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
-            APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-            APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
-            APIServiceNew.Badge['endpoint']]:
+        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:
             # No filter_params defined for Name service yet
@@ -164,8 +160,7 @@ if __name__ == '__main__':
 
     # test
     test_names = TST_VALUES.NAMES[0:4]
-    test_names = ['Tulipa sylvestris']
-    test_names = ['poa']
+    test_names.extend([None, 'poa', 'Tulipa sylvestris'])
     
     
     svc = NameSvc()
@@ -175,10 +170,6 @@ if __name__ == '__main__':
                 namestr=namestr, is_accepted=False, gbif_parse=gparse, 
                 gbif_count=True, kingdom=None)
             print_s2n_output(out)
-    # Try once with all providers
-    out = svc.GET(
-        namestr=namestr, provider=None, is_accepted=False, gbif_parse=True, 
-        gbif_count=True, kingdom=None)
     print_s2n_output(out)
                 
 """

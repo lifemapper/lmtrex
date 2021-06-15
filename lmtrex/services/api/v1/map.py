@@ -107,11 +107,7 @@ class MapSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
-        elif namestr.lower() in [
-            APIServiceNew.Occurrence['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
-            APIServiceNew.Name['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-            APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
-            APIServiceNew.Badge['endpoint']]:
+        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:   
             try:
@@ -195,6 +191,7 @@ if __name__ == '__main__':
     names = ['Tulipa sylvestris']
 #     names = ['Plagioecia patina']
     names = ['Phlox longifolia Nutt']
+    names.insert(0, None)
     svc = MapSvc()
     for namestr in names:
         for scodes in (None, 'worldclim-curr'):

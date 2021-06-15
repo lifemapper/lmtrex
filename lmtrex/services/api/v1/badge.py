@@ -55,6 +55,11 @@ class BadgeSvc(_S2nService):
         Return:
             a file containing the requested icon
         """
+        valid_providers = self.get_valid_providers()
+        if provider is None:
+            output = self._show_online(valid_providers)
+        elif provider.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
+            output = self._show_online(valid_providers)
         try:
             usr_params, info_valid_options = self._standardize_params_new(
                 provider=provider, icon_status=icon_status)
@@ -66,7 +71,7 @@ class BadgeSvc(_S2nService):
         
         # Without a provider, send online status
         if len(usr_params['provider']) == 0:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
             return output.response
 
         # Only first provider is used

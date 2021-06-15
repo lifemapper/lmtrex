@@ -97,11 +97,7 @@ class ResolveSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in [
-            APIServiceNew.Name['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
-            APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-            APIServiceNew.Occurrence['endpoint'], APIServiceNew.Address['endpoint'], 
-            APIServiceNew.Badge['endpoint']]:
+        elif occid.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:   
             try:

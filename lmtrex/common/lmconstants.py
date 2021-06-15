@@ -140,27 +140,63 @@ class APIService:
 # .............................................................................
 class APIServiceNew:
     Root = {'endpoint': '/api/v1', 'params': None}
-    # Service types
-    Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only']}
-    # TODO: Consider an Extension service for Digital Object Architecture
-    SpecimenExtension = {'endpoint': 'occext', 'params': None}
-    Name = {
-        'endpoint': 'name', 
-        'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom']}
-    Map = {
-        'endpoint': 'map', 
-        'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color']}
-    Heartbeat = {'endpoint': 'heartbeat', 'params': None}
-    # Specify guid resolver
-    Resolve = {
-        'endpoint': 'resolve', 
-        'params': ['provider', 'occid']}
     # Direct access to syftorium upload
     Address = {'endpoint': 'address', 'params': None}
     # Icons for service providers
     Badge = {
         'endpoint': 'badge', 
         'params': ['provider', 'icon_status']}
+    # Health for service providers
+    Heartbeat = {'endpoint': 'heartbeat', 'params': None}
+    # Metadata for map services
+    Map = {
+        'endpoint': 'map', 
+        'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color']}
+    # Taxonomic Resolution
+    Name = {
+        'endpoint': 'name', 
+        'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom']}
+    # Specimen occurrence records
+    Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only']}
+    # TODO: Consider an Extension service for Digital Object Architecture
+    SpecimenExtension = {'endpoint': 'occext', 'params': None}
+    # Specify guid resolver
+    Resolve = {
+        'endpoint': 'resolve', 
+        'params': ['provider', 'occid']}
+    
+    @classmethod
+    def get_other_endpoints(cls, api_svc):
+        if api_svc == APIServiceNew.Root: 
+            return [
+                APIServiceNew.Address['endpoint'], APIServiceNew.Badge['endpoint'],
+                APIServiceNew.Heartbeat['endpoint'], APIServiceNew.Map['endpoint'],
+                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
+                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
+        elif api_svc == APIServiceNew.Address: 
+            return [
+                APIServiceNew.Root['endpoint'], APIServiceNew.Badge['endpoint'],
+                APIServiceNew.Heartbeat['endpoint'], APIServiceNew.Map['endpoint'],
+                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
+                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
+        elif api_svc == APIServiceNew.Badge: 
+            return [
+                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'],
+                APIServiceNew.Heartbeat['endpoint'], APIServiceNew.Map['endpoint'],
+                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
+                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
+        elif api_svc == APIServiceNew.Heartbeat: 
+            return [
+                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'],
+                APIServiceNew.Badge['endpoint'], APIServiceNew.Map['endpoint'],
+                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
+                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
+        elif api_svc == APIServiceNew.Map: 
+            return [
+                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'],
+                APIServiceNew.Badge['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
+                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
+                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
             
 
 # .............................................................................
