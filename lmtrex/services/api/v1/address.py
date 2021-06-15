@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (SPECIFY_CACHE_API, APIService)
+from lmtrex.common.lmconstants import (SPECIFY_CACHE_API, APIService, APIServiceNew)
 from lmtrex.services.api.v1.base import _S2nService
 
 # .............................................................................
@@ -8,6 +8,7 @@ from lmtrex.services.api.v1.base import _S2nService
 class AddressSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Address
+    PARAMETER_KEYS = APIServiceNew.Address['params']
     
     # ...............................................
     @cherrypy.tools.json_out()

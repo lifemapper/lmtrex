@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (ServiceProvider, APIService, SPECIFY)
+from lmtrex.common.lmconstants import (ServiceProvider, APIService, APIServiceNew, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
@@ -15,7 +15,8 @@ solr_location = 'notyeti-192.lifemapper.org'
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
-    
+    PARAMETER_KEYS = APIServiceNew.Resolve['params']
+
     # ...............................................
     @staticmethod
     def get_url_from_meta(std_output):
@@ -107,8 +108,14 @@ class ResolveSvc(_S2nService):
         Note: 
             There will never be more than one record returned.
         """
+        valid_providers = self.get_valid_providers()
         if occid is None:
-            valid_providers = self.get_valid_providers()
+            output = self._show_online(providers=valid_providers)
+        elif occid.lower() in [
+            APIServiceNew.Name['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
+            APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
+            APIServiceNew.Occurrence['endpoint'], APIServiceNew.Address['endpoint'], 
+            APIServiceNew.Badge['endpoint']]:
             output = self._show_online(providers=valid_providers)
         else:   
             try:

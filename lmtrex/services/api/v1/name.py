@@ -124,10 +124,16 @@ class NameSvc(_S2nService):
             dictionaries of records corresponding to names in the provider 
             taxonomy.
         """
+        valid_providers = self.get_valid_providers()
         if namestr is None:
-            valid_providers = self.get_valid_providers()
             output = self._show_online(providers=valid_providers)
-        else:   
+        elif namestr.lower() in [
+            APIServiceNew.Occurrence['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
+            APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
+            APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
+            APIServiceNew.Badge['endpoint']]:
+            output = self._show_online(providers=valid_providers)
+        else:
             # No filter_params defined for Name service yet
             try:
                 good_params, info_valid_options = self._standardize_params_new(
