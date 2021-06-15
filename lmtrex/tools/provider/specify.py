@@ -78,7 +78,7 @@ class SpecifyPortalAPI(APIQuery):
         """
         if url is None:
             std_output = cls._standardize_output(
-                {}, occid, APIService.Occurrence, provider_query=[], 
+                {}, occid, APIService.Occurrence['endpoint'], provider_query=[], 
                 count_only=count_only, err='No URL to Specify record')
         elif url.startswith('http'):
             api = APIQuery(url, headers=JSON_HEADERS, logger=logger)
@@ -89,7 +89,7 @@ class SpecifyPortalAPI(APIQuery):
                 std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
             # Standardize output from provider response
             std_output = cls._standardize_output(
-                api.output, occid, APIService.Occurrence, 
+                api.output, occid, APIService.Occurrence['endpoint'], 
                 provider_query=[url], count_only=count_only, err=api.error)
         
         return std_output

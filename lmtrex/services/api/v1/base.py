@@ -1,7 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (
-    APIService, APIServiceNew, BrokerParameters, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
+    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
     VALID_ICON_OPTIONS)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
@@ -20,7 +20,7 @@ class _S2nService:
         provnames = set()
         # Ignore as-yet undefined filter_params
         for p in ServiceProvider.all():
-            if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
+            if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
         return provnames
 
@@ -31,7 +31,7 @@ class _S2nService:
         provnames = set()
         # Ignore as-yet undefined filter_params
         for p in ServiceProvider.all():
-            if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
+            if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
         return provnames
 
@@ -58,7 +58,7 @@ class _S2nService:
             lmtrex.services.api.v1.S2nOutput object
         """
         if not service: 
-            service = cls.SERVICE_TYPE
+            service = cls.SERVICE_TYPE['endpoint']
         all_output = S2nOutput(
             count, query_term, service, provider, 
             provider_query=provider_query, record_format=record_format,  
@@ -105,7 +105,7 @@ class _S2nService:
     # .............................................................................
     @classmethod
     def endpoint(cls):
-        endpoint =  '{}/{}'.format(APIService.Root, cls.SERVICE_TYPE)
+        endpoint =  '{}/{}'.format(APIService.Root['endpoint'], cls.SERVICE_TYPE['endpoint'])
         return endpoint
 
     # ...............................................
@@ -117,7 +117,7 @@ class _S2nService:
     # ...............................................
     def _show_online(self, providers):
         param_lst = []
-        for p in self.PARAMETER_KEYS:
+        for p in self.SERVICE_TYPE['params']:
             if p != 'provider':
                 pinfo = BrokerParameters[p]
                 pstr = 'parameter: \'{}\'; {}; default: {}'.format(
@@ -133,10 +133,10 @@ class _S2nService:
             type(BrokerParameters['provider']['type']), prov_str, providers))
             
         msg = 'S^n {} service is online for parameters: \n{}'.format(
-                    self.SERVICE_TYPE, '\n'.join(param_lst))
+                    self.SERVICE_TYPE['endpoint'], '\n'.join(param_lst))
         
         output = S2nOutput(
-                0, '', self.SERVICE_TYPE, prov_str, errors=[msg])
+                0, '', self.SERVICE_TYPE['endpoint'], prov_str, errors=[msg])
         return output
 
     # ...............................................
@@ -368,7 +368,7 @@ class _S2nService:
             info_valid_options['provider'] = valid_providers
 
         # Correct all parameter keys/values present
-        for key in self.PARAMETER_KEYS:
+        for key in self.SERVICE_TYPE['params']:
             val = user_kwargs[key]
         # for key, val in user_kwargs.items():
             # Add valid providers to parameters
@@ -404,7 +404,7 @@ class _S2nService:
                     good_params[key] = usr_val
                 
         # Add defaults for missing parameters
-        for key in self.PARAMETER_KEYS:
+        for key in self.SERVICE_TYPE['params']:
             param_meta = BrokerParameters[key]
         # for dkey, param_meta in BrokerParameters.items():
             try:

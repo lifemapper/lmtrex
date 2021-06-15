@@ -214,7 +214,7 @@ class LifemapperAPI(APIQuery):
             std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
             std_output = cls._standardize_map_output(
-                api.output, name, APIService.Map, provider_query=[api.url], 
+                api.output, name, APIService.Map['endpoint'], provider_query=[api.url], 
                 prjscenariocodes=prjscenariocodes, color=color, count_only=False, 
                 err=api.error)
 
@@ -251,7 +251,7 @@ class LifemapperAPI(APIQuery):
             count=out.count, record_format=out.record_format, 
             records=out.records, provider=cls.PROVIDER, errors=out.errors, 
             provider_query=[api.url], query_term=name, 
-            service=APIService.Map)
+            service=APIService.Map['endpoint'])
         return full_out    
    
 

@@ -238,8 +238,8 @@ class ItisAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, count_key, records_key, record_format, query_term, 
-            service, provider_query=[], is_accepted=False, err=None):
+            cls, output, count_key, records_key, record_format, query_term, service,
+            provider_query=[], is_accepted=False, err=None):
         total = 0
         stdrecs = []
         errmsgs = []
@@ -311,8 +311,7 @@ class ItisAPI(APIQuery):
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
                     output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                    sciname, APIService.Name, provider_query=[api.url], 
-                    is_accepted=is_accepted, err=api.error)
+                    sciname, APIService.Name['endpoint'], provider_query=[api.url], is_accepted=is_accepted, err=api.error)
         return std_output
 
 # ...............................................
@@ -338,8 +337,7 @@ class ItisAPI(APIQuery):
             # Standardize output from provider response
             std_output = cls._standardize_output(
                 output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                tsn, APIService.Name, provider_query=[apiq.url], 
-                is_accepted=True, err=apiq.error)
+                tsn, APIService.Name['endpoint'], provider_query=[apiq.url], is_accepted=True, err=apiq.error)
 
         return std_output
 

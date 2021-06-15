@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (APIService, APIServiceNew, BrokerParameters, ServiceProvider)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider)
 
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
@@ -17,8 +17,6 @@ from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_o
 @cherrypy.popargs('occid')
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
-    SERVICE_TYPE_NEW = APIServiceNew.Occurrence
-    PARAMETER_KEYS = APIServiceNew.Occurrence['params']
 
     # ...............................................
     @classmethod
@@ -26,7 +24,7 @@ class OccurrenceSvc(_S2nService):
         provnames = set()
         if filter_params is None:
             for p in ServiceProvider.all():
-                if cls.SERVICE_TYPE in p[S2nKey.SERVICES]:
+                if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                     provnames.add(p[S2nKey.PARAM])
         # Fewer providers by dataset
         elif 'dataset_key' in filter_params.keys():
@@ -138,7 +136,7 @@ class OccurrenceSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
@@ -185,7 +183,7 @@ class OccurrenceSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
@@ -212,7 +210,7 @@ class OccurrenceSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
+        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:   
             # No filter_params defined for Name service yet

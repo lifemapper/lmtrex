@@ -120,25 +120,25 @@ class TST_VALUES:
         'Acer saccharum Marshall']
     ITIS_TSNS = [526853, 183671, 182662, 566578]
 
-# .............................................................................
-class APIService:
-    Root = '/api/v1'
-    # Service types
-    Occurrence = 'occ'
-    # TODO: Consider an Extension service for Digital Object Architecture
-    SpecimenExtension = 'occext'
-    Name = 'name'
-    Map = 'map'
-    Heartbeat = 'heartbeat'
-    # Specify guid resolver
-    Resolve = 'resolve'
-    # Direct access to syftorium upload
-    Address = 'address'
-    # Icons for service providers
-    Badge = 'badge'
+# # .............................................................................
+# class APIService:
+#     Root = '/api/v1'
+#     # Service types
+#     Occurrence = 'occ'
+#     # TODO: Consider an Extension service for Digital Object Architecture
+#     SpecimenExtension = 'occext'
+#     Name = 'name'
+#     Map = 'map'
+#     Heartbeat = 'heartbeat'
+#     # Specify guid resolver
+#     Resolve = 'resolve'
+#     # Direct access to syftorium upload
+#     Address = 'address'
+#     # Icons for service providers
+#     Badge = 'badge'
 
 # .............................................................................
-class APIServiceNew:
+class APIService:
     Root = {'endpoint': '/api/v1', 'params': None}
     # Direct access to syftorium upload
     Address = {'endpoint': 'address', 'params': None}
@@ -167,99 +167,109 @@ class APIServiceNew:
     
     @classmethod
     def get_other_endpoints(cls, api_svc):
-        if api_svc == APIServiceNew.Root:
+        if api_svc == APIService.Root:
             return [
-                APIServiceNew.Address['endpoint'], APIServiceNew.Badge['endpoint'],
-                APIServiceNew.Heartbeat['endpoint'], APIServiceNew.Map['endpoint'],
-                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.Address: 
+                APIService.Address['endpoint'], APIService.Badge['endpoint'],
+                APIService.Heartbeat['endpoint'], APIService.Map['endpoint'],
+                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.Address: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Badge['endpoint'],
-                APIServiceNew.Heartbeat['endpoint'], APIServiceNew.Map['endpoint'],
-                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.Badge: 
+                APIService.Root['endpoint'], APIService.Badge['endpoint'],
+                APIService.Heartbeat['endpoint'], APIService.Map['endpoint'],
+                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.Badge: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'],
-                APIServiceNew.Heartbeat['endpoint'], APIServiceNew.Map['endpoint'],
-                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.Heartbeat: 
+                APIService.Root['endpoint'], APIService.Address['endpoint'],
+                APIService.Heartbeat['endpoint'], APIService.Map['endpoint'],
+                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.Heartbeat: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'],
-                APIServiceNew.Badge['endpoint'], APIServiceNew.Map['endpoint'],
-                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.Map: 
+                APIService.Root['endpoint'], APIService.Address['endpoint'],
+                APIService.Badge['endpoint'], APIService.Map['endpoint'],
+                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.Map: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'],
-                APIServiceNew.Badge['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-                APIServiceNew.Name['endpoint'], APIServiceNew.Occurrence['endpoint'],  
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.Name: 
+                APIService.Root['endpoint'], APIService.Address['endpoint'],
+                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
+                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.Name: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'], 
-                APIServiceNew.Badge['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-                APIServiceNew.Map['endpoint'], APIServiceNew.Occurrence['endpoint'],  
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.Occurrence: 
+                APIService.Root['endpoint'], APIService.Address['endpoint'], 
+                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
+                APIService.Map['endpoint'], APIService.Occurrence['endpoint'],  
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.Occurrence: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'], 
-                APIServiceNew.Badge['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-                APIServiceNew.Map['endpoint'], APIServiceNew.Name['endpoint'],   
-                APIServiceNew.Resolve['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
-        elif api_svc == APIServiceNew.SpecimenExtension: 
+                APIService.Root['endpoint'], APIService.Address['endpoint'], 
+                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
+                APIService.Map['endpoint'], APIService.Name['endpoint'],   
+                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
+        elif api_svc == APIService.SpecimenExtension: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'], 
-                APIServiceNew.Badge['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-                APIServiceNew.Map['endpoint'], APIServiceNew.Name['endpoint'], 
-                APIServiceNew.Occurrence['endpoint'],  APIServiceNew.Resolve['endpoint']]
-        elif api_svc == APIServiceNew.Resolve: 
+                APIService.Root['endpoint'], APIService.Address['endpoint'], 
+                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
+                APIService.Map['endpoint'], APIService.Name['endpoint'], 
+                APIService.Occurrence['endpoint'],  APIService.Resolve['endpoint']]
+        elif api_svc == APIService.Resolve: 
             return [
-                APIServiceNew.Root['endpoint'], APIServiceNew.Address['endpoint'], 
-                APIServiceNew.Badge['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
-                APIServiceNew.Map['endpoint'], APIServiceNew.Name['endpoint'], 
-                APIServiceNew.Occurrence['endpoint'], APIServiceNew.SpecimenExtension['endpoint']]
+                APIService.Root['endpoint'], APIService.Address['endpoint'], 
+                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
+                APIService.Map['endpoint'], APIService.Name['endpoint'], 
+                APIService.Occurrence['endpoint'], APIService.SpecimenExtension['endpoint']]
             
 
 # .............................................................................
 class ServiceProvider:
     GBIF = {
-        S2nKey.NAME: 'GBIF', S2nKey.PARAM: 'gbif', S2nKey.SERVICES: [
-            APIService.Occurrence, APIService.Name, APIService.Badge],
+        S2nKey.NAME: 'GBIF', 
+        S2nKey.PARAM: 'gbif', 
+        S2nKey.SERVICES: [
+            APIService.Occurrence['endpoint'], APIService.Name['endpoint'], APIService.Badge['endpoint']],
         'icon': {'active': '{}/gbif_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/gbif_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/gbif_hover-01-01.png'.format(ICON_DIR)}
         }
     iDigBio = {
-        S2nKey.NAME: 'iDigBio', S2nKey.PARAM: 'idb', S2nKey.SERVICES: [
-            APIService.Occurrence, APIService.Badge],
+        S2nKey.NAME: 'iDigBio', 
+        S2nKey.PARAM: 'idb', 
+        S2nKey.SERVICES: [
+            APIService.Occurrence['endpoint'], APIService.Badge['endpoint']],
         'icon': {'active': '{}/idigbio_colors_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/idigbio_colors_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/idigbio_colors_hover-01.png'.format(ICON_DIR)}
         }
     # TODO: need an ITIS badge
     ITISSolr = {
-        S2nKey.NAME: 'ITIS', S2nKey.PARAM: 'itis', S2nKey.SERVICES: [
-            APIService.Name]}
+        S2nKey.NAME: 'ITIS', 
+        S2nKey.PARAM: 'itis', 
+        S2nKey.SERVICES: [APIService.Name['endpoint']]}
     Lifemapper = {
-        S2nKey.NAME: 'Lifemapper', S2nKey.PARAM: 'lm', S2nKey.SERVICES: [
-            APIService.Map, APIService.Badge],
+        S2nKey.NAME: 'Lifemapper', 
+        S2nKey.PARAM: 'lm', 
+        S2nKey.SERVICES: [
+            APIService.Map['endpoint'], APIService.Badge['endpoint']],
         'icon': {'active': '{}/lm_active.png'.format(ICON_DIR),
                  'inactive': '{}/lm_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/lm_hover-01.png'.format(ICON_DIR)}
         }
     MorphoSource = {
-        S2nKey.NAME: 'MorphoSource', S2nKey.PARAM: 'mopho', S2nKey.SERVICES: [
-            APIService.SpecimenExtension, APIService.Occurrence, APIService.Badge],
+        S2nKey.NAME: 'MorphoSource', 
+        S2nKey.PARAM: 'mopho', 
+        S2nKey.SERVICES: [
+            APIService.SpecimenExtension['endpoint'], APIService.Occurrence['endpoint'], APIService.Badge['endpoint']],
         'icon': {'active': '{}/morpho_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/morpho_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/morpho_hover-01.png'.format(ICON_DIR)}
         }
     Specify = {
-        S2nKey.NAME: 'Specify', S2nKey.PARAM: 'specify', S2nKey.SERVICES: [
-            APIService.Occurrence, APIService.Resolve]}
+        S2nKey.NAME: 'Specify', 
+        S2nKey.PARAM: 'specify', 
+        S2nKey.SERVICES: [APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
 # ....................
     @classmethod
     def get_values(cls, param_or_name):

@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    APIService, APIServiceNew, ServiceProvider, Lifemapper, TST_VALUES)
+    APIService, ServiceProvider, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -13,8 +13,6 @@ from lmtrex.tools.utils import get_traceback
 @cherrypy.popargs('namestr')
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
-    SERVICE_TYPE_NEW = APIServiceNew.Map
-    PARAMETER_KEYS = APIServiceNew.Map['params']
     
     # ...............................................
     def _match_gbif_names(self, namestr, is_accepted):
@@ -59,7 +57,7 @@ class MapSvc(_S2nService):
         query_term = 'namestr={}; is_accepted={}; scenariocodes={}; color={}'.format(
             namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
-            len(stdrecs), query_term, self.SERVICE_TYPE, LifemapperAPI.PROVIDER, 
+            len(stdrecs), query_term, self.SERVICE_TYPE['endpoint'], LifemapperAPI.PROVIDER, 
             provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
             records=stdrecs, errors=errmsgs)
         return full_out.response
@@ -84,7 +82,7 @@ class MapSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), common_query, self.SERVICE_TYPE, provstr, records=allrecs,
+            len(allrecs), common_query, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
@@ -108,7 +106,7 @@ class MapSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
-        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
+        elif namestr.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:   
             try:

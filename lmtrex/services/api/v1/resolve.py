@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (APIService, APIServiceNew, ServiceProvider, SPECIFY)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
@@ -15,8 +15,6 @@ solr_location = 'notyeti-192.lifemapper.org'
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
-    SERVICE_TYPE_NEW = APIServiceNew.Resolve
-    PARAMETER_KEYS = APIServiceNew.Resolve['params']
 
     # ...............................................
     @staticmethod
@@ -71,7 +69,7 @@ class ResolveSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE, provstr, records=allrecs,
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
@@ -98,7 +96,7 @@ class ResolveSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
+        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE['endpoint']):
             output = self._show_online(valid_providers)
         else:   
             try:

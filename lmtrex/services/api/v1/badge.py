@@ -2,7 +2,7 @@ import cherrypy
 import os
 
 from lmtrex.common.lmconstants import (
-    IMG_PATH, ServiceProvider, APIService, APIServiceNew, ICON_CONTENT)
+    IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
 
 from lmtrex.tools.utils import get_traceback
 
@@ -13,8 +13,6 @@ from lmtrex.services.api.v1.s2n_type import S2nKey
 @cherrypy.expose
 class BadgeSvc(_S2nService):
     SERVICE_TYPE = APIService.Badge
-    SERVICE_TYPE_NEW = APIServiceNew.Badge
-    PARAMETER_KEYS = APIServiceNew.Badge['params']
 
     # ...............................................
     def get_icon(self, provider, icon_status):
@@ -59,7 +57,7 @@ class BadgeSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if provider is None:
             output = self._show_online(valid_providers)
-        elif provider.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
+        elif provider.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         try:
             usr_params, info_valid_options = self._standardize_params_new(
@@ -107,6 +105,7 @@ if __name__ == '__main__':
     # Get all providers
     valid_providers = svc.get_valid_providers()
     retval = svc.GET(provider='gbif', icon_status='activex')
+    print(retval)
     # for pr in valid_providers:
     #     for stat in VALID_ICON_OPTIONS:
     #         retval = svc.GET(provider=pr, icon_status=stat)

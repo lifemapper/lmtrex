@@ -161,7 +161,7 @@ class IdigbioAPI(APIQuery):
         else:
             std_out = cls._standardize_output(
                 api.output, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, 
-                Idigbio.RECORD_FORMAT, occid, APIService.Occurrence, 
+                Idigbio.RECORD_FORMAT, occid, APIService.Occurrence['endpoint'], 
                 provider_query=[api.url], count_only=count_only, err=api.error)
         
         return std_out

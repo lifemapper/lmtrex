@@ -101,7 +101,7 @@ class BisonAPI(APIQuery):
         else:
             std_output = cls._standardize_output(
                 api.output, BISON.COUNT_KEY, BISON.RECORDS_KEY, 
-                BISON.RECORD_FORMAT, namestr, APIService.Occurrence, 
+                BISON.RECORD_FORMAT, namestr, APIService.Occurrence['endpoint'], 
                 provider_query=[api.url], count_only=count_only, err=api.error)
         # Add query metadata to output
         for key, val in qry_meta.items():

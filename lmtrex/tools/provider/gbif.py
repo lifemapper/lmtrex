@@ -127,8 +127,8 @@ class GbifAPI(APIQuery):
             query_term = 'occid={}; count_only={}'.format(occid, count_only)
             # Standardize output from provider response
             std_output = cls._standardize_occurrence_output(
-                api.output, query_term, APIService.Occurrence, provider_query=[api.url], 
-                count_only=count_only, err=api.error)
+                api.output, query_term, provider_query=[api.url], count_only=count_only, 
+                err=api.error)
         
         return std_output
 
@@ -237,7 +237,7 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_match_output(
-            cls, output, status, query_term, service, provider_query=[], 
+            cls, output, status, query_term, provider_query=[], 
             err=None):
             # Pull alternatives out of record
         stdrecs = []
@@ -270,7 +270,7 @@ class GbifAPI(APIQuery):
         total = len(stdrecs)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
-            total, query_term, service, cls.PROVIDER, 
+            total, query_term, APIService.Name['endpoint'], cls.PROVIDER, 
             provider_query=provider_query, record_format=GBIF.RECORD_FORMAT_NAME, 
             records=stdrecs, errors=errmsgs)
         return std_output
@@ -288,7 +288,7 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_occurrence_output(
-            cls, output, query_term, service, provider_query=[], count_only=False, 
+            cls, output, query_term, provider_query=[], count_only=False, 
             err=None):
         # GBIF.COUNT_KEY, GBIF.RECORDS_KEY, GBIF.RECORD_FORMAT_OCCURRENCE, 
         stdrecs = []
@@ -321,7 +321,7 @@ class GbifAPI(APIQuery):
                         msg = cls._get_error_message(err=e)
                         errmsgs.append(msg)
         std_output = S2nOutput(
-            total, query_term, service, cls.PROVIDER, 
+            total, query_term, APIService.Occurrence['endpoint'], cls.PROVIDER, 
             provider_query=provider_query, record_format=GBIF.RECORD_FORMAT_OCCURRENCE, 
             records=stdrecs, errors=errmsgs)
 
@@ -366,8 +366,7 @@ class GbifAPI(APIQuery):
             query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, APIService.Occurrence, 
-                provider_query=[api.url], count_only=count_only, err=api.error)
+                api.output, query_term, provider_query=[api.url], count_only=count_only, err=api.error)
             
         return std_out
 
@@ -415,8 +414,7 @@ class GbifAPI(APIQuery):
         else:
             # Standardize output from provider response
             std_output = cls._standardize_match_output(
-                api.output, status, namestr, APIService.Name, 
-                provider_query=[api.url], err=api.error)
+                api.output, status, namestr, provider_query=[api.url], err=api.error)
             
         return std_output
 
