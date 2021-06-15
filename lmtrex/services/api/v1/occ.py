@@ -212,7 +212,7 @@ class OccurrenceSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
+        elif occid.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
             output = self._show_online(valid_providers)
         else:   
             # No filter_params defined for Name service yet
@@ -226,7 +226,7 @@ class OccurrenceSvc(_S2nService):
             else:    
                 # What to query
                 try:
-                    output = self.get_records(
+                    output = self.get_records_new(
                         good_params['occid'], good_params['provider'], good_params['count_only'], 
                         dataset_key=good_params['dataset_key'])
 

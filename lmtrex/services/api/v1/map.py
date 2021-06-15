@@ -108,7 +108,7 @@ class MapSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
-        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
+        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
             output = self._show_online(valid_providers)
         else:   
             try:
