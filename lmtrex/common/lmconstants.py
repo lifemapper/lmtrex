@@ -826,8 +826,10 @@ class S2N_SCHEMA:
             # GBIF-specific
             'confidence': '{}:gbif_confidence'.format(s2n),
             'usageKey': '{}:gbif_taxon_key'.format(s2n),
-            S2nKey.OCCURRENCE_COUNT: '{}:{}'.format(COMMUNITY_SCHEMA.S2N,S2nKey.OCCURRENCE_COUNT),
-            S2nKey.OCCURRENCE_URL: '{}:{}'.format(COMMUNITY_SCHEMA.S2N,S2nKey.OCCURRENCE_URL)
+            S2nKey.OCCURRENCE_COUNT: '{}:{}'.format(
+                COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_COUNT),
+            S2nKey.OCCURRENCE_URL: '{}:{}'.format(
+                COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
             }
         return mapping
 
