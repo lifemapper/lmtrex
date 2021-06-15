@@ -211,8 +211,8 @@ class ItisAPI(APIQuery):
     def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
         usage = rec['usage'].lower()
-        if (is_accepted is False or (is_accepted is True 
-                                       and usage in ('accepted', 'valid')) ):
+        if (not is_accepted 
+            or (is_accepted and usage in ('accepted', 'valid')) ):
             for fldname, val in rec.items():
                 # Leave out fields without value
                 if val and fldname in cls.NAME_MAP.keys():

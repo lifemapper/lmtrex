@@ -199,8 +199,8 @@ class GbifAPI(APIQuery):
                 if fldname in cls.NAME_MAP.keys():
                     # Also use ID field to construct URLs
                     if fldname == GBIF.SPECIES_ID_FIELD:
-                        newrec['view_url'] = GBIF.get_species_view(val)
-                        newrec['api_url'] = GBIF.get_species_data(val)
+                        newrec[cls.NAME_MAP['view_url']] = GBIF.get_species_view(val)
+                        newrec[cls.NAME_MAP['api_url']] = GBIF.get_species_data(val)
                     newfldname = cls.NAME_MAP[fldname]
                     newrec[newfldname] =  val
         hierarchy = {}
