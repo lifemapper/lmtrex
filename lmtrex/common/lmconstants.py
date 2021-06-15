@@ -270,6 +270,9 @@ class ServiceProvider:
         S2nKey.NAME: 'Specify', 
         S2nKey.PARAM: 'specify', 
         S2nKey.SERVICES: [APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
+    Syfter = {
+        }
+    
 # ....................
     @classmethod
     def get_values(cls, param_or_name):
@@ -554,6 +557,13 @@ class SPECIFY:
     RESOLVER_LOCATION = 'notyeti-192.lifemapper.org'
     
 # ......................................................
+class SYFTER:
+    REST_URL = 'https://syftorium.org/api/v1'
+    REST_URL_DEV = 'https://dev.syftorium.org/api/v1'
+    RESOLVE_RESOURCE = 'resolve'
+    
+    
+# ......................................................
 class GBIF:
     """GBIF constants enumeration"""
     DATA_DUMP_DELIMITER = '\t'
@@ -754,6 +764,11 @@ class S2N_SCHEMA:
         'month': COMMUNITY_SCHEMA.DWC,
         'day': COMMUNITY_SCHEMA.DWC,
     }
+    RESOLVED = {
+        # Provider's URLs to this record
+        'view_url': COMMUNITY_SCHEMA.S2N,
+        'api_url': COMMUNITY_SCHEMA.S2N
+    }
     
     @classmethod
     def get_gbif_taxonkey_fld(cls):
@@ -879,6 +894,21 @@ class S2N_SCHEMA:
         'speciesName': '{}:species_name'.format(s2n),
         'status': '{}:lm_status_code'.format(s2n),
         'statusModTime': '{}:modtime'.format(s2n),
+            }
+        return mapping
+
+    @classmethod
+    def get_specify_resolver_map(cls):
+        s2n = COMMUNITY_SCHEMA.S2N['code']
+        dwc = COMMUNITY_SCHEMA.DWC['code']
+        mapping = {
+            'id': '{}:ident'.format(s2n),
+            'dataset_guid': '{}:api_url'.format(s2n),
+            'who': '{}:institutionCode'.format(dwc),
+            'what': '{}:basisOfRecord'.format(dwc),
+            'when': '{}:date'.format(s2n),
+            'where': '{}:ark'.format(s2n),
+            'url': '{}:api_url'.format(s2n)
             }
         return mapping
         
