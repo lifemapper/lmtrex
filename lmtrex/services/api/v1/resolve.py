@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (APIService, APIServiceNew, BrokerParameters, ServiceProvider, SPECIFY)
+from lmtrex.common.lmconstants import (APIService, APIServiceNew, ServiceProvider, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
@@ -15,6 +15,7 @@ solr_location = 'notyeti-192.lifemapper.org'
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
+    SERVICE_TYPE_NEW = APIServiceNew.Resolve
     PARAMETER_KEYS = APIServiceNew.Resolve['params']
 
     # ...............................................

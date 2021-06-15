@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    APIService, APIServiceNew, BrokerParameters, ServiceProvider, Lifemapper, TST_VALUES)
+    APIService, APIServiceNew, ServiceProvider, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -13,6 +13,7 @@ from lmtrex.tools.utils import get_traceback
 @cherrypy.popargs('namestr')
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
+    SERVICE_TYPE_NEW = APIServiceNew.Map
     PARAMETER_KEYS = APIServiceNew.Map['params']
     
     # ...............................................

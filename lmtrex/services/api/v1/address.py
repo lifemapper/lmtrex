@@ -8,6 +8,7 @@ from lmtrex.services.api.v1.base import _S2nService
 class AddressSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Address
+    SERVICE_TYPE_NEW = APIServiceNew.Address
     PARAMETER_KEYS = APIServiceNew.Address['params']
     
     # ...............................................

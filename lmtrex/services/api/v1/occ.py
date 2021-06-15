@@ -17,6 +17,7 @@ from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_o
 @cherrypy.popargs('occid')
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
+    SERVICE_TYPE_NEW = APIServiceNew.Occurrence
     PARAMETER_KEYS = APIServiceNew.Occurrence['params']
 
     # ...............................................

@@ -13,6 +13,7 @@ from lmtrex.tools.utils import get_traceback
 @cherrypy.popargs('namestr')
 class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
+    SERVICE_TYPE_NEW = APIServiceNew.Name
     PARAMETER_KEYS = APIServiceNew.Name['params']
     
     # ...............................................
@@ -127,7 +128,7 @@ class NameSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
-        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
+        elif namestr.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
             output = self._show_online(valid_providers)
         else:
             # No filter_params defined for Name service yet

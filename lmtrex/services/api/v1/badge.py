@@ -13,6 +13,7 @@ from lmtrex.services.api.v1.s2n_type import S2nKey
 @cherrypy.expose
 class BadgeSvc(_S2nService):
     SERVICE_TYPE = APIService.Badge
+    SERVICE_TYPE_NEW = APIServiceNew.Badge
     PARAMETER_KEYS = APIServiceNew.Badge['params']
 
     # ...............................................
@@ -58,7 +59,7 @@ class BadgeSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if provider is None:
             output = self._show_online(valid_providers)
-        elif provider.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE):
+        elif provider.lower() in APIServiceNew.get_other_endpoints(self.SERVICE_TYPE_NEW):
             output = self._show_online(valid_providers)
         try:
             usr_params, info_valid_options = self._standardize_params_new(
