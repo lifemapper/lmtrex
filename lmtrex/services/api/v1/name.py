@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    S2N_SCHEMA, ServiceProvider, APIService, APIServiceNew, TST_VALUES)
+    APIService, APIServiceNew, S2N_SCHEMA, ServiceProvider, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -126,13 +126,13 @@ class NameSvc(_S2nService):
         """
         valid_providers = self.get_valid_providers()
         if namestr is None:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
         elif namestr.lower() in [
             APIServiceNew.Occurrence['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
             APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
             APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
             APIServiceNew.Badge['endpoint']]:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
         else:
             # No filter_params defined for Name service yet
             try:

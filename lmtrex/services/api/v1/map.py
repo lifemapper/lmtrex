@@ -1,7 +1,7 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (
-    ServiceProvider, APIService, APIServiceNew, Lifemapper, TST_VALUES)
+    APIService, APIServiceNew, BrokerParameters, ServiceProvider, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -104,9 +104,15 @@ class MapSvc(_S2nService):
             list of dictionaries of Lifemapper records corresponding to 
             maps with URLs and their layers in the Lifemapper archive
         """
+        valid_providers = self.get_valid_providers()
         if namestr is None:
-            valid_providers = self.get_valid_providers()
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
+        elif namestr.lower() in [
+            APIServiceNew.Occurrence['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
+            APIServiceNew.Name['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
+            APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
+            APIServiceNew.Badge['endpoint']]:
+            output = self._show_online(valid_providers)
         else:   
             try:
                 good_params, info_valid_options = self._standardize_params_new(

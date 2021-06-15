@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (ServiceProvider, APIServiceNew, APIService)
+from lmtrex.common.lmconstants import (APIService, APIServiceNew, BrokerParameters, ServiceProvider)
 
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
@@ -210,13 +210,13 @@ class OccurrenceSvc(_S2nService):
         """
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
         elif occid.lower() in [
             APIServiceNew.Name['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
             APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
             APIServiceNew.Resolve['endpoint'], APIServiceNew.Address['endpoint'], 
             APIServiceNew.Badge['endpoint']]:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
         else:   
             # No filter_params defined for Name service yet
             try:

@@ -1,7 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (
-    APIService, APIServiceNew, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
+    APIService, APIServiceNew, BrokerParameters, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
     VALID_ICON_OPTIONS)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
@@ -115,16 +115,27 @@ class _S2nService:
         return param
     
     # ...............................................
-    def _show_online(self, providers=None):
-        if providers is None:
-            msg = 'S^n {} service is online'.format(self.SERVICE_TYPE)
-            output = S2nOutput(0, '', self.SERVICE_TYPE, '', errors=[msg])
-        else:
-            providers_str = ', '.join(providers)
-            msg = 'S^n {} service is online for requested providers: '.format(
-                    self.SERVICE_TYPE, providers_str)
-            output = S2nOutput(
-                0, '', self.SERVICE_TYPE, providers_str, errors=[msg])
+    def _show_online(self, providers):
+        param_lst = []
+        for p in self.PARAMETER_KEYS:
+            pinfo = BrokerParameters[p]
+            pstr = 'parameter: {}, type: {}, default: {}'.format(
+                p, type(pinfo['type']), pinfo['default'])
+            try:
+                pstr += 'valid options: {}'.format(pinfo['options'])
+            except:
+                pass
+            param_lst.append(pstr)
+            
+        prov_str = ','.join(providers)
+        param_lst.append('parameter: provider, type: string, default: {}, valid options: {}'.format(
+            prov_str, providers))
+            
+        msg = 'S^n {} service is online for parameters: \n'.format(
+                    self.SERVICE_TYPE, '\n'.join(param_lst))
+        
+        output = S2nOutput(
+                0, '', self.SERVICE_TYPE, prov_str, errors=[msg])
         return output
 
     # ...............................................

@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (SPECIFY_CACHE_API, APIService, APIServiceNew)
+from lmtrex.common.lmconstants import (APIService, APIServiceNew, SPECIFY_CACHE_API)
 from lmtrex.services.api.v1.base import _S2nService
 
 # .............................................................................

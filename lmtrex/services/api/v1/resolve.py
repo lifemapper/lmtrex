@@ -1,6 +1,6 @@
 import cherrypy
 
-from lmtrex.common.lmconstants import (ServiceProvider, APIService, APIServiceNew, SPECIFY)
+from lmtrex.common.lmconstants import (APIService, APIServiceNew, BrokerParameters, ServiceProvider, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
@@ -56,20 +56,6 @@ class ResolveSvc(_S2nService):
         return std_output
     
     # ...............................................
-    def _show_online(self, providers=None):
-        std_output = self.count_specify_guid_recs()
-        std_output.set_value(S2nKey.SERVICE, self.SERVICE_TYPE)
-        if providers is None:
-            msg = 'S^n {} service is online'.format(self.SERVICE_TYPE)
-        else:
-            providers_str = ', '.join(providers)
-            msg = 'S^n {} service is online for requested providers: '.format(
-                    self.SERVICE_TYPE, providers_str)
-            std_output.set_value(S2nKey.PROVIDER, providers_str)
-            std_output.append_value(S2nKey.ERRORS, msg)
-        return std_output
-
-    # ...............................................
     def get_records(self, occid, req_providers):
         allrecs = []
         # for response metadata
@@ -110,13 +96,13 @@ class ResolveSvc(_S2nService):
         """
         valid_providers = self.get_valid_providers()
         if occid is None:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
         elif occid.lower() in [
             APIServiceNew.Name['endpoint'],  APIServiceNew.SpecimenExtension['endpoint'],  
             APIServiceNew.Map['endpoint'], APIServiceNew.Heartbeat['endpoint'], 
             APIServiceNew.Occurrence['endpoint'], APIServiceNew.Address['endpoint'], 
             APIServiceNew.Badge['endpoint']]:
-            output = self._show_online(providers=valid_providers)
+            output = self._show_online(valid_providers)
         else:   
             try:
                 good_params, info_valid_options = self._standardize_params_new(
