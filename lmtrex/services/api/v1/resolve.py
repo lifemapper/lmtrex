@@ -4,6 +4,7 @@ from lmtrex.common.lmconstants import (APIService, ServiceProvider, SPECIFY)
 import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
+from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
 
 collection = 'spcoco'
@@ -37,7 +38,7 @@ class ResolveSvc(_S2nService):
         return (url, msg)
     
     # ...............................................
-    def get_specify_records(self, occid):
+    def resolve_specify_guid(self, occid):
         try:
             output = SpSolr.query_guid(
                 occid, SPECIFY.RESOLVER_COLLECTION, SPECIFY.RESOLVER_LOCATION)
@@ -49,11 +50,28 @@ class ResolveSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def count_specify_guid_recs(self):
-        std_output = SpSolr.count_docs(
-            SPECIFY.RESOLVER_COLLECTION, SPECIFY.RESOLVER_LOCATION)
+    def count_resolvable_specify_recs(self):
+        std_output = SpecifyResolverAPI.count_docs()
         return std_output
     
+    # ...............................................
+    def get_counts(self, req_providers):
+        allrecs = []
+        # for response metadata
+        provnames = []
+        for pr in req_providers:
+            # Address single record
+            if pr == ServiceProvider.Specify[S2nKey.PARAM]:
+                sp_output = self.count_resolvable_specify_recs()
+                allrecs.append(sp_output)
+                provnames.append(ServiceProvider.Specify[S2nKey.NAME])
+        # Assemble
+        provstr = ','.join(provnames)
+        full_out = S2nOutput(
+            len(allrecs), None, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
+            record_format=S2n.RECORD_FORMAT)
+        return full_out
+
     # ...............................................
     def get_records(self, occid, req_providers):
         allrecs = []
@@ -63,7 +81,7 @@ class ResolveSvc(_S2nService):
         for pr in req_providers:
             # Address single record
             if pr == ServiceProvider.Specify[S2nKey.PARAM]:
-                sp_output = self._get_specify_records(occid)
+                sp_output = self.resolve_specify_guid(occid)
                 allrecs.append(sp_output)
                 provnames.append(ServiceProvider.Specify[S2nKey.NAME])
         # Assemble
@@ -96,8 +114,10 @@ class ResolveSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE['endpoint']):
+        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
+        elif occid.lower() == 'count':
+            output = self.count_resolvable_specify_recs()
         else:   
             try:
                 good_params, info_valid_options = self._standardize_params_new(
@@ -125,7 +145,8 @@ if __name__ == '__main__':
     # test
     from lmtrex.common.lmconstants import TST_VALUES
     
-    for occid in TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[:1]:
+    params = [None, TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0]]
+    for occid in params:
         print(occid)
         # Specify ARK Record
         svc = ResolveSvc()

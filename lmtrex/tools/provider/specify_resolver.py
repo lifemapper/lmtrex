@@ -65,6 +65,50 @@ class SpecifyResolverAPI(APIQuery):
     
 # ...............................................
     @classmethod
+    def count_docs(cls, logger=None):
+        """Return an ARK record for a guid using the Specify resolver service.
+        
+        Args:
+            guid: a unique identifier for a speciment record
+            logger: optional logger for info and error messages.  If None, 
+                prints to stdout    
+
+        Return: 
+            a dictionary containing one or more keys: 
+                count, records, error, warning
+            
+        Example URL: 
+            http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
+        """
+        api = SpecifyResolverAPI(logger=logger)
+
+        try:
+            cls.query_by_get(output_type='json')
+        except Exception as e:
+            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+        else:
+            try:
+                count = api.output['count']
+            except:
+                if api.error is not None:
+                    std_output = cls.get_failure(
+                        errors=[{'error': cls._get_error_message(err=api.error)}])
+                else:
+                    std_output = cls.get_failure(
+                        errors=[{'error': cls._get_error_message(
+                            msg='Missing `response` element')}])
+            else:
+                api_err = None
+                if api.error:
+                    api_err = {'error': api.error}
+                # Standardize output from provider response
+            std_output = S2nOutput(
+                count, None, APIService.Resolve['endpoint'], cls.PROVIDER, 
+                provider_query=api.url, records=[], errors=api_err)
+        return std_output
+
+# ...............................................
+    @classmethod
     def query_for_guid(cls, guid, logger=None):
         """Return an ARK record for a guid using the Specify resolver service.
         
@@ -103,7 +147,7 @@ class SpecifyResolverAPI(APIQuery):
                     api_err = {'error': api.error}
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    output, guid, APIService.Name['endpoint'], provider_query=[api.url], err=api_err)
+                    output, guid, APIService.Resolve['endpoint'], provider_query=[api.url], err=api_err)
         return std_output
 
     

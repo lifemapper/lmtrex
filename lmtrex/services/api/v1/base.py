@@ -118,23 +118,11 @@ class _S2nService:
     def _show_online(self, providers):
         param_lst = []
         for p in self.SERVICE_TYPE['params']:
-            if p != 'provider':
-                pinfo = BrokerParameters[p]
-                # pstr = 'parameter: \'{}\'; {}; default: {}'.format(
-                #     p, type(pinfo['type']), pinfo['default'])
-                # try:
-                #     pstr += '; valid options: {}'.format(pinfo['options'])
-                # except:
-                #     pass
-                # param_lst.append(pstr)
-                param_lst.append(pinfo)
-        pinfo = BrokerParameters['provider']
-        pinfo['options'] = providers
-        param_lst.append(pinfo)
-        # param_lst.append('parameter: provider; \'{}\'; default: \'{}\'; valid options: {}'.format(
-        #     type(BrokerParameters['provider']['type']), prov_str, providers))            
-        # msg = 'S^n {} service is online for parameters: \n{}'.format(
-        #             self.SERVICE_TYPE['endpoint'], '\n'.join(param_lst))
+            pinfo = BrokerParameters[p].copy()
+            pinfo['type'] = type(pinfo['type'])
+            if p == 'provider':
+                pinfo['options'] = providers
+            param_lst.append({p: pinfo})
         info = {
             'info': 'S^n {} service is online.'.format(self.SERVICE_TYPE['endpoint']), 
             'parameters': param_lst}
@@ -268,6 +256,9 @@ class _S2nService:
                 usr_val = int(provided_val)
             except:
                 usr_val = default_val
+                
+        else:
+            usr_val = provided_val
                 
         return usr_val, valid_options
 
