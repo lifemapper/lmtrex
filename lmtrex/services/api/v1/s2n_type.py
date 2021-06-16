@@ -98,17 +98,20 @@ class S2nOutput(object):
     provider_query: typing.List[str] = []
     record_format: str = ''
     records: typing.List[dict] = []
-    errors: typing.List[str] = []
+    errors: typing.List[dict] = []
      
     def __init__(
             self, count, query_term, service, provider, provider_query=[], 
             record_format='', records=[], errors=[]):
         # Dictionary is json-serializable
         self._response = {
-            S2nKey.COUNT: count, S2nKey.QUERY_TERM: query_term, 
-            S2nKey.SERVICE: service, S2nKey.PROVIDER: provider, 
+            S2nKey.COUNT: count, 
+            S2nKey.QUERY_TERM: query_term, 
+            S2nKey.SERVICE: service, 
+            S2nKey.PROVIDER: provider, 
             S2nKey.PROVIDER_QUERY: provider_query, 
-            S2nKey.RECORD_FORMAT: record_format, S2nKey.RECORDS: records, 
+            S2nKey.RECORD_FORMAT: record_format, 
+            S2nKey.RECORDS: records, 
             S2nKey.ERRORS: errors}
      
     def set_value(self, prop, value):

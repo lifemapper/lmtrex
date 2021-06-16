@@ -56,7 +56,7 @@ class MorphoSourceAPI(APIQuery):
         try:
             api.query_by_get(verify=verify)
         except Exception as e:
-            std_out = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             # Standardize output from provider response
             std_out = cls._standardize_output(

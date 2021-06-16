@@ -45,7 +45,7 @@ class ResolveSvc(_S2nService):
             traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
-                errors=[traceback])
+                errors=[{'error': traceback}])
         return output.response
 
     # ...............................................
@@ -104,7 +104,7 @@ class ResolveSvc(_S2nService):
                     occid=occid, provider=provider)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=occid, errors=[traceback])
+                output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
             else:    
                 # What to query: address one occurrence record, with optional filters
                 try:
@@ -116,7 +116,7 @@ class ResolveSvc(_S2nService):
                         output.append_value(S2nKey.ERRORS, msg)
                 except Exception as e:
                     traceback = get_traceback()
-                    output = self.get_failure(query_term=occid, errors=[traceback])
+                    output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
         return output.response
 
 

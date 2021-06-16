@@ -44,7 +44,7 @@ class OccurrenceSvc(_S2nService):
             traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
-                errors=[traceback])
+                errors=[{'error': traceback}])
         return output.response
 
     # ...............................................
@@ -56,7 +56,7 @@ class OccurrenceSvc(_S2nService):
             traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProvider.MorphoSource[S2nKey.NAME], query_term=occid, 
-                errors=[traceback])
+                errors=[{'error': traceback}])
         return output.response
 
     # ...............................................
@@ -65,7 +65,7 @@ class OccurrenceSvc(_S2nService):
             output = IdigbioAPI.get_occurrences_by_occid(occid, count_only=count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=occid, errors=[traceback])
+            output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
         return output.response
 
 
@@ -84,7 +84,7 @@ class OccurrenceSvc(_S2nService):
             traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=query_term, 
-                errors=[traceback])
+                errors=[{'error': traceback}])
         return output.response
 
     # ...............................................
@@ -220,7 +220,7 @@ class OccurrenceSvc(_S2nService):
                 count_only=count_only)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=occid, errors=[traceback])
+                output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
             else:    
                 # What to query
                 try:
@@ -234,7 +234,7 @@ class OccurrenceSvc(_S2nService):
                         output.append_value(S2nKey.ERRORS, msg)
                 except Exception as e:
                     traceback = get_traceback()
-                    output = self.get_failure(query_term=good_params['occid'], errors=[traceback])
+                    output = self.get_failure(query_term=good_params['occid'], errors=[{'error': traceback}])
         return output.response
     
 

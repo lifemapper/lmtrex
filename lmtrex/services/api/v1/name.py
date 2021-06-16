@@ -22,7 +22,7 @@ class NameSvc(_S2nService):
             traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=namestr, 
-                errors=[traceback])
+                errors=[{'error': traceback}])
         else:
             prov_query_list = output.provider_query
             # Add occurrence count to name records
@@ -59,7 +59,7 @@ class NameSvc(_S2nService):
             traceback = get_traceback()
             output = self.get_failure(
                 provider=ServiceProvider.iDigBio[S2nKey.NAME], query_term=namestr, 
-                errors=[traceback])
+                errors=[{'error': traceback}])
         return output.response
 
     # ...............................................
@@ -136,7 +136,7 @@ class NameSvc(_S2nService):
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=namestr, errors=[traceback])
+                output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
             else:
                 try:
                     # Query
@@ -150,7 +150,7 @@ class NameSvc(_S2nService):
                         output.append_value(S2nKey.ERRORS, msg)
     
                 except Exception as e:
-                    output = self.get_failure(query_term=namestr, errors=[str(e)])
+                    output = self.get_failure(query_term=namestr, errors=[{'error': str(e)}])
         return output.response
             
 

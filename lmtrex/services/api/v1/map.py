@@ -22,9 +22,9 @@ class MapSvc(_S2nService):
             # Get name from Gbif        
             nm_output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
-            errmsgs.append('Failed to match {} to GBIF accepted name'.format(namestr))
+            errmsgs.append({'error': 'Failed to match {} to GBIF accepted name'.format(namestr)})
             traceback = get_traceback()
-            errmsgs.append(traceback)
+            errmsgs.append({'error': traceback})
             scinames.append(namestr)
         else:
             for rec in nm_output.records:
@@ -115,7 +115,7 @@ class MapSvc(_S2nService):
                     is_accepted=is_accepted, scenariocode=scenariocode, color=color)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=namestr, errors=[traceback])
+                output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
             else:            
                 # What to query
                 try:
@@ -130,7 +130,7 @@ class MapSvc(_S2nService):
                         output.append_value(S2nKey.ERRORS, msg)
                         
                 except Exception as e:
-                    output = self.get_failure(query_term=namestr, errors=[str(e)])
+                    output = self.get_failure(query_term=namestr, errors=[{'error': str(e)}])
         return output.response
 
     # ...............................................
@@ -157,7 +157,7 @@ class MapSvc(_S2nService):
                 is_accepted=is_accepted, scenariocode=scenariocode, color=color)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=namestr, errors=[traceback])
+            output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
         else:            
             # Who to query
             valid_providers = self.get_providers()

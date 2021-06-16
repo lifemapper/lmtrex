@@ -80,7 +80,7 @@ class GbifAPI(APIQuery):
         try:
             tax_api.query()
         except Exception as e:
-            errmsgs.append(cls._get_error_message(err=e))
+            errmsgs.append({'error': cls._get_error_message(err=e)})
         else:
             output = tax_api.output
             elements_of_interest = [
@@ -122,7 +122,7 @@ class GbifAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             query_term = 'occid={}; count_only={}'.format(occid, count_only)
             # Standardize output from provider response
@@ -238,7 +238,7 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_match_output(
             cls, output, status, query_term, provider_query=[], 
-            err=None):
+            err={}):
             # Pull alternatives out of record
         stdrecs = []
         errmsgs = []
@@ -254,7 +254,7 @@ class GbifAPI(APIQuery):
             if output['matchType'].lower() == 'none':
                 is_match = False
         except AttributeError:
-            errmsgs.append(cls._get_error_message(msg='No matchType'))
+            errmsgs.append({'error': cls._get_error_message(msg='No matchType')})
         else:
             goodrecs = []
             # take primary output if matched
@@ -288,29 +288,28 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_occurrence_output(
-            cls, output, query_term, provider_query=[], count_only=False, 
-            err=None):
+            cls, output, query_term, provider_query=[], count_only=False, err={}):
         # GBIF.COUNT_KEY, GBIF.RECORDS_KEY, GBIF.RECORD_FORMAT_OCCURRENCE, 
         stdrecs = []
         total = 0
         errmsgs = []
-        if err is not None:
+        if err:
             errmsgs.append(err)
         # Count
         try:
             total = output[GBIF.COUNT_KEY]
         except:
             errmsgs.append(
-                cls._get_error_message(
-                    msg='Missing `{}` element'.format(GBIF.COUNT_KEY)))
+                {'error': cls._get_error_message(
+                    msg='Missing `{}` element'.format(GBIF.COUNT_KEY))})
         # Records
         if not count_only:
             try:
                 recs = output[GBIF.RECORDS_KEY]
             except:
                 errmsgs.append(
-                    cls._get_error_message(
-                        msg='Missing `{}` element'.format(GBIF.RECORDS_KEY)))
+                    {'error': cls._get_error_message(
+                        msg='Missing `{}` element'.format(GBIF.RECORDS_KEY))})
             else:
                 stdrecs = []
                 for r in recs:
@@ -318,8 +317,7 @@ class GbifAPI(APIQuery):
                         stdrecs.append(
                             cls._standardize_record(r, GBIF.RECORD_FORMAT_OCCURRENCE))
                     except Exception as e:
-                        msg = cls._get_error_message(err=e)
-                        errmsgs.append(msg)
+                        errmsgs.append({'error': cls._get_error_message(err=e)})
         std_output = S2nOutput(
             total, query_term, APIService.Occurrence['endpoint'], cls.PROVIDER, 
             provider_query=provider_query, record_format=GBIF.RECORD_FORMAT_OCCURRENCE, 
@@ -361,12 +359,16 @@ class GbifAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_out = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
+            api_err = None
+            if api.error:
+                api_err = {'error': api.error}
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, provider_query=[api.url], count_only=count_only, err=api.error)
+                api.output, query_term, provider_query=[api.url], count_only=count_only, 
+                err=api_err)
             
         return std_out
 
@@ -410,7 +412,7 @@ class GbifAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             # Standardize output from provider response
             std_output = cls._standardize_match_output(
@@ -442,16 +444,16 @@ class GbifAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            errmsgs.append(cls._get_error_message(err=e))
+            errmsgs.append({'error': cls._get_error_message(err=e)})
         else:
             try:
                 total = api.output['count']
             except Exception as e:
-                errmsgs.append(cls._get_error_message(
-                    msg='Missing `count` element'))
+                errmsgs.append({'error': cls._get_error_message(
+                    msg='Missing `count` element')})
             else:
                 if total < 1:
-                    errmsgs.append(cls._get_error_message(msg='No match'))
+                    errmsgs.append({'error': cls._get_error_message(msg='No match')})
                     simple_output[S2nKey.OCCURRENCE_URL] = None
                 else:
                     simple_output[S2nKey.OCCURRENCE_URL] = '{}/{}'.format(

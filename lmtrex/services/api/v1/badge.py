@@ -65,7 +65,7 @@ class BadgeSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                provider, icon_status), errors=[traceback])
+                provider, icon_status), errors=[{'error': traceback}])
             return output.response
         
         # Without a provider, send online status
@@ -81,7 +81,7 @@ class BadgeSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                provider, icon_status), errors=[traceback])
+                provider, icon_status), errors=[{'error': traceback}])
             return output.response
 
         # Whew

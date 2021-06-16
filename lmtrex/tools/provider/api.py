@@ -53,34 +53,33 @@ class APIQuery:
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, record_format, query_term, 
-            service, provider_query=[], count_only=False, err=None):
+            service, provider_query=[], count_only=False, err={}):
         errmsgs = []
         stdrecs = []
         total = 0
         query_term = 'query_term={}; count_only={}'.format(query_term, count_only)
-        if err is not None:
+        if err:
             errmsgs.append(err)
         # Count
         try:
             total = output[count_key]
         except:
-            errmsgs.append(cls._get_error_message(
-                msg='Missing `{}` element'.format(count_key)))
+            errmsgs.append({'error': cls._get_error_message(
+                msg='Missing `{}` element'.format(count_key))})
         # Records
         if not count_only:
             try:
                 recs = output[records_key]
             except:
                 errmsgs.append(
-                    cls._get_error_message(msg='Missing `{}` element'.format(
-                        records_key)))
+                    {'error': cls._get_error_message(msg='Missing `{}` element'.format(
+                        records_key))})
             else:
                 for r in recs:
                     try:
                         stdrecs.append(cls._standardize_record(r))
                     except Exception as e:
-                        msg = cls._get_error_message(err=e)
-                        errmsgs.append(msg)
+                        errmsgs.append({'error': cls._get_error_message(err=e)})
                         
         std_output = S2nOutput(
             total, query_term, service, cls.PROVIDER, 
@@ -259,7 +258,7 @@ class APIQuery:
     def get_failure(
         cls, count: int = 0, record_format: str = '',
         records: typing.List[dict] = [], provider: str = '', 
-        errors: typing.List[str] = [], provider_query: typing.List[str] = [],
+        errors: typing.List[dict] = [], provider_query: typing.List[str] = [],
         query_term: str = '', service: str = '') -> S2nOutput:
         """Output format for all (soon) API queries
         
@@ -268,7 +267,7 @@ class APIQuery:
             record_format: schema for the records returned
             records: list of records (dictionaries)
             provider: original data provider
-            errors: list of errors (strings)
+            errors: list of info messages, warnings, errors (dictionaries)
             provider_query: list of queries (url strings)
             service: type of S^n services
             

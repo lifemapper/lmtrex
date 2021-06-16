@@ -34,18 +34,18 @@ class SpecifyPortalAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, service, provider_query=[], count_only=False, err=None):
+            cls, output, query_term, service, provider_query=[], count_only=False, err={}):
         stdrecs = []
         total = 0
         errmsgs = []
-        if err is not None:
+        if err:
             errmsgs.append(err)
         # Count
         if output:
             try:
                 rec = output['core']
             except Exception as e:
-                errmsgs.append(cls._get_error_message(err=e))
+                errmsgs.append({'error': cls._get_error_message(err=e)})
             else:
                 total = 1
                 # Records
@@ -53,8 +53,7 @@ class SpecifyPortalAPI(APIQuery):
                     try:
                         stdrecs.append(cls._standardize_record(rec))
                     except Exception as e:
-                        msg = cls._get_error_message(err=e)
-                        errmsgs.append(msg)
+                        errmsgs.append({'error': cls._get_error_message(err=e)})
         std_output = S2nOutput(
             total, query_term, service, cls.PROVIDER, 
             provider_query=provider_query, record_format=DWC.SCHEMA, 
@@ -86,10 +85,13 @@ class SpecifyPortalAPI(APIQuery):
             try:
                 api.query_by_get()
             except Exception as e:
-                std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+                std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            api_err = None
+            if api.error:
+                api_err = {'error': api.error}
             # Standardize output from provider response
             std_output = cls._standardize_output(
                 api.output, occid, APIService.Occurrence['endpoint'], 
-                provider_query=[url], count_only=count_only, err=api.error)
+                provider_query=[url], count_only=count_only, err=api_err)
         
         return std_output

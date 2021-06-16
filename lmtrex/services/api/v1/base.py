@@ -40,7 +40,7 @@ class _S2nService:
     def get_failure(
         cls, count: int = 0, record_format: str = '',
         records: typing.List[dict] = [], provider: str = '', 
-        errors: typing.List[str] = [], provider_query: typing.List[str] = [],
+        errors: typing.List[dict] = [], provider_query: typing.List[str] = [],
         query_term: str = '', service: str = '') -> S2nOutput:
         """Output format for all (soon) S^n services
         
@@ -49,7 +49,7 @@ class _S2nService:
             record_format: schema for the records returned
             records: list of records (dictionaries)
             provider: original data provider
-            errors: list of errors (strings)
+            errors: list of info messages, warnings and errors (dictionaries)
             provider_query: list of queries (url strings)
             query_term: query term provided by the user, ex: name or id
             service: type of S^n services
@@ -120,23 +120,26 @@ class _S2nService:
         for p in self.SERVICE_TYPE['params']:
             if p != 'provider':
                 pinfo = BrokerParameters[p]
-                pstr = 'parameter: \'{}\'; {}; default: {}'.format(
-                    p, type(pinfo['type']), pinfo['default'])
-                try:
-                    pstr += '; valid options: {}'.format(pinfo['options'])
-                except:
-                    pass
-                param_lst.append(pstr)
+                # pstr = 'parameter: \'{}\'; {}; default: {}'.format(
+                #     p, type(pinfo['type']), pinfo['default'])
+                # try:
+                #     pstr += '; valid options: {}'.format(pinfo['options'])
+                # except:
+                #     pass
+                # param_lst.append(pstr)
+                param_lst.append(pinfo)
         pinfo = BrokerParameters['provider']
-        prov_str = ','.join(providers)
-        param_lst.append('parameter: provider; \'{}\'; default: \'{}\'; valid options: {}'.format(
-            type(BrokerParameters['provider']['type']), prov_str, providers))
-            
-        msg = 'S^n {} service is online for parameters: \n{}'.format(
-                    self.SERVICE_TYPE['endpoint'], '\n'.join(param_lst))
-        
+        pinfo['options'] = providers
+        param_lst.append(pinfo)
+        # param_lst.append('parameter: provider; \'{}\'; default: \'{}\'; valid options: {}'.format(
+        #     type(BrokerParameters['provider']['type']), prov_str, providers))            
+        # msg = 'S^n {} service is online for parameters: \n{}'.format(
+        #             self.SERVICE_TYPE['endpoint'], '\n'.join(param_lst))
+        info = {
+            'info': 'S^n {} service is online.'.format(self.SERVICE_TYPE['endpoint']), 
+            'parameters': param_lst}
         output = S2nOutput(
-                0, '', self.SERVICE_TYPE['endpoint'], prov_str, errors=[msg])
+                0, '', self.SERVICE_TYPE['endpoint'], ','.join(providers), errors=[info])
         return output
 
     # ...............................................

@@ -45,23 +45,20 @@ class SpecifyResolverAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, record_format, query_term, service, provider_query=[], count_only=False, err=None):
+            cls, output, query_term, provider_query=[], err={}):
         errmsgs = []
         stdrecs = []
         total = 0
-        query_term = 'query_term={}; count_only={}'.format(query_term, count_only)
-        if err is not None:
+        if err:
             errmsgs.append(err)
         try:
             stdrecs.append(cls._standardize_record(output))
         except Exception as e:
-            msg = cls._get_error_message(err=e)
-            errmsgs.append(msg)
+            errmsgs.append({'error': cls._get_error_message(err=e)})
                         
         std_output = S2nOutput(
-            total, query_term, service, cls.PROVIDER, 
-            provider_query=provider_query, record_format=record_format, 
-            records=stdrecs, errors=errmsgs)
+            total, query_term, APIService.Resolve['endpoint'], cls.PROVIDER, 
+            provider_query=provider_query, records=stdrecs, errors=errmsgs)
 
         return std_output
 
@@ -88,23 +85,25 @@ class SpecifyResolverAPI(APIQuery):
         try:
             cls.query_by_get(output_type='json')
         except Exception as e:
-            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             try:
                 output = api.output['response']
             except:
                 if api.error is not None:
                     std_output = cls.get_failure(
-                        errors=[cls._get_error_message(err=api.error)])
+                        errors=[{'error': cls._get_error_message(err=api.error)}])
                 else:
                     std_output = cls.get_failure(
-                        errors=[cls._get_error_message(
-                            msg='Missing `response` element')])
+                        errors=[{'error': cls._get_error_message(
+                            msg='Missing `response` element')}])
             else:
+                api_err = None
+                if api.error:
+                    api_err = {'error': api.error}
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                    sciname, APIService.Name['endpoint'], provider_query=[api.url], is_accepted=is_accepted, err=api.error)
+                    output, guid, APIService.Name['endpoint'], provider_query=[api.url], err=api_err)
         return std_output
 
     

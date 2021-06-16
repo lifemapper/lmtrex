@@ -239,21 +239,21 @@ class ItisAPI(APIQuery):
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, record_format, query_term, service,
-            provider_query=[], is_accepted=False, err=None):
+            provider_query=[], is_accepted=False, err={}):
         total = 0
         stdrecs = []
         errmsgs = []
-        if err is not None:
+        if err:
             errmsgs.append(err)
 
         try:
             total = output[count_key]
         except Exception as e:
-            errmsgs.append(cls._get_error_message(err=e))
+            errmsgs.append({'error': cls._get_error_message(err=e)})
         try:
             docs = output[records_key]
         except:
-            errmsgs.append(cls._get_error_message(err=e))
+            errmsgs.append({'error': cls._get_error_message(err=e)})
         else:
             for doc in docs:
                 newrec = cls._standardize_record(doc, is_accepted=is_accepted)
@@ -295,18 +295,18 @@ class ItisAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             try:
                 output = api.output['response']
             except:
                 if api.error is not None:
                     std_output = cls.get_failure(
-                        errors=[cls._get_error_message(err=api.error)])
+                        errors=[{'error': cls._get_error_message(err=api.error)}])
                 else:
                     std_output = cls.get_failure(
-                        errors=[cls._get_error_message(
-                            msg='Missing `response` element')])
+                        errors=[{'error': cls._get_error_message(
+                            msg='Missing `response` element')}])
             else:
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
@@ -332,7 +332,7 @@ class ItisAPI(APIQuery):
         try:
             apiq.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             # Standardize output from provider response
             std_output = cls._standardize_output(

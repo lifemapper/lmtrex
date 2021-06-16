@@ -157,12 +157,15 @@ class IdigbioAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_out = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
+            api_err = None
+            if api.error:
+                api_err = {'error': api.error}
             std_out = cls._standardize_output(
                 api.output, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, 
                 Idigbio.RECORD_FORMAT, occid, APIService.Occurrence['endpoint'], 
-                provider_query=[api.url], count_only=count_only, err=api.error)
+                provider_query=[api.url], count_only=count_only, err=api_err)
         
         return std_out
 

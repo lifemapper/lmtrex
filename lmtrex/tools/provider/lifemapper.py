@@ -115,23 +115,21 @@ class LifemapperAPI(APIQuery):
     @classmethod
     def _standardize_map_output(
             cls, output, query_term, service, prjscenariocodes=None, color=None, count_only=False, 
-            provider_query=[], err=None):
+            provider_query=[], err={}):
         occ_layer_rec = None
         stdrecs = []
         errmsgs = []
-        if err is not None:
-            errmsgs.append(err)
-        if err is not None:
+        if err:
             errmsgs.append(err)
         # Records
         if len(output) == 0:
-            errmsgs.append(cls._get_error_message(
-                'Failed to return any map layers for {}'.format(query_term)))
+            errmsgs.append({'error': cls._get_error_message(
+                'Failed to return any map layers for {}'.format(query_term))})
         else:
             try:
                 occ_url = output[0]['occurrenceSet']['metadataUrl']
             except Exception as e:
-                errmsgs.append(cls._get_error_message('Failed to return occurrence URL'))
+                errmsgs.append({'error': cls._get_error_message('Failed to return occurrence URL')})
             else:
                 occ_rec = cls._get_occurrenceset_record(occ_url)
                 occ_layer_rec = cls._standardize_layer_record(occ_rec)
@@ -145,7 +143,7 @@ class LifemapperAPI(APIQuery):
                     if r2:
                         stdrecs.append(r2)
                 except Exception as e:
-                    errmsgs.append(cls._get_error_message(err=e))
+                    errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
         std_output = S2nOutput(
@@ -156,11 +154,11 @@ class LifemapperAPI(APIQuery):
     
     # ...............................................
     @classmethod
-    def _standardize_occ_output(cls, output, color=None, count_only=False, err=None):
+    def _standardize_occ_output(cls, output, color=None, count_only=False, err={}):
         stdrecs = []
-        errmsgs = []
+        errmsgs = {}
         total = len(output)
-        if err is not None:
+        if err:
             errmsgs.append(err)
         # Records]
         if not count_only:
@@ -168,7 +166,7 @@ class LifemapperAPI(APIQuery):
                 try:
                     stdrecs.append(cls._standardize_occ_record(r, color=color))
                 except Exception as e:
-                    errmsgs.append(cls._get_error_message(err=e))
+                    errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
         std_output = S2nOutput(
@@ -213,10 +211,13 @@ class LifemapperAPI(APIQuery):
         except Exception as e:
             std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
         else:
+            api_err = None
+            if api.error:
+                api_err = {'error': api.error}
             std_output = cls._standardize_map_output(
                 api.output, name, APIService.Map['endpoint'], provider_query=[api.url], 
                 prjscenariocodes=prjscenariocodes, color=color, count_only=False, 
-                err=api.error)
+                err=api_err)
 
         return std_output
 
@@ -242,10 +243,13 @@ class LifemapperAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            out = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
+            api_err = None
+            if api.error:
+                api_err = {'error': api.error}
             # Standardize output from provider response
-            out = cls._standardize_occ_output(api.output, err=api.error)
+            out = cls._standardize_occ_output(api.output, err=api_err)
 
         full_out = S2nOutput(
             count=out.count, record_format=out.record_format, 
@@ -271,7 +275,7 @@ class LifemapperAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            out = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             try:
                 rec = api.output
