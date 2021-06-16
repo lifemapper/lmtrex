@@ -1,5 +1,5 @@
 from lmtrex.common.lmconstants import (
-    APIService, DWC, JSON_HEADERS, ServiceProvider, S2N_SCHEMA, TST_VALUES)
+    APIService, DWC, JSON_HEADERS, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
 
@@ -17,7 +17,7 @@ class SpecifyPortalAPI(APIQuery):
 
     # ...............................................
     @classmethod
-    def _standardize_record(cls, rec):
+    def _standardize_sp7_record(cls, rec):
         newrec = {}
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
         for fldname, val in rec:
@@ -33,27 +33,48 @@ class SpecifyPortalAPI(APIQuery):
                 
     # ...............................................
     @classmethod
+    def _standardize_sp6_record(cls, rec):
+        newrec = {}
+        mapping = S2N_SCHEMA.get_specifycache_occurrence_map()
+        for fldname, val in rec.items():
+            # Leave out fields without value
+            if val:
+                # Leave out non-mapped fields
+                try:
+                    newfldname = mapping[fldname]
+                    newrec[newfldname] = val
+                except:
+                    pass
+        return newrec
+                
+    # ...............................................
+    @classmethod
     def _standardize_output(
             cls, output, query_term, service, provider_query=[], count_only=False, err={}):
         stdrecs = []
         total = 0
+        is_specify_cache = False
         errmsgs = []
         if err:
             errmsgs.append(err)
         # Count
         if output:
             try:
+                # Specify 7 record
                 rec = output['core']
             except Exception as e:
-                errmsgs.append({'error': cls._get_error_message(err=e)})
-            else:
+                rec = output
+                is_specify_cache = True
+                
+            if rec:
                 total = 1
                 # Records
                 if not count_only:
-                    try:
-                        stdrecs.append(cls._standardize_record(rec))
-                    except Exception as e:
-                        errmsgs.append({'error': cls._get_error_message(err=e)})
+                    if is_specify_cache:
+                        stdrecs.append(cls._standardize_sp6_record(rec))
+                    else:
+                        stdrecs.append(cls._standardize_sp7_record(rec))
+                        
         std_output = S2nOutput(
             total, query_term, service, cls.PROVIDER, 
             provider_query=provider_query, record_format=DWC.SCHEMA, 

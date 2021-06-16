@@ -6,10 +6,11 @@ from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
 from lmtrex.tools.provider.mopho import MorphoSourceAPI
 from lmtrex.tools.provider.specify import SpecifyPortalAPI
+from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
+
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.resolve import ResolveSvc
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 # .............................................................................
@@ -34,12 +35,11 @@ class OccurrenceSvc(_S2nService):
     # ...............................................
     def _get_specify_records(self, occid, count_only):
         # Resolve for record URL
-        spark = ResolveSvc()
-        std_output = spark.get_specify_records(occid)
-        (url, msg) = spark.get_url_from_meta(std_output)
+        spark = SpecifyResolverAPI()
+        api_url = spark.resolve_guid_to_url(occid)
                 
         try:
-            output = SpecifyPortalAPI.get_specify_record(occid, url, count_only)
+            output = SpecifyPortalAPI.get_specify_record(occid, api_url, count_only)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
@@ -122,10 +122,10 @@ class OccurrenceSvc(_S2nService):
                     allrecs.append(mopho_output)
                     provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
                 # Specify
-                # elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
-                #     sp_output = self._get_specify_records(occid, count_only)
-                #     allrecs.append(sp_output)
-                #     provnames.append(ServiceProvider.Specify[S2nKey.NAME])
+                elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
+                    sp_output = self._get_specify_records(occid, count_only)
+                    allrecs.append(sp_output)
+                    provnames.append(ServiceProvider.Specify[S2nKey.NAME])
             # Filter by parameters
             elif dskey:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
@@ -173,6 +173,11 @@ class OccurrenceSvc(_S2nService):
                     mopho_output = self._get_mopho_records(occid, count_only)
                     allrecs.append(mopho_output)
                     provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
+                # Specify
+                elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
+                    sp_output = self._get_specify_records(occid, count_only)
+                    allrecs.append(sp_output)
+                    provnames.append(ServiceProvider.Specify[S2nKey.NAME])
             # Filter by parameters
             elif dskey:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
@@ -245,7 +250,7 @@ if __name__ == '__main__':
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
-    occids.insert(0, None)
+    occids = [None, '2facc7a2-dd88-44af-b95a-733cc27527d4']
     # Get all providers
     for occid in occids:
         out = svc.GET(occid=occid, count_only=False)

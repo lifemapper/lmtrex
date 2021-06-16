@@ -1,5 +1,5 @@
 from lmtrex.common.lmconstants import (
-    APIService, SYFTER, ServiceProvider, S2N_SCHEMA)
+    APIService, COMMUNITY_SCHEMA, SYFTER, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import get_traceback
@@ -51,10 +51,12 @@ class SpecifyResolverAPI(APIQuery):
         total = 0
         if err:
             errmsgs.append(err)
-        try:
-            stdrecs.append(cls._standardize_record(output))
-        except Exception as e:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
+        if output:
+            try:
+                stdrecs.append(cls._standardize_record(output))
+                total = 1
+            except Exception as e:
+                errmsgs.append({'error': cls._get_error_message(err=e)})
                         
         std_output = S2nOutput(
             total, query_term, APIService.Resolve['endpoint'], cls.PROVIDER, 
@@ -107,6 +109,22 @@ class SpecifyResolverAPI(APIQuery):
                 provider_query=api.url, records=[], errors=api_err)
         return std_output
 
+    # ...............................................
+    @classmethod
+    def resolve_guid_to_url(cls, occid):
+        try:
+            std_output = cls.query_for_guid(occid)
+        except Exception as e:
+            traceback = get_traceback()
+            return traceback
+        else:
+            url = None
+            if std_output.response[S2nKey.COUNT] > 0:
+                rec = std_output.response['records'][0]
+                fldname ='{}:api_url'.format(COMMUNITY_SCHEMA.S2N['code'])
+                url = rec[fldname]
+        return url
+
 # ...............................................
     @classmethod
     def query_for_guid(cls, guid, logger=None):
@@ -127,27 +145,16 @@ class SpecifyResolverAPI(APIQuery):
         api = SpecifyResolverAPI(ident=guid, logger=logger)
 
         try:
-            cls.query_by_get(output_type='json')
+            api.query_by_get(output_type='json')
         except Exception as e:
             std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
-            try:
-                output = api.output['response']
-            except:
-                if api.error is not None:
-                    std_output = cls.get_failure(
-                        errors=[{'error': cls._get_error_message(err=api.error)}])
-                else:
-                    std_output = cls.get_failure(
-                        errors=[{'error': cls._get_error_message(
-                            msg='Missing `response` element')}])
-            else:
-                api_err = None
-                if api.error:
-                    api_err = {'error': api.error}
-                # Standardize output from provider response
-                std_output = cls._standardize_output(
-                    output, guid, APIService.Resolve['endpoint'], provider_query=[api.url], err=api_err)
+            api_err = None
+            if api.error:
+                api_err = {'error': api.error}
+            # Standardize output from provider response
+            std_output = cls._standardize_output(
+                api.output, guid, provider_query=[api.url], err=api_err)
         return std_output
 
     

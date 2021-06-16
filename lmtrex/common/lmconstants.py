@@ -12,7 +12,8 @@ TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
 SPECIFY7_RECORD_ENDPOINT = 'export/record'
-SPECIFY_CACHE_API = 'https://notyeti-195.lifemapper.org/api/v1/sp_cache'
+# TODO: create a script to switch between dev.syftorium.org and syftorium.org (production)
+SPECIFY_CACHE_API = 'https://dev.syftorium.org/api/v1/sp_cache'
 SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 
 DATA_DUMP_DELIMITER = '\t'
@@ -726,6 +727,9 @@ class S2N_SCHEMA:
         # MorphoSource-specific field
         'specimen.specimen_id': COMMUNITY_SCHEMA.MS,
 
+        # Specify7-specific field
+        'specify_identifier': COMMUNITY_SCHEMA.S2N,
+
         'accessRights': COMMUNITY_SCHEMA.DCT,
         'language': COMMUNITY_SCHEMA.DCT,
         'license': COMMUNITY_SCHEMA.DCT,
@@ -766,11 +770,36 @@ class S2N_SCHEMA:
         'day': COMMUNITY_SCHEMA.DWC,
     }
     RESOLVED = {
-        # Provider's URLs to this record
-        'view_url': COMMUNITY_SCHEMA.S2N,
+        'ident': COMMUNITY_SCHEMA.S2N,
+        'dataset_guid': COMMUNITY_SCHEMA.S2N,
+        'institutionCode': COMMUNITY_SCHEMA.DWC,
+        'basisOfRecord': COMMUNITY_SCHEMA.DWC,
+        'date': COMMUNITY_SCHEMA.S2N,
+        'ark': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N
     }
     
+    @classmethod
+    def get_s2n_fields(cls, svc):
+        if svc == APIService.Map['endpoint']:
+            schema = S2N_SCHEMA.MAP
+        elif svc == APIService.Name['endpoint']:
+            schema = S2N_SCHEMA.NAME
+        elif svc == APIService.Occurrence['endpoint']:
+            schema = S2N_SCHEMA.OCCURRENCE
+        elif svc == APIService.Resolve['endpoint']:
+            schema = S2N_SCHEMA.RESOLVED
+        else:
+            schema = None
+            
+        flds = []
+        try:
+            for fname, ns in schema.items():
+                flds.append('{}:{}'.format(ns, fname))
+        except:
+            pass
+        return flds
+
     @classmethod
     def get_gbif_taxonkey_fld(cls):
         return '{}:gbif_taxon_key'.format(COMMUNITY_SCHEMA.S2N['code'])
@@ -816,6 +845,28 @@ class S2N_SCHEMA:
             spfldname = '{}/{}'.format(comschem['url'], fn)
             newfldname = '{}:{}'.format(comschem['code'], fn)
             sname_stdname[spfldname] = newfldname
+        return sname_stdname
+    
+    @classmethod
+    def get_specifycache_occurrence_map(cls):
+        # sp_cache_names_outside_of_stdnames = [
+        #     'collection_id','continent','country','county','eventDate','id','institutionID',
+        #     'modified','preparations','rights']
+        names_in_spcache = [
+            'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
+            'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
+            'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
+        occschem = S2N_SCHEMA.OCCURRENCE
+        sname_stdname = {}
+        for fn in names_in_spcache:
+            if fn == 'identifier':
+                newfn = 'specify_identifier'
+                ns = occschem[newfn]['code']
+                stdname = '{}:{}'.format(ns, newfn)
+            else:
+                ns = occschem[fn]['code']
+                stdname = '{}:{}'.format(ns, fn)
+            sname_stdname[fn] = stdname
         return sname_stdname
 
     @classmethod
@@ -882,36 +933,53 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_lifemapper_map_map(cls):
-        s2n = COMMUNITY_SCHEMA.S2N['code']
-        mapping = {
-        'endpoint': '{}:endpoint'.format(s2n),
-        'data_link': '{}:data_link'.format(s2n),
-        'sdm_projection_scenario_code': '{}:sdm_projection_scenario_code'.format(s2n),
-        'sdm_projection_scenario_link': '{}:sdm_projection_scenario_link'.format(s2n),
-        'layer_type': '{}:layer_type'.format(s2n),
-        'layer_name': '{}:layer_name'.format(s2n),
-        'point_count': '{}:point_count'.format(s2n),
-        'point_bbox': '{}:point_bbox'.format(s2n),
-        'speciesName': '{}:species_name'.format(s2n),
-        'status': '{}:lm_status_code'.format(s2n),
-        'statusModTime': '{}:modtime'.format(s2n),
-            }
-        return mapping
+        # s2n = COMMUNITY_SCHEMA.S2N['code']
+        # mapping = {
+        # 'endpoint': '{}:endpoint'.format(s2n),
+        # 'data_link': '{}:data_link'.format(s2n),
+        # 'sdm_projection_scenario_code': '{}:sdm_projection_scenario_code'.format(s2n),
+        # 'sdm_projection_scenario_link': '{}:sdm_projection_scenario_link'.format(s2n),
+        # 'layer_type': '{}:layer_type'.format(s2n),
+        # 'layer_name': '{}:layer_name'.format(s2n),
+        # 'point_count': '{}:point_count'.format(s2n),
+        # 'point_bbox': '{}:point_bbox'.format(s2n),
+        # 'speciesName': '{}:species_name'.format(s2n),
+        # 'status': '{}:lm_status_code'.format(s2n),
+        # 'statusModTime': '{}:modtime'.format(s2n),
+        #     }
+        lm_stdname = {}
+        for fn, comschem in S2N_SCHEMA.RESOLVED.items():
+            std_name = '{}:{}'.format(comschem['code'], fn)
+            if fn == 'species_name':
+                lm_stdname['speciesName'] = std_name
+            elif fn == 'lm_status_code':
+                lm_stdname['status'] = std_name
+            elif fn == 'modtime':
+                lm_stdname['statusModTime'] = std_name
+            else:
+                lm_stdname[fn] = std_name
+        return lm_stdname
 
     @classmethod
     def get_specify_resolver_map(cls):
-        s2n = COMMUNITY_SCHEMA.S2N['code']
-        dwc = COMMUNITY_SCHEMA.DWC['code']
-        mapping = {
-            'id': '{}:ident'.format(s2n),
-            'dataset_guid': '{}:api_url'.format(s2n),
-            'who': '{}:institutionCode'.format(dwc),
-            'what': '{}:basisOfRecord'.format(dwc),
-            'when': '{}:date'.format(s2n),
-            'where': '{}:ark'.format(s2n),
-            'url': '{}:api_url'.format(s2n)
-            }
-        return mapping
+        spres_stdname = {}
+        for fn, comschem in S2N_SCHEMA.RESOLVED.items():
+            std_name = '{}:{}'.format(comschem['code'], fn)
+            if fn == 'ident':
+                spres_stdname['id'] = std_name
+            elif fn == 'institutionCode':
+                spres_stdname['who'] = std_name
+            elif fn == 'basisOfRecord':
+                spres_stdname['what'] = std_name
+            elif fn == 'date':
+                spres_stdname['when'] = std_name
+            elif fn == 'ark':
+                spres_stdname['where'] = std_name
+            elif fn == 'api_url':
+                spres_stdname['url'] = std_name
+            else:
+                spres_stdname[fn] = std_name
+        return spres_stdname
         
 # .............................................................................
 class ITIS:

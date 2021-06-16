@@ -1,7 +1,6 @@
 import cherrypy
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, SPECIFY)
-import lmtrex.tools.solr as SpSolr
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
 from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
@@ -40,8 +39,7 @@ class ResolveSvc(_S2nService):
     # ...............................................
     def resolve_specify_guid(self, occid):
         try:
-            output = SpSolr.query_guid(
-                occid, SPECIFY.RESOLVER_COLLECTION, SPECIFY.RESOLVER_LOCATION)
+            output = SpecifyResolverAPI.query_for_guid(occid)
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(
