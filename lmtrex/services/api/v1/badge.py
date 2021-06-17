@@ -54,49 +54,53 @@ class BadgeSvc(_S2nService):
         Return:
             a file containing the requested icon
         """
+        output = None
+        
         valid_providers = self.get_valid_providers()
         if provider is None or icon_status is None:
             output = self._show_online(valid_providers)
         elif provider.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
-        try:
-            usr_params, info_valid_options = self._standardize_params_new(
-                provider=provider, icon_status=icon_status)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                provider, icon_status), errors=[{'error': traceback}])
-            return output.response
-        
-        # Without a provider or icon_status, send online status
-        if len(usr_params['provider']) == 0 or usr_params['icon_status'] is None:
-            output = self._show_online(valid_providers)
-            return output.response
-
-        # Only first provider is used
-        provider = usr_params['provider'].pop()
-        icon_status = usr_params['icon_status']
-        try:
-            icon_fname = self.get_icon(provider, icon_status)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                provider, icon_status), errors=[{'error': traceback}])
-            return output.response
-
-        # Whew
-        ifile = open(icon_fname, mode='rb')
-        # ret_file_name = os.path.basename(icon_fname)
-        # cherrypy.response.headers[
-        #     'Content-Disposition'] = 'attachment; filename="{}"'.format(ret_file_name)
-        cherrypy.response.headers['Content-Type'] = ICON_CONTENT
-        
-        if stream:
-            return cherrypy.lib.file_generator(ifile)
         else:
-            icontent = ifile.read()
-            ifile.close()
-            return icontent
+            try:
+                usr_params, info_valid_options = self._standardize_params_new(
+                    provider=provider, icon_status=icon_status)
+            except Exception as e:
+                traceback = get_traceback()
+                output = self.get_failure(query_term='provider={}, icon_status={}'.format(
+                    provider, icon_status), errors=[{'error': traceback}])
+            else:
+                # Without a provider or icon_status, send online status
+                if len(usr_params['provider']) == 0 or usr_params['icon_status'] is None:
+                    output = self._show_online(valid_providers)
+                else:
+                    # Only first provider is used
+                    provider = usr_params['provider'].pop()
+                    icon_status = usr_params['icon_status']
+                    try:
+                        icon_fname = self.get_icon(provider, icon_status)
+                    except Exception as e:
+                        traceback = get_traceback()
+                        output = self.get_failure(query_term='provider={}, icon_status={}'.format(
+                            provider, icon_status), errors=[{'error': traceback}])
+
+        # Return service parameters if anything is amiss
+        if output:
+            return output.response
+        else:
+            # Whew
+            ifile = open(icon_fname, mode='rb')
+            # ret_file_name = os.path.basename(icon_fname)
+            # cherrypy.response.headers[
+            #     'Content-Disposition'] = 'attachment; filename="{}"'.format(ret_file_name)
+            cherrypy.response.headers['Content-Type'] = ICON_CONTENT
+            
+            if stream:
+                return cherrypy.lib.file_generator(ifile)
+            else:
+                icontent = ifile.read()
+                ifile.close()
+                return icontent
     
 
 # .............................................................................
@@ -107,6 +111,8 @@ if __name__ == '__main__':
     retval = svc.GET(provider='gbif', icon_status='activex')
     print(retval)
     retval = svc.GET()
+    print(retval)
+    retval = svc.GET(provider='gbif', icon_status='active')
     print(retval)
     # for pr in valid_providers:
     #     for stat in VALID_ICON_OPTIONS:
