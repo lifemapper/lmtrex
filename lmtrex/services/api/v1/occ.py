@@ -253,9 +253,10 @@ if __name__ == '__main__':
     occids = [None, '2facc7a2-dd88-44af-b95a-733cc27527d4']
     # Get all providers
     for occid in occids:
-        out = svc.GET(occid=occid, count_only=False)
-        outputs = out['records']
-        print_s2n_output(out)
+        for prov in svc.get_providers():
+            out = svc.GET(occid=occid, provider=prov, count_only=False)
+            outputs = out['records']
+            print_s2n_output(out)
         # for pout in outputs:
         #     if pout['count'] > 0:
         #         if pout['provider'] == 'Specify':

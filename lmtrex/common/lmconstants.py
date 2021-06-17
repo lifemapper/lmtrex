@@ -14,6 +14,7 @@ SPECIFY7_SERVER_KEY = 'specify7-server'
 SPECIFY7_RECORD_ENDPOINT = 'export/record'
 # TODO: create a script to switch between dev.syftorium.org and syftorium.org (production)
 SPECIFY_CACHE_API = 'https://dev.syftorium.org/api/v1/sp_cache'
+# SPECIFY_CACHE_API = 'https://syftorium.org/api/v1/sp_cache'
 SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 
 DATA_DUMP_DELIMITER = '\t'

@@ -164,9 +164,9 @@ if __name__ == '__main__':
     
     svc = NameSvc()
     for namestr in test_names:
-        for gparse in [True]:
+        for prov in svc.get_providers():
             out = svc.GET(
-                namestr=namestr, is_accepted=False, gbif_parse=gparse, 
+                namestr=namestr, is_accepted=False, gbif_parse=True, 
                 gbif_count=True, kingdom=None)
             print_s2n_output(out)
     print_s2n_output(out)
