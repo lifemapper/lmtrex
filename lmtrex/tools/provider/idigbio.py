@@ -73,6 +73,9 @@ class IdigbioAPI(APIQuery):
     def _standardize_record(cls, rec):
         newrec = {}
         issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]]
+        # Add icon url
+        newrec['{}:icon_url'.format(
+            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.iDigBio[S2nKey.PARAM])
         # Should contain 'uuid' field
         try:
             uuid = rec[Idigbio.ID_FIELD]

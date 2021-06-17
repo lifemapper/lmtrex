@@ -1,5 +1,5 @@
 from lmtrex.common.lmconstants import (
-    APIService, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
+    APIService, COMMUNITY_SCHEMA, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
 from lmtrex.fileop.logtools import (log_error, log_info)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
@@ -25,6 +25,10 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
+        # Add icon url
+        newrec['{}:icon_url'.format(
+            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.MorphoSource[S2nKey.PARAM])
+        # Add provider stuff
         for fldname, val in rec.items():
             # Leave out fields without value
             if fldname in cls.OCCURRENCE_MAP.keys():

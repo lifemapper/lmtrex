@@ -153,6 +153,10 @@ class GbifAPI(APIQuery):
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
         issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
 
+        # Add icon url
+        newrec['{}:icon_url'.format(
+            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.GBIF[S2nKey.PARAM])
+        # Add provider stuff
         for fldname, val in rec.items():
             # Leave out fields without value
             if val and fldname in cls.OCCURRENCE_MAP.keys():
@@ -193,6 +197,9 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_name_record(cls, rec):
         newrec = {}
+        # Add icon url
+        newrec['{}:icon_url'.format(
+            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.GBIF[S2nKey.PARAM])
         for fldname, val in rec.items():
             # Leave out fields without value
             if val:
@@ -456,8 +463,7 @@ class GbifAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(msg='No match')})
                     simple_output[S2nKey.OCCURRENCE_URL] = None
                 else:
-                    simple_output[S2nKey.OCCURRENCE_URL] = '{}/{}'.format(
-                        GBIF.species_url(), taxon_key)
+                    simple_output[S2nKey.OCCURRENCE_URL] = api.url
         # TODO: standardize_record and provide schema link
         simple_output[S2nKey.COUNT] = total
         simple_output[S2nKey.QUERY_TERM] = taxon_key

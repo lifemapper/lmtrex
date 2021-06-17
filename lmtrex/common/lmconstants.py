@@ -9,6 +9,10 @@ CONFIG_DIR = 'config'
 TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
+# Broker icon service
+ICON_API = 'https://broker-dev.spcoco.org/api/v1/badge'
+# ICON_API = 'https://broker.spcoco.org/api/v1/badge'
+
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
 SPECIFY7_RECORD_ENDPOINT = 'export/record'
@@ -670,6 +674,7 @@ class S2N_SCHEMA:
         # Provider's URLs to this record
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
+        'icon_url': COMMUNITY_SCHEMA.S2N,
         # S2n standardization of common elements
         'status': COMMUNITY_SCHEMA.S2N,
         'scientific_name': COMMUNITY_SCHEMA.S2N,
@@ -694,6 +699,7 @@ class S2N_SCHEMA:
         # Provider's URLs to this record
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
+        'icon_url': COMMUNITY_SCHEMA.S2N,
 
         'endpoint': COMMUNITY_SCHEMA.S2N,
         'data_link': COMMUNITY_SCHEMA.S2N,
@@ -715,6 +721,7 @@ class S2N_SCHEMA:
         # Provider's URLs to this record
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
+        'icon_url': COMMUNITY_SCHEMA.S2N,
         # S2n resolution of non-standard contents
         'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
 
@@ -857,6 +864,8 @@ class S2N_SCHEMA:
             'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
             'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
             'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
+        # Add urls
+        names_in_spcache.extend(['api_url', 'view_url', 'icon_url'])
         occschem = S2N_SCHEMA.OCCURRENCE
         sname_stdname = {}
         for fn in names_in_spcache:
@@ -883,7 +892,7 @@ class S2N_SCHEMA:
                 mopho_stdname['specimen.occurrence_id'] = std_name
             elif fn == 'uuid':
                 mopho_stdname['specimen.uuid'] = std_name
-            elif fn in ['specimen.specimen_id', 'view_url', 'api_url']:
+            elif fn in ['specimen.specimen_id', 'view_url', 'api_url', 'icon_url']:
                 mopho_stdname[fn] = std_name
         return mopho_stdname
     
@@ -893,6 +902,7 @@ class S2N_SCHEMA:
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
             'api_url': '{}:api_url'.format(s2n),
+            'icon_url': '{}:icon_url'.format(s2n),
             'status': '{}:status'.format(s2n),
             'scientificName': '{}:scientific_name'.format(s2n),
             'canonicalName': '{}:canonical_name'.format(s2n), 
@@ -917,6 +927,7 @@ class S2N_SCHEMA:
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
             'api_url': '{}:api_url'.format(s2n),
+            'icon_url': '{}:icon_url'.format(s2n),
             'usage': '{}:status'.format(s2n),
             'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
             'nameWOInd': '{}:canonical_name'.format(s2n), 

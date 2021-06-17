@@ -1,5 +1,5 @@
 from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, ServiceProvider, S2N_SCHEMA)
+    APIService, COMMUNITY_SCHEMA, Lifemapper, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import get_traceback
@@ -59,6 +59,9 @@ class LifemapperAPI(APIQuery):
             return newrec
 
         # Success
+        # Add icon url
+        newrec['{}:icon_url'.format(
+            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.Lifemapper[S2nKey.PARAM])
         newrec[cls.MAP_MAP['endpoint']] = '{}/{}'.format(map_url, mapname)
         newrec[cls.MAP_MAP['layer_name']] = '{}/{}'.format(map_url, layer_name)
         newrec[cls.MAP_MAP['status']] = stat

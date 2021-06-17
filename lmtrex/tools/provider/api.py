@@ -4,7 +4,7 @@ import typing
 import urllib
 
 from lmtrex.common.lmconstants import (
-    HTTPStatus, URL_ESCAPES, ENCODING, TST_VALUES)
+    HTTPStatus, ICON_API, URL_ESCAPES, ENCODING, TST_VALUES)
 from lmtrex.fileop.logtools import (log_warn)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.lm_xml import fromstring, deserialize
@@ -48,6 +48,15 @@ class APIQuery:
             implemented in subclasses
         """
         raise Exception('Not implemented in base class')
+    
+    # ...............................................
+    @classmethod
+    def get_icon_url(cls, provider, icon_status=None):
+        """Add link to badge service with provider param and optionally icon_status."""
+        url = '{}?provider={}'.format(ICON_API, provider)
+        if icon_status:
+            url = '{}&icon_status={}'.format(url, icon_status)
+        return url
     
     # ...............................................
     @classmethod
