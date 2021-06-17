@@ -64,7 +64,7 @@ class BadgeSvc(_S2nService):
         output = None
         
         valid_providers = self.get_valid_providers()
-        if provider is None or icon_status is None:
+        if provider is None and icon_status is None:
             output = self._show_online(valid_providers)
         elif provider.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     svc = BadgeSvc()
     # Get all providers
     valid_providers = svc.get_valid_providers()
-    retval = svc.GET(provider='gbif', icon_status='activex')
+    retval = svc.GET(provider='gbif')
     print(retval)
     retval = svc.GET()
     print(retval)

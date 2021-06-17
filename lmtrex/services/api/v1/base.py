@@ -404,11 +404,16 @@ class _S2nService:
             # Require one valid icon_status
             elif key == 'icon_status':
                 valid_stat = BrokerParameters[key]['options']
-                if val is None or val not in valid_stat:
+                if val is None:
                     option_errors.append(
                         {'error':
-                         'Value {} for parameter icon_status not in valid options {}'.format(
-                             val, valid_stat)})
+                         'Parameter {} containing one of {} options is required'.format(
+                             key, valid_stat)})
+                elif val not in valid_stat:
+                    option_errors.append(
+                        {'error':
+                         'Value {} for parameter {} not in valid options {}'.format(
+                             val, key, valid_stat)})
                     
             elif val is not None:
                 # Allows None or comma-delimited list
