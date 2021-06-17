@@ -220,7 +220,7 @@ class OccurrenceSvc(_S2nService):
         else:   
             # No filter_params defined for Name service yet
             try:
-                good_params, info_valid_options = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params_new(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
             except Exception as e:
@@ -234,9 +234,8 @@ class OccurrenceSvc(_S2nService):
                         dataset_key=good_params['dataset_key'])
 
                     # Add message on invalid parameters to output
-                    for key, options in info_valid_options.items():
-                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
-                        output.append_value(S2nKey.ERRORS, msg)
+                    for err in option_errors:
+                        output.append_value(S2nKey.ERRORS, err)
                 except Exception as e:
                     traceback = get_traceback()
                     output = self.get_failure(query_term=good_params['occid'], errors=[{'error': traceback}])

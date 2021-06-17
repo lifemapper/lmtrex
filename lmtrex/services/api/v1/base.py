@@ -320,24 +320,45 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
+    def get_multivalue_options(cls, user_vals, valid_vals):
+        "Default for parameters allowing multiple values is to return results for all options"
+        valid_params = set()
+        invalid_params = set()        
+        
+        for v in user_vals:
+            if v in valid_vals:
+                valid_params.add(v)
+            else:
+                invalid_params.add(v)
+
+        if not valid_params: 
+            valid_params = valid_vals
+            
+        return list(valid_params), list(invalid_params)
+
+    # .............................................................................
+    @classmethod
     def get_valid_requested_providers_new(cls, user_provider_string, valid_providers):
-        valid_requested_providers = set()
-        invalid_providers = set()        
+        # valid_requested_providers = set()
+        # invalid_providers = set()
+        user_provs = []
         
         if user_provider_string:
             user_provider_string = user_provider_string.lower()
             tmpprovs = user_provider_string.split(',')
             user_provs = set([tp.strip() for tp in tmpprovs])
-            for prov in user_provs:
-                if prov in valid_providers:
-                    valid_requested_providers.add(prov)
-                else:
-                    invalid_providers.add(prov)
-
-        if not valid_requested_providers: 
-            valid_requested_providers = valid_providers
             
-        return list(valid_requested_providers), list(invalid_providers)
+        valid_requested_providers, invalid_providers = cls.get_multivalue_options(user_provs, valid_providers)
+        #     for prov in user_provs:
+        #         if prov in valid_providers:
+        #             valid_requested_providers.add(prov)
+        #         else:
+        #             invalid_providers.add(prov)
+        #
+        # if not valid_requested_providers: 
+        #     valid_requested_providers = valid_providers
+            
+        return valid_requested_providers, invalid_providers
 
     # ...............................................
     def _process_params_new(self, user_kwargs, valid_providers):
@@ -357,20 +378,20 @@ class _S2nService:
             Do we need not_in_valid_options for error message?
         """
         good_params = {}
-        info_valid_options = {}
+        option_errors = []
         
         # Allows None or comma-delimited list
         valid_requested_providers, invalid_providers = self.get_valid_requested_providers_new(
             user_kwargs['provider'], valid_providers)
         if invalid_providers:
-            info_valid_options['error'] = \
-            'Value(s) {} for parameter provider not in valid options {}'.format(
-                user_kwargs['provider'], valid_providers)
+            option_errors.append(
+                {'error':
+                 'Value(s) {} for parameter provider not in valid options {}'.format(
+                     invalid_providers, valid_providers)})
 
         # Correct all parameter keys/values present
         for key in self.SERVICE_TYPE['params']:
             val = user_kwargs[key]
-        # for key, val in user_kwargs.items():
             # Add valid providers to parameters
             if key == 'provider':
                 good_params[key] = valid_requested_providers
@@ -380,30 +401,42 @@ class _S2nService:
             elif key == 'namestr':
                 good_params['namestr'] = val
                 
+            # Require one valid icon_status
+            elif key == 'icon_status':
+                valid_stat = BrokerParameters[key]['options']
+                if val is None or val not in valid_stat:
+                    option_errors.append(
+                        {'error':
+                         'Value {} for parameter icon_status not in valid options {}'.format(
+                             val, valid_stat)})
+                    
             elif val is not None:
                 # Allows None or comma-delimited list
                 if key == 'scenariocode':
-                    scens = set()
-                    val = val.lower() 
+                    usr_scens = []
+                    valid_scens = BrokerParameters[key]['options']
                     tmpscens = val.split(',') 
                     for ts in tmpscens:
-                        scen = ts.strip()
-                        if scen in BrokerParameters[key]['options']:
-                            scens.add(scen)
-                    if scens:
-                        good_params[key] = list(scens)
-                    else:
-                        info_valid_options['error'] = \
-                        'Value {} for parameter {} is not in valid options {}'.format(
-                            val, key, BrokerParameters[key]['options'])
-                        good_params[key] = BrokerParameters[key]['options']
+                        # scen = ts.lower().strip()
+                        usr_scens.append(ts.lower().strip())
+                    valid_requested_scens, invalid_scens = self.get_multivalue_options(usr_scens, valid_scens)
+                    # Accept good options (or default/all)
+                    good_params[key] = valid_requested_scens
+                    # But include message for invalid options
+                    if invalid_scens:
+                        option_errors.append(
+                            {'error':
+                             'Value(s) {} for parameter scenariocode not in valid options {}'.format(
+                                 invalid_scens, valid_scens)})
                 # All other parameters have single value
                 else:
                     usr_val, valid_options = self._fix_type_new(key, val)
-                    # TODO: Do we need this info_valid_options to correct user?
+                    # TODO: Do we need this option_errors to correct user?
                     if valid_options is not None and val not in valid_options:
-                        info_valid_options['error'] = 'Value {} for parameter {} is not in valid options {}'.format(
-                            val, key, BrokerParameters[key]['options'])
+                        option_errors.append(
+                            {'error': 
+                             'Value {} for parameter {} is not in valid options {}'.format(
+                                 val, key, BrokerParameters[key]['options'])})
                         good_params[key] = None
                     else:
                         good_params[key] = usr_val
@@ -417,7 +450,7 @@ class _S2nService:
             except:
                 good_params[key] = param_meta['default']
             
-        return good_params, info_valid_options
+        return good_params, option_errors
 
     # ...............................................
     def _standardize_params(
@@ -617,7 +650,7 @@ class _S2nService:
             'icon_status': icon_status}
         
         valid_providers = self.get_valid_providers(filter_params=filter_params)
-        usr_params, info_valid_options = self._process_params_new(user_kwargs, valid_providers)
+        usr_params, option_errors = self._process_params_new(user_kwargs, valid_providers)
 
         # Remove gbif_parse and itis_match flags
         gbif_parse = itis_match = False
@@ -633,7 +666,7 @@ class _S2nService:
         if namestr and (gbif_parse or itis_match):
             usr_params['namestr'] = self.parse_name_with_gbif(namestr)
                 
-        return usr_params, info_valid_options
+        return usr_params, option_errors
 
     # ..........................
     @staticmethod

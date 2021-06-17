@@ -131,7 +131,7 @@ class NameSvc(_S2nService):
         else:
             # No filter_params defined for Name service yet
             try:
-                good_params, info_valid_options = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params_new(
                     namestr=namestr, provider=provider, is_accepted=is_accepted, 
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
             except Exception as e:
@@ -145,9 +145,8 @@ class NameSvc(_S2nService):
                         good_params['gbif_count'], good_params['kingdom'])
 
                     # Add message on invalid parameters to output
-                    for key, options in info_valid_options.items():
-                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
-                        output.append_value(S2nKey.ERRORS, msg)
+                    for err in option_errors:
+                        output.append_value(S2nKey.ERRORS, err)
     
                 except Exception as e:
                     output = self.get_failure(query_term=namestr, errors=[{'error': str(e)}])

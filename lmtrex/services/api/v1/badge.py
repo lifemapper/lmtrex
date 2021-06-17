@@ -70,26 +70,42 @@ class BadgeSvc(_S2nService):
             output = self._show_online(valid_providers)
         else:
             try:
-                usr_params, info_valid_options = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params_new(
                     provider=provider, icon_status=icon_status)
             except Exception as e:
                 traceback = get_traceback()
                 output = self.get_failure(query_term='provider={}, icon_status={}'.format(
                     provider, icon_status), errors=[{'error': traceback}])
             else:
-                # Without a provider or icon_status, send online status
-                if len(usr_params['provider']) == 0 or usr_params['icon_status'] is None:
-                    output = self._show_online(valid_providers)
-                else:
-                    # Only first provider is used
-                    provider = usr_params['provider'].pop()
-                    icon_status = usr_params['icon_status']
-                    try:
-                        icon_fname = self.get_icon(provider, icon_status)
-                    except Exception as e:
-                        traceback = get_traceback()
-                        output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                            provider, icon_status), errors=[{'error': traceback}])
+                errors = []
+                try:
+                    provider = good_params['provider'].pop()
+                except:
+                    errors.append(
+                         {'error': 
+                          'Parameter provider containing one of {} options is required'.format(
+                              valid_providers)})
+                else:                    
+                    if provider not in valid_providers:
+                        errors.append(
+                             {'error': 
+                              'Value(s) {} for parameter provider not in valid options {}'.format(
+                                  good_params['provider'], valid_providers)})
+                    if option_errors:
+                        errors.extend(option_errors)
+                        
+                    if errors:
+                        output = self.get_failure(provider=','.join(valid_providers), errors=errors)
+                    else:
+                        # Only first provider is used
+                        provider = good_params['provider'].pop()
+                        icon_status = good_params['icon_status']
+                        try:
+                            icon_fname = self.get_icon(provider, icon_status)
+                        except Exception as e:
+                            traceback = get_traceback()
+                            output = self.get_failure(query_term='provider={}, icon_status={}'.format(
+                                provider, icon_status), errors=[{'error': traceback}])
 
         # Return service parameters if anything is amiss
         if output:

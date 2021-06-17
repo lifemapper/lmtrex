@@ -118,20 +118,19 @@ class ResolveSvc(_S2nService):
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, info_valid_options = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params_new(
                     occid=occid, provider=provider)
             except Exception as e:
                 traceback = get_traceback()
                 output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
-            else:    
+            else:
                 # What to query: address one occurrence record, with optional filters
                 try:
                     output = self.get_records(good_params['occid'], good_params['provider'])
 
                     # Add message on invalid parameters to output
-                    for key, options in info_valid_options.items():
-                        msg = 'Valid {} options: {}'.format(key, ','.join(options))
-                        output.append_value(S2nKey.ERRORS, msg)
+                    for err in option_errors.items():
+                        output.append_value(S2nKey.ERRORS, err)
                 except Exception as e:
                     traceback = get_traceback()
                     output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
