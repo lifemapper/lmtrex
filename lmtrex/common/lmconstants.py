@@ -519,7 +519,7 @@ BrokerParameters = {
     'icon_status': {
         'type': '', 
         'options': VALID_ICON_OPTIONS, 
-        'default': VALID_ICON_OPTIONS[0]}
+        'default': None}
     }
 
 # ......................................................

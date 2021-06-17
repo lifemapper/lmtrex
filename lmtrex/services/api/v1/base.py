@@ -395,7 +395,9 @@ class _S2nService:
                     # TODO: Do we need this info_valid_options to correct user?
                     if valid_options is not None and val not in valid_options:
                         info_valid_options[key] = valid_options
-                    good_params[key] = usr_val
+                        good_params[key] = None
+                    else:
+                        good_params[key] = usr_val
                 
         # Add defaults for missing parameters
         for key in self.SERVICE_TYPE['params']:
