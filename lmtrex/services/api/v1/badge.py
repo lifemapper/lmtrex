@@ -116,7 +116,7 @@ if __name__ == '__main__':
     print(retval)
     retval = svc.GET()
     print(retval)
-    retval = svc.GET(provider='gbif', icon_status='active')
+    retval = svc.GET(provider='morphosource', icon_status='active')
     print(retval)
     # for pr in valid_providers:
     #     for stat in VALID_ICON_OPTIONS:

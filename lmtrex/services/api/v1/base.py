@@ -22,6 +22,7 @@ class _S2nService:
         for p in ServiceProvider.all():
             if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
+        provnames = list(provnames)
         return provnames
 
     # ...............................................
@@ -33,6 +34,8 @@ class _S2nService:
         for p in ServiceProvider.all():
             if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
+                
+        provnames = list(provnames)
         return provnames
 
     # .............................................................................
@@ -319,23 +322,22 @@ class _S2nService:
     @classmethod
     def get_valid_requested_providers_new(cls, user_provider_string, valid_providers):
         valid_requested_providers = set()
-        contains_invalid_option = False
+        invalid_providers = set()        
         
         if user_provider_string:
             user_provider_string = user_provider_string.lower()
             tmpprovs = user_provider_string.split(',')
             user_provs = set([tp.strip() for tp in tmpprovs])
-            invalid_providers = set()
             for prov in user_provs:
                 if prov in valid_providers:
                     valid_requested_providers.add(prov)
                 else:
-                    contains_invalid_option = True
+                    invalid_providers.add(prov)
 
         if not valid_requested_providers: 
             valid_requested_providers = valid_providers
             
-        return valid_requested_providers, contains_invalid_option
+        return list(valid_requested_providers), list(invalid_providers)
 
     # ...............................................
     def _process_params_new(self, user_kwargs, valid_providers):
@@ -358,10 +360,12 @@ class _S2nService:
         info_valid_options = {}
         
         # Allows None or comma-delimited list
-        valid_requested_providers, contains_invalid_option = self.get_valid_requested_providers_new(
+        valid_requested_providers, invalid_providers = self.get_valid_requested_providers_new(
             user_kwargs['provider'], valid_providers)
-        if contains_invalid_option:
-            info_valid_options['provider'] = valid_providers
+        if invalid_providers:
+            info_valid_options['error'] = \
+            'Value(s) {} for parameter provider not in valid options {}'.format(
+                user_kwargs['provider'], valid_providers)
 
         # Correct all parameter keys/values present
         for key in self.SERVICE_TYPE['params']:
@@ -387,16 +391,19 @@ class _S2nService:
                         if scen in BrokerParameters[key]['options']:
                             scens.add(scen)
                     if scens:
-                        good_params[key] = scens
+                        good_params[key] = list(scens)
                     else:
-                        info_valid_options[key] = BrokerParameters[key]['options']
+                        info_valid_options['error'] = \
+                        'Value {} for parameter {} is not in valid options {}'.format(
+                            val, key, BrokerParameters[key]['options'])
                         good_params[key] = BrokerParameters[key]['options']
                 # All other parameters have single value
                 else:
                     usr_val, valid_options = self._fix_type_new(key, val)
                     # TODO: Do we need this info_valid_options to correct user?
                     if valid_options is not None and val not in valid_options:
-                        info_valid_options[key] = valid_options
+                        info_valid_options['error'] = 'Value {} for parameter {} is not in valid options {}'.format(
+                            val, key, BrokerParameters[key]['options'])
                         good_params[key] = None
                     else:
                         good_params[key] = usr_val

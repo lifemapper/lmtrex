@@ -164,13 +164,17 @@ if __name__ == '__main__':
     
     svc = NameSvc()
     out = svc.GET()
-    for namestr in test_names:
-        for prov in svc.get_providers():
-            out = svc.GET(
-                namestr=namestr, is_accepted=False, gbif_parse=True, 
-                gbif_count=True, kingdom=None)
-            print_s2n_output(out)
+    out = svc.GET(
+        namestr='Tulipa sylvestris', provider='gbif', is_accepted=False, gbif_parse=True, 
+        gbif_count=True, kingdom=None)
     print_s2n_output(out)
+    # for namestr in test_names:
+    #     for prov in svc.get_providers():
+    #         out = svc.GET(
+    #             namestr=namestr, provider=prov, is_accepted=False, gbif_parse=True, 
+    #             gbif_count=True, kingdom=None)
+    #         print_s2n_output(out)
+    # print_s2n_output(out)
                 
 """
 https://broker-dev.spcoco.org/api/v1/name/Poa annua?provider=gbif
