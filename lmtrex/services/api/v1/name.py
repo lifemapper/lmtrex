@@ -158,11 +158,12 @@ class NameSvc(_S2nService):
 if __name__ == '__main__':
 
     # test
-    test_names = TST_VALUES.NAMES[0:4]
-    test_names.extend([None, 'poa', 'Tulipa sylvestris'])
+    # test_names = TST_VALUES.NAMES[0:4]
+    test_names = [None, 'poa', 'Tulipa sylvestris']
     
     
     svc = NameSvc()
+    out = svc.GET()
     for namestr in test_names:
         for prov in svc.get_providers():
             out = svc.GET(

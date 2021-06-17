@@ -86,15 +86,11 @@ class BadgeSvc(_S2nService):
 
         # Return service parameters if anything is amiss
         if output:
+            cherrypy.response.headers['Content-Type'] = 'application/json'
             return output.response
         else:
-            # Whew
-            ifile = open(icon_fname, mode='rb')
-            # ret_file_name = os.path.basename(icon_fname)
-            # cherrypy.response.headers[
-            #     'Content-Disposition'] = 'attachment; filename="{}"'.format(ret_file_name)
             cherrypy.response.headers['Content-Type'] = ICON_CONTENT
-            
+            ifile = open(icon_fname, mode='rb')
             if stream:
                 return cherrypy.lib.file_generator(ifile)
             else:

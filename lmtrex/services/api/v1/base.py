@@ -119,9 +119,9 @@ class _S2nService:
         param_lst = []
         for p in self.SERVICE_TYPE['params']:
             pinfo = BrokerParameters[p].copy()
-            pinfo['type'] = type(pinfo['type'])
+            pinfo['type'] = str(type(pinfo['type']))
             if p == 'provider':
-                pinfo['options'] = providers
+                pinfo['options'] = list(providers)
             param_lst.append({p: pinfo})
         info = {
             'info': 'S^n {} service is online.'.format(self.SERVICE_TYPE['endpoint']), 
