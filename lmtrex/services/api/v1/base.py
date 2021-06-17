@@ -307,11 +307,11 @@ class _S2nService:
         valid_requested_providers, invalid_providers = self.get_valid_requested_providers(
             user_kwargs['provider'], valid_providers)
         # TODO: Why are option_errors retained across queries!!
-        if invalid_providers:
+        for ip in invalid_providers:
             option_errors.append(
                 {'error':
-                 'Value(s) {} for parameter provider not in valid options {}'.format(
-                     invalid_providers, valid_providers)})
+                 'Value {} for parameter provider not in valid options {}'.format(
+                     ip, valid_providers)})
 
         # Correct all parameter keys/values present
         for key in self.SERVICE_TYPE['params']:
