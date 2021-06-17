@@ -948,7 +948,7 @@ class S2N_SCHEMA:
         # 'statusModTime': '{}:modtime'.format(s2n),
         #     }
         lm_stdname = {}
-        for fn, comschem in S2N_SCHEMA.RESOLVED.items():
+        for fn, comschem in S2N_SCHEMA.MAP.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'species_name':
                 lm_stdname['speciesName'] = std_name
