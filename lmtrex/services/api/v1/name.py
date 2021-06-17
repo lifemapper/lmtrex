@@ -131,7 +131,7 @@ class NameSvc(_S2nService):
         else:
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params(
                     namestr=namestr, provider=provider, is_accepted=is_accepted, 
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
             except Exception as e:

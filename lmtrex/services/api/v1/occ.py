@@ -220,7 +220,7 @@ class OccurrenceSvc(_S2nService):
         else:   
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
             except Exception as e:
@@ -249,6 +249,8 @@ if __name__ == '__main__':
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
+    out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
+    
     occids = [None, '2facc7a2-dd88-44af-b95a-733cc27527d4']
     # Get all providers
     for occid in occids:

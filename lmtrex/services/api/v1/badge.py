@@ -70,7 +70,7 @@ class BadgeSvc(_S2nService):
             output = self._show_online(valid_providers)
         else:
             try:
-                good_params, option_errors = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params(
                     provider=provider, icon_status=icon_status)
             except Exception as e:
                 traceback = get_traceback()

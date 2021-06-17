@@ -118,7 +118,7 @@ class ResolveSvc(_S2nService):
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, option_errors = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params(
                     occid=occid, provider=provider)
             except Exception as e:
                 traceback = get_traceback()

@@ -68,42 +68,7 @@ class _S2nService:
             records=records, errors=errors)
         return all_output
 
-    # .............................................................................
-    @classmethod
-    def get_valid_requested_providers(cls, standardized_providers, valid_providers):
-        # Who to query
-        req_providers = set(standardized_providers)
-        valid_providers = set(valid_providers)
-        
-        if req_providers is None: 
-            req_providers = valid_providers
-        else:
-            # Note invalid providers
-            invalid_providers = req_providers.difference(valid_providers)
-            # Only return valid requested providers
-            valid_req_providers = valid_providers.intersection(req_providers)
-            if len(valid_req_providers) == 0:
-                valid_req_providers = valid_providers
-        return valid_req_providers, invalid_providers
 
-    # # .............................................................................
-    # @classmethod
-    # def get_valid_requested_providers_new(cls, requested_providers, valid_providers):
-    #     invalid_providers = set()
-    #     # valid_providers = cls.get_valid_providers(filter_params=filter_params)
-    #
-    #     if requested_providers is None: 
-    #         valid_req_providers = valid_providers
-    #     else:
-    #         # Who to query
-    #         req_providers = set([prov.lower() for prov in requested_providers])
-    #         # Note invalid providers
-    #         invalid_providers = req_providers.difference(valid_providers)
-    #         valid_req_providers = valid_providers.intersection(req_providers)
-    #         # No providers --> all providers
-    #         if len(valid_req_providers) == 0:
-    #             valid_req_providers = valid_providers
-    #     return valid_req_providers, invalid_providers
 
     # .............................................................................
     @classmethod
@@ -276,48 +241,6 @@ class _S2nService:
             def_val = default_val
         return def_val
 
-        
-    # ...............................................
-    def _process_params(self, kwarg_defaults, user_kwargs):
-        """
-        Modify all user provided key/value pairs to change keys to lower case, 
-        and change values to the expected type (string, int, float, boolean).
-        
-        Args:
-            kwarg_defaults: dictionary of 
-                * keys containing valid keyword parameters for the current 
-                    service. All must be lowercase.
-                * values containing 
-                    * the default value or 
-                    * list of valid values (first is default), or
-                    * tuple of 2 elements: None (default), and a value of the correct type 
-            user_kwargs: dictionary of keywords and values sent by the user for 
-                the current service.
-                
-        Note:
-            A list of valid values for a keyword can include None as a default 
-                if user-provided value is invalid
-        """
-        good_params = {}
-        # Correct all parameter keys/values present
-        for key, provided_val in user_kwargs.items():
-            key = key.lower()
-            try:
-                default_val = kwarg_defaults[key]
-            except:
-                pass
-            else:
-                usr_val = self._fix_type(provided_val, default_val)
-                if usr_val is not None:
-                    good_params[key] = usr_val
-                
-        # Add missing defaults
-        for dkey, dval in kwarg_defaults.items():
-            if good_params[dkey] is None:
-                good_params[dkey] = self._get_def_val(dval)
-            
-        return good_params
-
     # .............................................................................
     @classmethod
     def get_multivalue_options(cls, user_vals, valid_vals):
@@ -338,7 +261,7 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_valid_requested_providers_new(cls, user_provider_string, valid_providers):
+    def get_valid_requested_providers(cls, user_provider_string, valid_providers):
         # valid_requested_providers = set()
         # invalid_providers = set()
         user_provs = []
@@ -361,7 +284,7 @@ class _S2nService:
         return valid_requested_providers, invalid_providers
 
     # ...............................................
-    def _process_params_new(self, user_kwargs, valid_providers):
+    def _process_params(self, user_kwargs, valid_providers):
         """
         Modify all user provided key/value pairs to change keys to lower case, 
         and change values to the expected type (string, int, float, boolean).
@@ -381,8 +304,9 @@ class _S2nService:
         option_errors = []
         
         # Allows None or comma-delimited list
-        valid_requested_providers, invalid_providers = self.get_valid_requested_providers_new(
+        valid_requested_providers, invalid_providers = self.get_valid_requested_providers(
             user_kwargs['provider'], valid_providers)
+        # TODO: Why are option_errors retained across queries!!
         if invalid_providers:
             option_errors.append(
                 {'error':
@@ -459,162 +383,6 @@ class _S2nService:
 
     # ...............................................
     def _standardize_params(
-            self, valid_providers=None, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
-            gbif_count=False, itis_match=False, kingdom=None, 
-            occid=None, dataset_key=None, count_only=False, url=None,
-            scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
-            layers=None, request=None, frmat=None, srs=None, transparent=None, 
-            width=None, do_match=True, icon_status=None):
-        """Standardize the parameters for all Name Services into a dictionary 
-        with all keys as standardized parameter names and values as 
-        correctly-typed user values or defaults. 
-        
-        Note: 
-            This function sets default values, but defaults may be changed for 
-            a few subclasses that share parameters but have different defaults.  
-            Change default with _set_default, prior to calling this method.
-        
-        Args:
-            provider: string containing a comma delimited list of provider 
-                codes indicating which providers to query.  If the string is not present
-                or 'all', all providers of this service will be queried.
-            is_accepted: flag to indicate whether to limit to 'valid' or 
-                'accepted' taxa in the ITIS Taxonomy or GBIF Backbone Taxonomy
-            gbif_parse: flag to indicate whether to first use the GBIF parser 
-                to parse a scientific name into canonical name
-            gbif_count: flag to indicate whether to count occurrences in 
-                service provider for this taxon
-            itis_match: flag to indicate whether to first use the ITIS solr 
-                service to match a scientific name to an ITIS accepted name,
-                used with BISON
-            kingdom: filter for ITIS records from this kingdom
-            occid: a Specify occurrence GUID, mapped to the 
-                dwc:occurrenceId field
-            dataset_key: a GBIF dataset GUID for returning a set of points, 
-                used with GBIF
-            count_only: flag indicating whether to return records
-            url: direct URL to Specify occurrence, only used with for Specify
-                queries
-            scenariocode: A lifemapper code indicating the climate scenario used
-                to calculate predicted presence of a species 
-            bbox: A (min x, min y, max x, max y) tuple of bounding parameters
-            color: The color (or color ramp) to use for the map
-            exceptions: The format to report exceptions in
-            height: The height (in pixels) of the returned map
-            layers: A comma-delimited list of layer names
-            request: The request operation name to perform
-            frmat: The desired response format, query parameter is
-                'format'
-            sld: (todo) A URL referencing a StyledLayerDescriptor XML file which
-                controls or enhances map layers and styling
-            sld_body: (todo) A URL-encoded StyledLayerDescriptor XML document which
-                controls or enhances map layers and styling
-            srs: The spatial reference system for the map output.  'crs' for
-                version 1.3.0.
-            transparent: Boolean indicating if the background of the map should
-                be transparent
-            width: The width (in pixels) of the returned map
-            do_match: Flag indicating whether to query GBIF for the 'accepted' 
-                scientific name
-            icon_status: string indicating which version of the icon to return, valid options are:
-                active, inactive, hover 
-        Return:
-            a dictionary containing keys and properly formated values for the
-                user specified parameters.
-        """
-        empty_str = ''
-        if valid_providers is None:
-            valid_providers = (None, empty_str)
-        kwarg_defaults = {
-            # Sequences denote value options, the first is the default, 
-            #    other values are of the required type
-            # For name services
-            'provider': valid_providers,
-            'is_accepted': False, 
-            'gbif_parse': False, 
-            'gbif_count': False, 
-            'itis_match': False, 
-            'kingdom': (None, empty_str),
-            # For occurrence services
-            'occid': (None, empty_str), 
-            'dataset_key': (None, empty_str), 
-            'count_only': False, 
-            'url': (None, empty_str),
-            'scenariocode': (None, empty_str),
-            'bbox': '-180,-90,180,90', 
-            'color': Lifemapper.VALID_COLORS,
-            'exceptions': (None, empty_str), 
-            'height': 300, 
-            # VALID broker parameter options, must be list
-            'layers': Lifemapper.VALID_MAPLAYER_TYPES,
-            'request': VALID_MAP_REQUESTS, 
-            'format': None, 
-            'srs': 'epsg:4326', 
-            'transparent': None, 
-            'width': 600, 
-            'icon_status': VALID_ICON_OPTIONS}
-        user_kwargs = {
-            'provider': provider,
-            'is_accepted': is_accepted, 
-            'gbif_parse': gbif_parse, 
-            'gbif_count': gbif_count, 
-            'itis_match': itis_match, 
-            'kingdom': kingdom, 
-            'occid': occid, 
-            'dataset_key': dataset_key, 
-            'count_only': count_only, 
-            'url': url,
-            'scenariocode': scenariocode,
-            'bbox': bbox, 
-            'color': color, 
-            'exceptions': exceptions, 
-            'height': height, 
-            'layers': layers, 
-            'request': request, 
-            'format': frmat, 
-            'srs': srs, 
-            'transparent': transparent, 
-            'width': width, 
-            'icon_status': icon_status}
-        
-        usr_params, bad_params = self._process_params(kwarg_defaults, user_kwargs)
-        # Do not edit namestr, maintain capitalization
-        usr_params['namestr'] = namestr
-        # Allow for None or comma-delimited list of providers
-        provs = []
-        if provider is not None:
-            provs = []
-            # Prepared params are lower case 
-            tmpprovs = usr_params['provider'].split(',') 
-            for tp in tmpprovs:
-                prov = tp.strip()
-                if ServiceProvider.is_valid_param(prov):
-                    provs.append(prov)
-        usr_params['provider'] = provs
-        # Allow for None or comma-delimited list of scenarios
-        scens = []
-        if scenariocode is not None:
-            # Prepared params are lower case 
-            tmpscens = usr_params['scenariocode'].split(',') 
-            for ts in tmpscens:
-                scen = ts.strip()
-                if scen in Lifemapper.valid_scenario_codes():
-                    scens.append(scen)
-        usr_params['scenariocode'] = scens
-        # Remove 'gbif_parse' and itis_match flags
-        gbif_parse = usr_params.pop('gbif_parse')
-        itis_match = usr_params.pop('itis_match')
-        # Replace namestr with GBIF-parsed namestr
-        if namestr:
-            if gbif_parse: 
-                usr_params['namestr'] = self.parse_name_with_gbif(namestr)
-            elif itis_match:
-                usr_params['namestr'] = self.parse_name_with_gbif(namestr)
-                
-        return usr_params, bad_params
-
-    # ...............................................
-    def _standardize_params_new(
             self, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
             gbif_count=False, itis_match=False, kingdom=None, 
             occid=None, dataset_key=None, count_only=False, url=None,
@@ -655,7 +423,8 @@ class _S2nService:
             'icon_status': icon_status}
         
         valid_providers = self.get_valid_providers(filter_params=filter_params)
-        usr_params, option_errors = self._process_params_new(user_kwargs, valid_providers)
+        option_errors = None
+        usr_params, option_errors = self._process_params(user_kwargs, valid_providers)
 
         # Remove gbif_parse and itis_match flags
         gbif_parse = itis_match = False

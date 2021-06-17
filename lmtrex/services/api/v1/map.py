@@ -110,7 +110,7 @@ class MapSvc(_S2nService):
             output = self._show_online(valid_providers)
         else:   
             try:
-                good_params, option_errors = self._standardize_params_new(
+                good_params, option_errors = self._standardize_params(
                     namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                     is_accepted=is_accepted, scenariocode=scenariocode, color=color)
             except Exception as e:
@@ -130,56 +130,6 @@ class MapSvc(_S2nService):
                         
                 except Exception as e:
                     output = self.get_failure(query_term=namestr, errors=[{'error': str(e)}])
-        return output.response
-
-    # ...............................................
-    @cherrypy.tools.json_out()
-    def GETOLD(self, namestr=None, provider=None, gbif_parse=True, is_accepted=True, 
-            scenariocode=None, color=None, **kwargs):
-        """Get one or more taxon records for a scientific name string from each
-        available name service.
-        
-        Args:
-            namestr: a scientific name
-            gbif_parse: flag to indicate whether to first use the GBIF parser 
-                to parse a scientific name into canonical name 
-        Return:
-            a dictionary with keys for each service queried.  Values contain 
-            lmtrex.services.api.v1.S2nOutput object with records as a 
-            list of dictionaries of Lifemapper records corresponding to 
-            maps with URLs and their layers in the Lifemapper archive
-        """
-        # No filter_params defined for Map service yet
-        try:
-            usr_params = self._standardize_params(
-                namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
-                is_accepted=is_accepted, scenariocode=scenariocode, color=color)
-        except Exception as e:
-            traceback = get_traceback()
-            output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
-        else:            
-            # Who to query
-            valid_providers = self.get_providers()
-            valid_req_providers, invalid_providers = self.get_valid_requested_providers(
-                usr_params['provider'], valid_providers)
-
-            # What to query
-            scencodes = usr_params['scenariocode']
-            namestr = usr_params['namestr']
-            try:
-                if namestr is None:
-                    output = self._show_online(providers=valid_providers)
-                else:
-                    # Query
-                    output = self.get_records(
-                        namestr, valid_req_providers, usr_params['is_accepted'], 
-                        scencodes, usr_params['color'])
-                    if invalid_providers:
-                        msg = 'Invalid providers requested: {}'.format(
-                            ','.join(invalid_providers))
-                        output.append_value(S2nKey.ERRORS, msg)
-            except Exception as e:
-                output = self.get_failure(query_term=namestr, errors=[str(e)])
         return output.response
 
 # .............................................................................
