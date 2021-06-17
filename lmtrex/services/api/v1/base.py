@@ -116,6 +116,10 @@ class _S2nService:
     
     # ...............................................
     def _show_online(self, providers):
+        svc = self.SERVICE_TYPE['endpoint']
+        info = {
+            'info': 'S^n {} service is online.'.format(svc)}
+
         param_lst = []
         for p in self.SERVICE_TYPE['params']:
             pinfo = BrokerParameters[p].copy()
@@ -123,11 +127,9 @@ class _S2nService:
             if p == 'provider':
                 pinfo['options'] = list(providers)
             param_lst.append({p: pinfo})
-        info = {
-            'info': 'S^n {} service is online.'.format(self.SERVICE_TYPE['endpoint']), 
-            'parameters': param_lst}
-        output = S2nOutput(
-                0, '', self.SERVICE_TYPE['endpoint'], ','.join(providers), errors=[info])
+        info['parameters'] = param_lst
+        
+        output = S2nOutput(0, '', svc, ','.join(providers), errors=[info])
         return output
 
     # ...............................................

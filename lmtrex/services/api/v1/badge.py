@@ -37,6 +37,13 @@ class BadgeSvc(_S2nService):
         return full_filename
 
     # ...............................................
+    @cherrypy.tools.json_out()
+    def get_json_service_info(self, output):
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        import json
+        boutput = bytes(json.dumps(output.response), 'utf-8')
+        return boutput
+
     # ...............................................
     def GET(self, provider=None, icon_status=None, stream=True, **kwargs):
         """Get one icon to indicate a provider in a GUI
@@ -86,8 +93,9 @@ class BadgeSvc(_S2nService):
 
         # Return service parameters if anything is amiss
         if output:
-            cherrypy.response.headers['Content-Type'] = 'application/json'
-            return output.response
+            boutput = self.get_json_service_info(output)
+            return boutput
+            
         else:
             cherrypy.response.headers['Content-Type'] = ICON_CONTENT
             ifile = open(icon_fname, mode='rb')
