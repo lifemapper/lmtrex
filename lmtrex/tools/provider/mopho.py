@@ -63,9 +63,10 @@ class MorphoSourceAPI(APIQuery):
             std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             # Standardize output from provider response
+            query_term = 'occid={}&count_only={}'.format(occid, count_only)
             std_out = cls._standardize_output(
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
-                MorphoSource.RECORD_FORMAT, occid, APIService.Occurrence['endpoint'], 
+                MorphoSource.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
                 provider_query=[api.url], count_only=count_only, err=api.error)
         
         return std_out

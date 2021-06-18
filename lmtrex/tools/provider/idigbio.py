@@ -165,9 +165,10 @@ class IdigbioAPI(APIQuery):
             api_err = None
             if api.error:
                 api_err = {'error': api.error}
+            query_term = 'occid={}&count_only={}'.format(occid, count_only)
             std_out = cls._standardize_output(
                 api.output, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, 
-                Idigbio.RECORD_FORMAT, occid, APIService.Occurrence['endpoint'], 
+                Idigbio.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
                 provider_query=[api.url], count_only=count_only, err=api_err)
         
         return std_out

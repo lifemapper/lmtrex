@@ -119,8 +119,9 @@ class SpecifyPortalAPI(APIQuery):
             if api.error:
                 api_err = {'error': api.error}
             # Standardize output from provider response
+            query_term = 'occid={}&count_only={}'.format(occid, count_only)
             std_output = cls._standardize_output(
-                api.output, occid, APIService.Occurrence['endpoint'], 
+                api.output, query_term, APIService.Occurrence['endpoint'], 
                 provider_query=[url], count_only=count_only, err=api_err)
         
         return std_output

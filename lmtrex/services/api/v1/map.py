@@ -67,11 +67,14 @@ class MapSvc(_S2nService):
             self, namestr, req_providers, is_accepted, scenariocodes, color):
         allrecs = []
         # for response metadata
-        common_query = ''
+        query_term = ''
         if namestr is not None:
-            common_query = 'namestr={}; provider={}'.format(
-                namestr, ','.join(req_providers))
-            
+            sc = scenariocodes
+            if scenariocodes:
+                sc = ','.join(scenariocodes)
+            query_term = \
+            'namestr={}&provider={}&is_accepted={}&scenariocodes={}&color={}'.format(
+                namestr, ','.join(req_providers), is_accepted, sc, color)
         provnames = []
         for pr in req_providers:
             # Lifemapper
@@ -83,7 +86,7 @@ class MapSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), common_query, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 

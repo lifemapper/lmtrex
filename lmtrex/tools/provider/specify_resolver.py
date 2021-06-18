@@ -153,8 +153,9 @@ class SpecifyResolverAPI(APIQuery):
             if api.error:
                 api_err = {'error': api.error}
             # Standardize output from provider response
+            query_term = 'occid={}'.format(guid)
             std_output = cls._standardize_output(
-                api.output, guid, provider_query=[api.url], err=api_err)
+                api.output, query_term, provider_query=[api.url], err=api_err)
         return std_output
 
     

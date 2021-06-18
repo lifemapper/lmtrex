@@ -41,9 +41,12 @@ class _S2nService:
     # .............................................................................
     @classmethod
     def get_failure(
-        cls, count: int = 0, record_format: str = '',
-        records: typing.List[dict] = [], provider: str = '', 
-        errors: typing.List[dict] = [], provider_query: typing.List[str] = [],
+        cls, count: int = 0, 
+        record_format: str = '',
+        records: typing.List[dict] = [], 
+        provider: str = '', 
+        errors: typing.List[dict] = [], 
+        provider_query: typing.List[str] = [],
         query_term: str = '', service: str = '') -> S2nOutput:
         """Output format for all (soon) S^n services
         
@@ -126,49 +129,6 @@ class _S2nService:
             # Default to original namestring if match fails
             pass
         return namestr
-        
-    # ...............................................
-    def _fix_type(self, provided_val, default_val):
-        if provided_val is None:
-            return None
-        # all strings are lower case
-        try:
-            provided_val = provided_val.lower()
-        except:
-            pass
-        
-        # Find type from sequence of options
-        if isinstance(default_val, list) or isinstance(default_val, tuple):
-            if len(default_val) <= 1:
-                raise Exception('Sequence of options must contain > 1 item')
-            # Find type from other value in sequence containing None
-            if default_val[0] is not None:
-                default_val = default_val[0]
-            else:
-                default_val = default_val[1]
-
-        # Convert int, str to boolean
-        if isinstance(default_val, bool):                
-            if provided_val in (0, '0', 'no', 'false'):
-                return False
-            else:
-                return True
-        elif isinstance(default_val, str):                
-            usr_val = str(provided_val)
-            
-        # Failed conversions return default value
-        elif isinstance(default_val, float):
-            try:             
-                usr_val = float(provided_val)
-            except:
-                usr_val = default_val
-        elif isinstance(default_val, int):                
-            try:             
-                usr_val = int(provided_val)
-            except:
-                usr_val = default_val
-                
-        return usr_val
 
     # ...............................................
     def _fix_type_new(self, key, provided_val):
@@ -241,47 +201,68 @@ class _S2nService:
             def_val = default_val
         return def_val
 
+    # # .............................................................................
+    # @classmethod
+    # def get_multivalue_options(cls, user_vals, valid_vals):
+    #     "Default for parameters allowing multiple values is to return results for all options"
+    #     valid_params = set()
+    #     invalid_params = set()        
+    #
+    #     for v in user_vals:
+    #         if v in valid_vals:
+    #             valid_params.add(v)
+    #         else:
+    #             invalid_params.add(v)
+    #
+    #     return list(valid_params), list(invalid_params)
+
     # .............................................................................
     @classmethod
-    def get_multivalue_options(cls, user_vals, valid_vals):
-        "Default for parameters allowing multiple values is to return results for all options"
-        valid_params = set()
-        invalid_params = set()        
+    def get_valid_requested_params(cls, user_params_string, valid_params):
+        """
+        Return valid requested and invalid options for parameters that accept multiple values,
+        including provider and scenariocode parameters.
         
-        for v in user_vals:
-            if v in valid_vals:
-                valid_params.add(v)
+        Note: 
+            provider: 
+                For the badge service, exactly one provider is required.  For all other services, 
+                multiple providers are accepted, and None indicates to query all valid providers.
+            scenariocode: 
+                For the map service, multiple scenariocode are accepted, and None indicates to 
+                return map layers computed with all valid scenariocodes.
+        """
+        valid_requested_params = set()
+        invalid_params = set()
+        
+        if user_params_string:
+            tmplst = user_params_string.split(',')
+            user_params = set([tp.lower().strip() for tp in tmplst])
+            
+            # valid_requested_providers, invalid_providers = cls.get_multivalue_options(user_provs, valid_providers)
+            for param in user_params:
+                if param in valid_params:
+                    valid_requested_params.add(param)
+                else:
+                    invalid_params.add(param)
+                    
+            invalid_params = list(invalid_params)
+            if valid_requested_params:
+                valid_requested_params = list(valid_requested_params)
             else:
-                invalid_params.add(v)
-
-        if not valid_params: 
-            valid_params = valid_vals
-            
-        return list(valid_params), list(invalid_params)
-
-    # .............................................................................
-    @classmethod
-    def get_valid_requested_providers(cls, user_provider_string, valid_providers):
-        # valid_requested_providers = set()
-        # invalid_providers = set()
-        user_provs = []
-        
-        if user_provider_string:
-            user_provider_string = user_provider_string.lower()
-            tmpprovs = user_provider_string.split(',')
-            user_provs = set([tp.strip() for tp in tmpprovs])
-            
-        valid_requested_providers, invalid_providers = cls.get_multivalue_options(user_provs, valid_providers)
-        #     for prov in user_provs:
-        #         if prov in valid_providers:
-        #             valid_requested_providers.add(prov)
-        #         else:
-        #             invalid_providers.add(prov)
-        #
-        # if not valid_requested_providers: 
-        #     valid_requested_providers = valid_providers
-            
-        return valid_requested_providers, invalid_providers
+                valid_requested_params = None
+                        
+        return valid_requested_params, invalid_params
+    
+    # ...............................................
+    def _is_fatal(self, msg_lst):
+        for msg in msg_lst:
+            try:
+                msg['error']
+            except:
+                pass
+            else:
+                return True
+        return False
 
     # ...............................................
     def _process_params(self, user_kwargs, valid_providers):
@@ -304,12 +285,13 @@ class _S2nService:
         option_errors = []
         
         # Allows None or comma-delimited list
-        valid_requested_providers, invalid_providers = self.get_valid_requested_providers(
+        valid_requested_providers, invalid_providers = self.get_valid_requested_params(
             user_kwargs['provider'], valid_providers)
-        # TODO: Why are option_errors retained across queries!!
+
         for ip in invalid_providers:
+            # Add warning, not fatal, some valid providers may requested
             option_errors.append(
-                {'error':
+                {'warning':
                  'Value {} for parameter provider not in valid options {}'.format(
                      ip, valid_providers)})
 
@@ -344,25 +326,19 @@ class _S2nService:
             elif val is not None:
                 # Allows None or comma-delimited list
                 if key == 'scenariocode':
-                    usr_scens = []
                     valid_scens = BrokerParameters[key]['options']
-                    tmpscens = val.split(',') 
-                    for ts in tmpscens:
-                        # scen = ts.lower().strip()
-                        usr_scens.append(ts.lower().strip())
-                    valid_requested_scens, invalid_scens = self.get_multivalue_options(usr_scens, valid_scens)
-                    # Accept good options (or default/all)
+                    valid_requested_scens, invalid_scens = self.get_valid_requested_params(val, valid_scens)
                     good_params[key] = valid_requested_scens
                     # But include message for invalid options
-                    if invalid_scens:
+                    for badscen in invalid_scens:
+                        # Add warning, not fatal, some valid providers may requested
                         option_errors.append(
-                            {'error':
-                             'Value(s) {} for parameter scenariocode not in valid options {}'.format(
-                                 invalid_scens, valid_scens)})
+                            {'warning':
+                             'Value {} for parameter scenariocode not in valid options {}'.format(
+                                 badscen, valid_scens)})
                 # All other parameters have single value
                 else:
                     usr_val, valid_options = self._fix_type_new(key, val)
-                    # TODO: Do we need this option_errors to correct user?
                     if valid_options is not None and val not in valid_options:
                         option_errors.append(
                             {'error': 
@@ -375,7 +351,6 @@ class _S2nService:
         # Add defaults for missing parameters
         for key in self.SERVICE_TYPE['params']:
             param_meta = BrokerParameters[key]
-        # for dkey, param_meta in BrokerParameters.items():
             try:
                 val = good_params[key]
             except:
@@ -425,7 +400,6 @@ class _S2nService:
             'icon_status': icon_status}
         
         valid_providers = self.get_valid_providers(filter_params=filter_params)
-        option_errors = None
         usr_params, option_errors = self._process_params(user_kwargs, valid_providers)
 
         # Remove gbif_parse and itis_match flags

@@ -288,8 +288,10 @@ class ItisAPI(APIQuery):
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
         q_filters = {ITIS.NAME_KEY: sciname}
+        query_term = 'namestr={}'.format(sciname)
         if kingdom is not None:
             q_filters['kingdom'] = kingdom
+            query_term = '{}&kingdom={}'.format(query_term, kingdom)
         api = ItisAPI(ITIS.SOLR_URL, q_filters=q_filters, logger=logger)
 
         try:
@@ -308,10 +310,12 @@ class ItisAPI(APIQuery):
                         errors=[{'error': cls._get_error_message(
                             msg='Missing `response` element')}])
             else:
+                if is_accepted:
+                    query_term = '{}&is_accepted={}'.format(query_term, is_accepted)
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
                     output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                    sciname, APIService.Name['endpoint'], provider_query=[api.url], is_accepted=is_accepted, err=api.error)
+                    query_term, APIService.Name['endpoint'], provider_query=[api.url], is_accepted=is_accepted, err=api.error)
         return std_output
 
 # ...............................................
@@ -334,10 +338,11 @@ class ItisAPI(APIQuery):
         except Exception as e:
             std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
+            query_term = 'tsn={}&is_accepted=True'.format(tsn)
             # Standardize output from provider response
             std_output = cls._standardize_output(
                 output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                tsn, APIService.Name['endpoint'], provider_query=[apiq.url], is_accepted=True, err=apiq.error)
+                query_term, APIService.Name['endpoint'], provider_query=[apiq.url], is_accepted=True, err=apiq.error)
 
         return std_output
 

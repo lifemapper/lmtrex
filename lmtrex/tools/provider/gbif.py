@@ -124,7 +124,7 @@ class GbifAPI(APIQuery):
         except Exception as e:
             std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
-            query_term = 'occid={}; count_only={}'.format(occid, count_only)
+            query_term = 'occid={}&count_only={}'.format(occid, count_only)
             # Standardize output from provider response
             std_output = cls._standardize_occurrence_output(
                 api.output, query_term, provider_query=[api.url], count_only=count_only, 
@@ -368,7 +368,7 @@ class GbifAPI(APIQuery):
         except Exception as e:
             std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
-            query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
+            query_term = 'dataset_key={}&count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
             api_err = None
             if api.error:

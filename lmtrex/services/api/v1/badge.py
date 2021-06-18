@@ -37,6 +37,50 @@ class BadgeSvc(_S2nService):
         return full_filename
 
     # ...............................................
+    def get_error_or_iconfile(self, provider, valid_providers, icon_status):
+        icon_fname = error_output = None
+        try:
+            good_params, option_errors = self._standardize_params(
+                provider=provider, icon_status=icon_status)
+        except Exception as e:
+            # query term with original user strings
+            query_term='provider={}&icon_status={}'.format(provider, icon_status)
+            # failed to parse parameters
+            traceback = get_traceback()
+            error_output = self.get_failure(
+                query_term=query_term, errors=[{'error': traceback}])
+        else:
+            icon_status = good_params['icon_status']
+            try:
+                provider = good_params['provider'][0]
+            except:
+                # failed to get provider
+                option_errors.append(
+                     {'error': 
+                      'Parameter provider containing one of {} options is required'.format(
+                          valid_providers)})
+                
+        # query term with processed parameters
+        query_term='provider={}&icon_status={}'.format(provider, icon_status)    
+        if not error_output and self._is_fatal(option_errors):
+            # respond to failures
+            error_output = self.get_failure(
+                query_term=query_term, provider=','.join(valid_providers), 
+                errors=option_errors)
+        
+        # Failed yet?
+        if not error_output:
+            # get icon file
+            try:
+                icon_fname = self.get_icon(provider, icon_status)
+            except Exception as e:
+                traceback = get_traceback()
+                error_output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                
+        return icon_fname, error_output
+
+
+    # ...............................................
     @cherrypy.tools.json_out()
     def get_json_service_info(self, output):
         cherrypy.response.headers['Content-Type'] = 'application/json'
@@ -61,57 +105,17 @@ class BadgeSvc(_S2nService):
         Return:
             a file containing the requested icon
         """
-        output = None
+        icon_fname = None
         
         valid_providers = self.get_valid_providers()
+        # empty query
         if provider is None and icon_status is None:
-            output = self._show_online(valid_providers)
-        elif provider.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
-            output = self._show_online(valid_providers)
+            msg_output = self._show_online(valid_providers)
         else:
-            try:
-                good_params, option_errors = self._standardize_params(
-                    provider=provider, icon_status=icon_status)
-            except Exception as e:
-                traceback = get_traceback()
-                output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                    provider, icon_status), errors=[{'error': traceback}])
-            else:
-                errors = []
-                try:
-                    provider = good_params['provider'].pop()
-                except:
-                    errors.append(
-                         {'error': 
-                          'Parameter provider containing one of {} options is required'.format(
-                              valid_providers)})
-                else:                    
-                    if provider not in valid_providers:
-                        errors.append(
-                             {'error': 
-                              'Value(s) {} for parameter provider not in valid options {}'.format(
-                                  good_params['provider'], valid_providers)})
-                    if option_errors:
-                        errors.extend(option_errors)
-                        
-                    if errors:
-                        output = self.get_failure(provider=','.join(valid_providers), errors=errors)
-                    else:
-                        # Only first provider is used
-                        icon_status = good_params['icon_status']
-                        try:
-                            icon_fname = self.get_icon(provider, icon_status)
-                        except Exception as e:
-                            traceback = get_traceback()
-                            output = self.get_failure(query_term='provider={}, icon_status={}'.format(
-                                provider, icon_status), errors=[{'error': traceback}])
-
-        # Return service parameters if anything is amiss
-        if output:
-            boutput = self.get_json_service_info(output)
-            return boutput
+            icon_fname, msg_output = self.get_error_or_iconfile(provider, valid_providers, icon_status)
             
-        else:
+        if icon_fname:
+            # Return image data
             cherrypy.response.headers['Content-Type'] = ICON_CONTENT
             ifile = open(icon_fname, mode='rb')
             if stream:
@@ -120,6 +124,10 @@ class BadgeSvc(_S2nService):
                 icontent = ifile.read()
                 ifile.close()
                 return icontent
+        else:
+            # Must have failed
+            boutput = self.get_json_service_info(msg_output)
+            return boutput
     
 
 # .............................................................................

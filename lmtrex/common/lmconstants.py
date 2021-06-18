@@ -493,7 +493,7 @@ BrokerParameters = {
     'scenariocode': {
         'type': '', 
         'options': Lifemapper.valid_scenario_codes(), 
-        'default': Lifemapper.valid_scenario_codes()[0]},
+        'default': None},
     'url': {'type': '', 'default': None},
     'bbox': {'type': '', 'default': '-180,-90,180,90'},
     'color': {

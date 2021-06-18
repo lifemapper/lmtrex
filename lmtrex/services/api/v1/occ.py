@@ -73,11 +73,11 @@ class OccurrenceSvc(_S2nService):
     def _get_gbif_records(self, occid, dataset_key, count_only):
         try:
             if occid is not None:
-                query_term = 'occid={}; count_only={}'.format(occid, count_only)
+                query_term = 'occid={}&count_only={}'.format(occid, count_only)
                 output = GbifAPI.get_occurrences_by_occid(
                     occid, count_only=count_only)
             elif dataset_key is not None:
-                query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
+                query_term = 'dataset_key={}&count_only={}'.format(dataset_key, count_only)
                 output = GbifAPI.get_occurrences_by_dataset(
                     dataset_key, count_only)
         except Exception as e:
@@ -88,75 +88,18 @@ class OccurrenceSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def get_records(self, occid, req_providers, count_only, filter_params=None):
+    def get_records(self, occid, req_providers, count_only, dataset_key=None):
         allrecs = []
         # for response metadata
         query_term = ''
-        dskey = None
-        provstr = ','.join(req_providers)
         if occid is not None:
-            query_term = 'occid={}; provider={}; count_only={}'.format(
-                occid, provstr, count_only)
-        elif filter_params:
-            try:
-                dskey = filter_params['dataset_key']
-                query_term = 'dataset_key={}; provider={}; count_only={}'.format(
-                    dskey, provstr, count_only)
-            except:
-                query_term = 'invalid query term'
-                
-        provnames = []
-        for pr in req_providers:
-            # Address single record
-            if occid is not None:
-                # GBIF
-                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    gbif_output = self._get_gbif_records(occid, dskey, count_only)
-                    allrecs.append(gbif_output)
-                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
-                # iDigBio
-                elif pr == ServiceProvider.iDigBio[S2nKey.PARAM]:
-                    idb_output = self._get_idb_records(occid, count_only)
-                    allrecs.append(idb_output)
-                    provnames.append(ServiceProvider.iDigBio[S2nKey.NAME])
-                # MorphoSource
-                elif pr == ServiceProvider.MorphoSource[S2nKey.PARAM]:
-                    mopho_output = self._get_mopho_records(occid, count_only)
-                    allrecs.append(mopho_output)
-                    provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
-                # Specify
-                elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
-                    sp_output = self._get_specify_records(occid, count_only)
-                    allrecs.append(sp_output)
-                    provnames.append(ServiceProvider.Specify[S2nKey.NAME])
-            # Filter by parameters
-            elif dskey:
-                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    gbif_output = self._get_gbif_records(occid, dskey, count_only)
-                    allrecs.append(gbif_output)
-                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
-
-        # Assemble
-        provstr = ','.join(provnames)
-        full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
-            record_format=S2n.RECORD_FORMAT)
-        return full_out
-
-    # ...............................................
-    def get_records_new(self, occid, req_providers, count_only, dataset_key=None):
-        allrecs = []
-        # for response metadata
-        query_term = ''
-        dskey = None
-        if occid is not None:
-            query_term = 'occid={}; count_only={}'.format(occid, count_only)
+            query_term = 'occid={}&provider={}&count_only={}'.format(occid, ','.join(req_providers), count_only)
         elif dataset_key:
             try:
-                query_term = 'dataset_key={}; count_only={}'.format(dataset_key, count_only)
+                query_term = 'dataset_key={}&provider={}&count_only={}'.format(dataset_key, ','.join(req_providers), count_only)
             except:
                 query_term = 'invalid query term'
-                
+
         provnames = []
         for pr in req_providers:
             # Address single record
@@ -182,16 +125,15 @@ class OccurrenceSvc(_S2nService):
                     allrecs.append(sp_output)
                     provnames.append(ServiceProvider.Specify[S2nKey.NAME])
             # Filter by parameters
-            elif dskey:
+            elif dataset_key:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
                     allrecs.append(gbif_output)
                     provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
 
         # Assemble
-        provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], ','.join(provnames), records=allrecs,
             record_format=S2n.RECORD_FORMAT)
         return full_out
 
@@ -228,11 +170,13 @@ class OccurrenceSvc(_S2nService):
                 count_only=count_only)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
+                query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
+                    occid, provider, count_only, dataset_key)
+                output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
             else:    
                 # What to query
                 try:
-                    output = self.get_records_new(
+                    output = self.get_records(
                         good_params['occid'], good_params['provider'], good_params['count_only'], 
                         dataset_key=good_params['dataset_key'])
 
@@ -241,7 +185,10 @@ class OccurrenceSvc(_S2nService):
                         output.append_value(S2nKey.ERRORS, err)
                 except Exception as e:
                     traceback = get_traceback()
-                    output = self.get_failure(query_term=good_params['occid'], errors=[{'error': traceback}])
+                    query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
+                        good_params['occid'], good_params['provider'], good_params['count_only'],
+                        good_params['dataset_key'])
+                    output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
         return output.response
     
 
