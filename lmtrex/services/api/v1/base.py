@@ -300,6 +300,9 @@ class _S2nService:
             val = user_kwargs[key]
             # Add valid providers to parameters
             if key == 'provider':
+                # for all services except Badge, no providers returns all valid providers
+                if valid_requested_providers is None and self.SERVICE_TYPE != APIService.Badge:
+                    valid_requested_providers = valid_providers
                 good_params[key] = valid_requested_providers
                 good_params['valid_providers'] = valid_providers
                 
@@ -414,7 +417,7 @@ class _S2nService:
             pass
         # Replace namestr with GBIF-parsed namestr
         if namestr and (gbif_parse or itis_match):
-            usr_params['namestr'] = self.parse_name_with_gbif(namestr)
+            usr_params['namestr'] = self.parse_name_with_gbif(namestr)            
                 
         return usr_params, option_errors
 

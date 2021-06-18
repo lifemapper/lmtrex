@@ -69,8 +69,7 @@ class NameSvc(_S2nService):
         # for response metadata
         query_term = ''
         if namestr is not None:
-            query_term = 'namestr={}&provider={}'.format(
-                namestr, ','.join(req_providers))
+            query_term = 'namestr={}&provider={}'.format(namestr, ','.join(req_providers))
             
         provnames = []
         for pr in req_providers:
@@ -165,7 +164,7 @@ if __name__ == '__main__':
     svc = NameSvc()
     out = svc.GET()
     out = svc.GET(
-        namestr='Tulipa sylvestris', provider='gbif', is_accepted=False, gbif_parse=True, 
+        namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
         gbif_count=True, kingdom=None)
     print_s2n_output(out)
     # for namestr in test_names:

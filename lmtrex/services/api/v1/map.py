@@ -72,8 +72,7 @@ class MapSvc(_S2nService):
             sc = scenariocodes
             if scenariocodes:
                 sc = ','.join(scenariocodes)
-            query_term = \
-            'namestr={}&provider={}&is_accepted={}&scenariocodes={}&color={}'.format(
+            query_term = 'namestr={}&provider={}&is_accepted={}&scenariocodes={}&color={}'.format(
                 namestr, ','.join(req_providers), is_accepted, sc, color)
         provnames = []
         for pr in req_providers:
