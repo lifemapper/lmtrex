@@ -422,8 +422,9 @@ class GbifAPI(APIQuery):
             std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
         else:
             # Standardize output from provider response
+            query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
             std_output = cls._standardize_match_output(
-                api.output, status, namestr, provider_query=[api.url], err=api.error)
+                api.output, status, query_term, provider_query=[api.url], err=api.error)
             
         return std_output
 
