@@ -133,9 +133,11 @@ if __name__ == '__main__':
     svc = BadgeSvc()
     # Get all providers
     valid_providers = svc.get_valid_providers()
-    retval = svc.GET(provider='gbif')
-    print(retval)
+    # retval = svc.GET(provider='gbif', icon_status='active')
+    # print(retval)
     retval = svc.GET()
+    print(retval)
+    retval = svc.GET(provider='gbif', icon_status='active')
     print(retval)
     retval = svc.GET(provider='morphosource', icon_status='active')
     print(retval)

@@ -338,6 +338,8 @@ class _S2nService:
                         {'error':
                          'Value {} for parameter {} not in valid options {}'.format(
                              val, key, valid_stat)})
+                else:
+                    good_params[key] = val
                     
             elif val is not None:
                 # Allows None or comma-delimited list
