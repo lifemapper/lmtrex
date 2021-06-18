@@ -69,7 +69,8 @@ class MapSvc(_S2nService):
         # for response metadata
         common_query = ''
         if namestr is not None:
-            common_query = 'namestr={}'.format(namestr)
+            common_query = 'namestr={}; provider={}'.format(
+                namestr, ','.join(req_providers))
             
         provnames = []
         for pr in req_providers:

@@ -69,7 +69,8 @@ class NameSvc(_S2nService):
         # for response metadata
         query_term = ''
         if namestr is not None:
-            query_term = 'namestr={}'.format(namestr)
+            query_term = 'namestr={}; provider={}'.format(
+                namestr, ','.join(req_providers))
             
         provnames = []
         for pr in req_providers:

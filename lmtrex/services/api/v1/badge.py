@@ -91,12 +91,6 @@ class BadgeSvc(_S2nService):
                              {'error': 
                               'Value(s) {} for parameter provider not in valid options {}'.format(
                                   good_params['provider'], valid_providers)})
-                    # # test good_params['icon_status']?
-                    # if good_params['icon_status'] is None:
-                    #     errors.append(
-                    #         {'error':
-                    #          'Parameter icon_status containing one of {} options is required'.format(
-                    #              BrokerParameters['icon_status']['options'])})
                     if option_errors:
                         errors.extend(option_errors)
                         

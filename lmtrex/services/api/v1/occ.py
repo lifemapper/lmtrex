@@ -93,12 +93,15 @@ class OccurrenceSvc(_S2nService):
         # for response metadata
         query_term = ''
         dskey = None
+        provstr = ','.join(req_providers)
         if occid is not None:
-            query_term = 'occid={}; count_only={}'.format(occid, count_only)
+            query_term = 'occid={}; provider={}; count_only={}'.format(
+                occid, provstr, count_only)
         elif filter_params:
             try:
                 dskey = filter_params['dataset_key']
-                query_term = 'dataset_key={}; count_only={}'.format(dskey, count_only)
+                query_term = 'dataset_key={}; provider={}; count_only={}'.format(
+                    dskey, provstr, count_only)
             except:
                 query_term = 'invalid query term'
                 
