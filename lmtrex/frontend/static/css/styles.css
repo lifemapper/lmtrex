@@ -22,7 +22,7 @@ body {
 main.sections {
   display: flex;
   flex-direction: column;
-  row-gap: 3rem;
+  row-gap: 2rem;
 }
 
 .section {
@@ -34,13 +34,26 @@ main.sections {
   color: var(--b3);
   display: flex;
   align-items: center;
-  padding: 1rem;
-  column-gap: 0.5rem;
   cursor: pointer;
 }
 
-.section-header::before {
+.section-header-icon {
+  background: var(--b3);
+  padding: 1rem;
+}
+
+.section-header::after {
   content: "\25BC";
+  padding: 1rem;
+}
+
+.section-header-name {
+  flex: 1;
+  padding: 1rem;
+}
+
+.section.section-collapsed .section-header::after {
+  content: "\25B2"
 }
 
 .section.section-collapsed .section-body {
