@@ -200,6 +200,7 @@ if __name__ == '__main__':
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
+    out = svc.GET(occid='test', provider='mopho', count_only=False)
     out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
     
     occids = [None, '2facc7a2-dd88-44af-b95a-733cc27527d4']

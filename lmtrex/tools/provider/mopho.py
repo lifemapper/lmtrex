@@ -77,7 +77,7 @@ if __name__ == '__main__':
     
     for guid in TST_VALUES.GUIDS_WO_SPECIFY_ACCESS:
         moutput = MorphoSourceAPI.get_occurrences_by_occid_page1(guid)
-        for r in moutput[S2nKey.RECORDS]:
+        for r in moutput.response[S2nKey.RECORDS]:
             occid = notes = None
             try:
                 occid = r['specimen.occurrence_id']
