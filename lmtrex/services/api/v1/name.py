@@ -164,6 +164,9 @@ if __name__ == '__main__':
     svc = NameSvc()
     out = svc.GET()
     out = svc.GET(
+        namestr='Tulipa sylvestris', is_accepted=False, gbif_parse=True, 
+        gbif_count=True, kingdom=None)
+    out = svc.GET(
         namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
         gbif_count=True, kingdom=None)
     print_s2n_output(out)

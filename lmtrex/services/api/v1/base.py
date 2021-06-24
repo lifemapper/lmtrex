@@ -231,13 +231,14 @@ class _S2nService:
                 For the map service, multiple scenariocode are accepted, and None indicates to 
                 return map layers computed with all valid scenariocodes.
         """
-        valid_requested_params = set()
-        invalid_params = set()
+        valid_requested_params = invalid_params = []
         
         if user_params_string:
             tmplst = user_params_string.split(',')
             user_params = set([tp.lower().strip() for tp in tmplst])
             
+            valid_requested_params = set()
+            invalid_params = set()
             # valid_requested_providers, invalid_providers = cls.get_multivalue_options(user_provs, valid_providers)
             for param in user_params:
                 if param in valid_params:
@@ -249,7 +250,7 @@ class _S2nService:
             if valid_requested_params:
                 valid_requested_params = list(valid_requested_params)
             else:
-                valid_requested_params = None
+                valid_requested_params = []
                         
         return valid_requested_params, invalid_params
     
@@ -301,7 +302,7 @@ class _S2nService:
             # Add valid providers to parameters
             if key == 'provider':
                 # for all services except Badge, no providers returns all valid providers
-                if valid_requested_providers is None and self.SERVICE_TYPE != APIService.Badge:
+                if not valid_requested_providers and self.SERVICE_TYPE != APIService.Badge:
                     valid_requested_providers = valid_providers
                 good_params[key] = valid_requested_providers
                 good_params['valid_providers'] = valid_providers
