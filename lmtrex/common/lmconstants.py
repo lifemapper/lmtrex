@@ -173,7 +173,7 @@ class APIService:
     SpecimenExtension = {'endpoint': 'occext', 'params': None}
     Frontend = {
         'endpoint': 'frontend',
-        'params': ['occid', 'namest']}
+        'params': ['occid', 'namestr']}
     
     @classmethod
     def get_other_endpoints(cls, api_svc):

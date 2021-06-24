@@ -1,6 +1,7 @@
 import cherrypy
 
 from lmtrex.frontend.field_mapper import map_fields
+from lmtrex.frontend.helpers import provider_label_to_icon_url
 from lmtrex.tools.utils import get_traceback
 from lmtrex.common.lmconstants import (APIService)
 from lmtrex.services.api.v1.base import _S2nService
@@ -9,6 +10,8 @@ from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.frontend.json_to_html import json_to_html
 from lmtrex.frontend.templates import template, index_template
+from lmtrex.frontend.leaflet import leaflet
+import json
 
 # .............................................................................
 @cherrypy.expose
@@ -33,14 +36,22 @@ class FrontendSvc(_S2nService):
         """
 
         try:
-            usr_params = self._standardize_params(
-                occid=occid, namestr=namestr
+            good_params, option_errors = self._standardize_params(
+                namestr=namestr,
+                occid=occid
             )
         except Exception:
             traceback = get_traceback()
             return self.get_failure(
-                query_term=occid, errors=[traceback]
-            ).response
+                query_term=namestr,
+                errors=[{ 'error': traceback }]
+            )
+
+        if good_params['occid'] is None:
+            cherrypy.response.status = 400
+            return index_template(
+                'Invalid request URL'
+            )
 
         occurrence_info = [
             {
@@ -49,7 +60,7 @@ class FrontendSvc(_S2nService):
                 **response['records'][0]
             }
             for response in \
-                OccurrenceSvc().GET(occid=usr_params['occid'])['records']
+                OccurrenceSvc().GET(occid=good_params['occid'])['records']
             if len(response['records'])>0
         ]
 
@@ -59,7 +70,7 @@ class FrontendSvc(_S2nService):
             if 'dwc:scientificName' in response
         ]
         scientific_name = scientific_names[0] \
-            if len(scientific_names)>0 else namestr
+            if len(scientific_names)>0 else good_params['namestr']
 
         name_info = [
             {
@@ -71,22 +82,6 @@ class FrontendSvc(_S2nService):
             NameSvc().GET(namestr=scientific_name)['records']
             if len(response['records']) > 0
         ] if scientific_name else []
-
-        map_info = [
-            response['records'][0]
-            for response in \
-            MapSvc().GET(namestr=scientific_name)['records']
-            if len(response['records']) > 0 and \
-                response['provider']=='Lifemapper'
-        ] if scientific_name else []
-
-        provider_icon_mapper = {
-            'Lifemapper': 'lm',
-            'MorphoSource': 'mopho',
-            'GBIF': 'gbif',
-            'iDigBio': 'idb',
-            'ITIS': '',
-        }
 
         sections = []
 
@@ -103,13 +98,12 @@ class FrontendSvc(_S2nService):
                 })
             sections.append({
                 'icon_url':
-                    f'https://broker-dev.spcoco.org/api/v1/badge/?provider='
-                    f'{provider_icon_mapper[response["s2n:provider"]]}'
-                    f'&icon_status=active',
+                    provider_label_to_icon_url(response["s2n:provider"]),
                 'label': label,
                 'content': content
             })
 
+        sections = [*leaflet(MapSvc().GET(namestr=scientific_name)), *sections]
 
         if len(sections)==0:
             cherrypy.response.status = 404
