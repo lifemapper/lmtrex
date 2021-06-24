@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Format different parts of the response object."""
 
-import os
 from typing import Dict, List
 
 
@@ -137,4 +136,4 @@ def format_response(response: Dict[str, any]) -> str:
         str:
             formatted response
     """
-    return format_dict(response)
+    return format_value(response)
