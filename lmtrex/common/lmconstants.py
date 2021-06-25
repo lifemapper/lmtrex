@@ -171,6 +171,9 @@ class APIService:
         'params': ['provider', 'occid']}
     # TODO: Consider an Extension service for Digital Object Architecture
     SpecimenExtension = {'endpoint': 'occext', 'params': None}
+    Frontend = {
+        'endpoint': 'frontend',
+        'params': ['occid', 'namestr']}
     
     @classmethod
     def get_other_endpoints(cls, api_svc):

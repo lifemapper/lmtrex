@@ -1,0 +1,65 @@
+:root {
+  --b1: #eee;
+  --b2: #fff;
+  --b3: #ccc;
+  --t1: #666;
+  --t2: #888;
+  --t3: #000;
+  --red: #f00;
+  --green: #0f0;
+}
+
+body {
+  margin: 1rem;
+  background: var(--b2);
+  font-family: "Calibri", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+main.sections {
+  display: flex;
+  flex-direction: column;
+  row-gap: 2rem;
+}
+
+.section {
+  background: var(--b1);
+}
+
+.section-header {
+  background: var(--t3);
+  color: var(--b3);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.section-header-icon {
+  background: var(--b3);
+  padding: 1rem;
+}
+
+.section-header::after {
+  content: "\25BC";
+  padding: 1rem;
+}
+
+.section-header-name {
+  flex: 1;
+  padding: 1rem;
+}
+
+.section.section-collapsed .section-header::after {
+  content: "\25B2"
+}
+
+.section.section-collapsed .section-body {
+  display: none;
+}
+
+.section-body {
+  padding: 1rem;
+}
