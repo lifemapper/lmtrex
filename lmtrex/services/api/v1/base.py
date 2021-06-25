@@ -42,12 +42,10 @@ class _S2nService:
     @classmethod
     def get_failure(
         cls, count: int = 0, 
-        record_format: str = '',
-        records: typing.List[dict] = [], 
-        provider: str = '', 
+        provider: dict = {}, 
         errors: typing.List[dict] = [], 
-        provider_query: typing.List[str] = [],
-        query_term: str = '', service: str = '') -> S2nOutput:
+        query_term: str = '', 
+        service: str = '') -> S2nOutput:
         """Output format for all (soon) S^n services
         
         Args:
@@ -66,12 +64,8 @@ class _S2nService:
         if not service: 
             service = cls.SERVICE_TYPE['endpoint']
         all_output = S2nOutput(
-            count, query_term, service, provider, 
-            provider_query=provider_query, record_format=record_format,  
-            records=records, errors=errors)
+            count, query_term, service, provider=provider, errors=errors)
         return all_output
-
-
 
     # .............................................................................
     @classmethod
@@ -100,7 +94,7 @@ class _S2nService:
             param_lst.append({p: pinfo})
         info['parameters'] = param_lst
         
-        output = S2nOutput(0, '', svc, ','.join(providers), errors=[info])
+        output = S2nOutput(0, '', svc, errors=[info])
         return output
 
     # ...............................................

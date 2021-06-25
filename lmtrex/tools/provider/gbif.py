@@ -275,11 +275,11 @@ class GbifAPI(APIQuery):
             for r in goodrecs:
                 stdrecs.append(cls._standardize_name_record(r))
         total = len(stdrecs)
+        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
-            total, query_term, APIService.Name['endpoint'], cls.PROVIDER, 
-            provider_query=provider_query, record_format=GBIF.RECORD_FORMAT_NAME, 
-            records=stdrecs, errors=errmsgs)
+            total, query_term, APIService.Name['endpoint'], provider=prov_meta, 
+            record_format=GBIF.RECORD_FORMAT_NAME, records=stdrecs, errors=errmsgs)
         return std_output
         
     # ...............................................
@@ -325,10 +325,10 @@ class GbifAPI(APIQuery):
                             cls._standardize_record(r, GBIF.RECORD_FORMAT_OCCURRENCE))
                     except Exception as e:
                         errmsgs.append({'error': cls._get_error_message(err=e)})
+        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
-            total, query_term, APIService.Occurrence['endpoint'], cls.PROVIDER, 
-            provider_query=provider_query, record_format=GBIF.RECORD_FORMAT_OCCURRENCE, 
-            records=stdrecs, errors=errmsgs)
+            total, query_term, APIService.Occurrence['endpoint'], provider=prov_meta, 
+            record_format=GBIF.RECORD_FORMAT_OCCURRENCE, records=stdrecs, errors=errmsgs)
 
         return std_output
     
@@ -373,6 +373,7 @@ class GbifAPI(APIQuery):
             api_err = None
             if api.error:
                 api_err = {'error': api.error}
+                
             std_out = cls._standardize_occurrence_output(
                 api.output, query_term, provider_query=[api.url], count_only=count_only, 
                 err=api_err)
@@ -428,7 +429,6 @@ class GbifAPI(APIQuery):
             
         return std_output
 
-
     # ...............................................
     @classmethod
     def count_occurrences_for_taxon(cls, taxon_key, logger=None):
@@ -465,15 +465,17 @@ class GbifAPI(APIQuery):
                     simple_output[S2nKey.OCCURRENCE_URL] = None
                 else:
                     simple_output[S2nKey.OCCURRENCE_URL] = api.url
-        # TODO: standardize_record and provide schema link
-        simple_output[S2nKey.COUNT] = total
-        simple_output[S2nKey.QUERY_TERM] = taxon_key
-        simple_output[S2nKey.RECORD_FORMAT] = None
-        simple_output[S2nKey.RECORDS] = []
-        simple_output[S2nKey.PROVIDER] = cls.PROVIDER
-        simple_output[S2nKey.PROVIDER_QUERY] = [api.url]
-        simple_output[S2nKey.ERRORS] = errmsgs
-        return simple_output
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=[api.url])
+        std_output = S2nOutput(
+            total, 'count', APIService.Occurrence['endpoint'], provider=prov_meta, errors=errmsgs)
+        # # TODO: standardize_record and provide schema link
+        # simple_output[S2nKey.COUNT] = total
+        # simple_output[S2nKey.QUERY_TERM] = taxon_key
+        # simple_output[S2nKey.RECORD_FORMAT] = None
+        # simple_output[S2nKey.RECORDS] = []
+        # simple_output[S2nKey.PROVIDER] = prov_meta
+        # simple_output[S2nKey.ERRORS] = errmsgs
+        return std_output
 
     # ......................................
     @classmethod

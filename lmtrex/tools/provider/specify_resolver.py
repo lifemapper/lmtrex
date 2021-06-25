@@ -57,10 +57,11 @@ class SpecifyResolverAPI(APIQuery):
                 total = 1
             except Exception as e:
                 errmsgs.append({'error': cls._get_error_message(err=e)})
-                        
+                
+        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
-            total, query_term, APIService.Resolve['endpoint'], cls.PROVIDER, 
-            provider_query=provider_query, records=stdrecs, errors=errmsgs)
+            total, query_term, APIService.Resolve['endpoint'], provider=prov_meta, 
+            records=stdrecs, errors=errmsgs)
 
         return std_output
 
@@ -103,10 +104,11 @@ class SpecifyResolverAPI(APIQuery):
                 api_err = None
                 if api.error:
                     api_err = {'error': api.error}
-                # Standardize output from provider response
+            
+            # Standardize output from provider response
+            prov_meta = cls._init_provider_response_elt(prov_query_urls=[api.url])
             std_output = S2nOutput(
-                count, None, APIService.Resolve['endpoint'], cls.PROVIDER, 
-                provider_query=api.url, records=[], errors=api_err)
+                count, 'count', APIService.Resolve['endpoint'], provider=prov_meta, errors=api_err)
         return std_output
 
     # ...............................................

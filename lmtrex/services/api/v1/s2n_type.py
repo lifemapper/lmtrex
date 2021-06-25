@@ -12,8 +12,11 @@ class S2nKey:
     QUERY_TERM = 'query_term'
     # output one service at a time
     SERVICE = 'service'
+    # provider is a dictionary with keys code, label, query_url
     PROVIDER = 'provider'
-    PROVIDER_QUERY = 'provider_query'
+    PROVIDER_CODE = 'code'
+    PROVIDER_LABEL = 'label'
+    PROVIDER_QUERY_URL = 'query_url'
     # other S2N constant keys
     NAME = 'name'
     # input request multiple services
@@ -26,7 +29,11 @@ class S2nKey:
     def response_keys(cls):
         return  set([
             cls.COUNT, cls.RECORD_FORMAT, cls.RECORDS, cls.ERRORS,  
-            cls.QUERY_TERM, cls.SERVICE, cls.PROVIDER, cls.PROVIDER_QUERY])
+            cls.QUERY_TERM, cls.SERVICE, cls.PROVIDER])
+
+    @classmethod
+    def response_provider_keys(cls):
+        return  set([cls.PROVIDER_CODE, cls.PROVIDER_LABEL, cls.PROVIDER_QUERY_URL])
 
 
 # # .............................................................................
@@ -89,44 +96,46 @@ class S2nKey:
 class S2n:
     RECORD_FORMAT = 'Lifemapper service broker schema TBD'
     
-# TODO: change query_term to a list or dictionary
+# TODO: change query_term to a dictionary
 class S2nOutput(object):
     count: int
     query_term: str
     service: str
-    provider: str
-    provider_query: typing.List[str] = []
+    provider: dict = {}
     record_format: str = ''
     records: typing.List[dict] = []
     errors: typing.List[dict] = []
      
     def __init__(
-            self, count, query_term, service, provider, provider_query=[], 
-            record_format='', records=[], errors=[]):
+            self, count, query_term, service, provider={}, record_format='S2n schema TBD', 
+            records=[], errors=[]):
         # Dictionary is json-serializable
         self._response = {
             S2nKey.COUNT: count, 
             S2nKey.QUERY_TERM: query_term, 
             S2nKey.SERVICE: service, 
             S2nKey.PROVIDER: provider, 
-            S2nKey.PROVIDER_QUERY: provider_query, 
             S2nKey.RECORD_FORMAT: record_format, 
             S2nKey.RECORDS: records, 
             S2nKey.ERRORS: errors}
      
     def set_value(self, prop, value):
-        if prop in (
-            S2nKey.COUNT, S2nKey.QUERY_TERM, S2nKey.SERVICE, S2nKey.PROVIDER, 
-            S2nKey.PROVIDER_QUERY, S2nKey.RECORD_FORMAT, S2nKey.RECORDS, S2nKey.ERRORS):
-            # Append or set
+        if prop in S2nKey.response_keys():
             self._response[prop] = value
+            
+        elif prop in S2nKey.response_provider_keys():
+            self._response[S2nKey.PROVIDER][prop] = value
+            
         else:
             raise Exception('Unrecognized property {}'.format(prop))
         
     def append_value(self, prop, value):
-        if prop in (S2nKey.PROVIDER_QUERY, S2nKey.RECORDS, S2nKey.ERRORS):
+        if prop in (S2nKey.RECORDS, S2nKey.ERRORS):
             # Append or set
             self._response[prop].append(value)
+        elif prop == S2nKey.PROVIDER_QUERY_URL:
+            # Append or set
+            self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL].append(value)
         else:
             raise Exception(
                 'Property {} is not a multi-value element, use `set_value`'.format(prop))
@@ -152,8 +161,16 @@ class S2nOutput(object):
         return self._response[S2nKey.PROVIDER]
  
     @property
+    def provider_code(self):
+        return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_CODE]
+  
+    @property
+    def provider_label(self):
+        return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_LABEL]
+  
+    @property
     def provider_query(self):
-        return self._response[S2nKey.PROVIDER_QUERY]
+        return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL]
   
     @property
     def record_format(self):

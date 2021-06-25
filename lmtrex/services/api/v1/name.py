@@ -45,9 +45,9 @@ class NameSvc(_S2nService):
                         else:
                             namerec[cntfld] = outdict[S2nKey.COUNT]
                             namerec[urlfld] = outdict[S2nKey.OCCURRENCE_URL]
-                            prov_query_list.extend(outdict[S2nKey.PROVIDER_QUERY])
+                            prov_query_list.extend(outdict[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL])
      
-                output.set_value(S2nKey.PROVIDER_QUERY, prov_query_list)
+                output.set_value(S2nKey.PROVIDER_QUERY_URL, prov_query_list)
         return output.response
 
     # ...............................................

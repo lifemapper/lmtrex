@@ -149,9 +149,9 @@ class LifemapperAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
+        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
-            len(stdrecs), query_term, service, cls.PROVIDER, provider_query=provider_query, 
-            record_format=Lifemapper.RECORD_FORMAT_MAP, records=stdrecs, errors=errmsgs )
+            len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs )
 
         return std_output
     
@@ -172,10 +172,10 @@ class LifemapperAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
+        prov_meta = cls._init_provider_response_elt()
         std_output = S2nOutput(
             count=total, record_format=Lifemapper.RECORD_FORMAT_OCC, 
-            records=stdrecs, provider=cls.PROVIDER, errors=errmsgs, 
-            provider_query=None, query_term=None, service=None)
+            records=stdrecs, provider=prov_meta, errors=errmsgs)
 
         return std_output
 
@@ -217,51 +217,14 @@ class LifemapperAPI(APIQuery):
             api_err = None
             if api.error:
                 api_err = {'error': api.error}
+            
             std_output = cls._standardize_map_output(
                 api.output, name, APIService.Map['endpoint'], provider_query=[api.url], 
                 prjscenariocodes=prjscenariocodes, color=color, count_only=False, 
                 err=api_err)
 
         return std_output
-
-    # ...............................................
-    @classmethod
-    def find_occurrencesets_by_name(cls, name, logger=None):
-        """
-        List occurrences for a given scientific name.  
-        
-        Args:
-            name: a scientific name 'Accepted' according to the GBIF Backbone 
-                Taxonomy
-            logger: optional logger for info and error messages.  If None, 
-                prints to stdout    
-, 
-        Note: 
-            Lifemapper contains only 'Accepted' name froms the GBIF Backbone 
-            Taxonomy and this method requires them for success.
-        """
-        other_filters = {Lifemapper.NAME_KEY: name, Lifemapper.ATOM_KEY: 0}
-        api = LifemapperAPI(
-            resource=Lifemapper.OCC_RESOURCE, other_filters=other_filters)
-        try:
-            api.query_by_get()
-        except Exception as e:
-            out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
-        else:
-            api_err = None
-            if api.error:
-                api_err = {'error': api.error}
-            # Standardize output from provider response
-            out = cls._standardize_occ_output(api.output, err=api_err)
-
-        full_out = S2nOutput(
-            count=out.count, record_format=out.record_format, 
-            records=out.records, provider=cls.PROVIDER, errors=out.errors, 
-            provider_query=[api.url], query_term=name, 
-            service=APIService.Map['endpoint'])
-        return full_out    
    
-
     # ...............................................
     @classmethod
     def _get_occurrenceset_record(cls, url, logger=None):

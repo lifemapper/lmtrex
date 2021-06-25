@@ -88,10 +88,9 @@ class APIQuery:
                         stdrecs.append(cls._standardize_record(r))
                     except Exception as e:
                         errmsgs.append({'error': cls._get_error_message(err=e)})
-                        
+        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
-            total, query_term, service, cls.PROVIDER, 
-            provider_query=provider_query, record_format=record_format, 
+            total, query_term, service, provider=prov_meta, record_format=record_format, 
             records=stdrecs, errors=errmsgs)
 
         return std_output
@@ -105,6 +104,16 @@ class APIQuery:
         if err is not None:
             text = '{}; (exception: {})'.format(text, err)
         return text
+
+    # ...............................................
+    @classmethod
+    def _get_provider_response_elt(cls, prov_query_urls=[]):
+        provider_element = { 
+            S2nKey.PROVIDER_CODE: cls.PROVIDER[S2nKey.PARAM],
+            S2nKey.PROVIDER_LABEL: cls.PROVIDER[S2nKey.NAME],
+            S2nKey.PROVIDER_QUERY_URL: prov_query_urls}
+        return provider_element
+
     
     # .....................................
     @classmethod
@@ -264,10 +273,13 @@ class APIQuery:
     # ...............................................
     @classmethod
     def get_failure(
-        cls, count: int = 0, record_format: str = '',
-        records: typing.List[dict] = [], provider: str = '', 
-        errors: typing.List[dict] = [], provider_query: typing.List[str] = [],
-        query_term: str = '', service: str = '') -> S2nOutput:
+        cls, count: int = 0, 
+        record_format: str = '',
+        records: typing.List[dict] = [], 
+        provider: dict = {}, 
+        errors: typing.List[dict] = [], 
+        query_term: str = '', 
+        service: str = '') -> S2nOutput:
         """Output format for all (soon) API queries
         
         Args:
@@ -283,10 +295,10 @@ class APIQuery:
             lmtrex.services.api.v1.S2nOutput object
         """
         if not provider:
-            provider = cls.PROVIDER
+            prov_meta = cls._get_provider_response_elt()
         return S2nOutput(
-            count, query_term, service, provider, provider_query=provider_query,
-            record_format=record_format, records=records, errors=errors)
+            count, query_term, service, provider=prov_meta, record_format=record_format, 
+            records=records, errors=errors)
 
     # ...............................................
     def query_by_get(self, output_type='json', verify=True):
