@@ -379,60 +379,6 @@ SPCOCO_FIELDS = [
     # redirection URL to specify7-server
     'url']
 
-# For parsing BISON Solr API response, updated Feb 2015
-class BISON:
-    """Bison constant enumeration"""
-#     'https://bison.usgs.gov/api/search.json?params=resourceID%3A(%22865cd00a-f762-11e1-a439-00145eb45e9a%22+)'
-    
-    SOLR_URL = 'https://bison.usgs.gov/solr/occurrences/select'
-    OPEN_SEARCH_URL = 'https://bison.usgs.gov/api/search.json'
-    REST_URL = 'https://bison.usgs.gov/index.jsp'
-    BISON_URL = 'https://bison.usgs.gov/api'
-    EXTENDED_PARAMS_KEY = 'params'
-    DATASET_ID_KEY = 'resourceID'
-    OCCURRENCE_ID_KEY = 'occurrenceID'
-    COUNT_KEY = 'total'
-    RECORDS_KEY = 'results'
-    
-    LIMIT = 1000
-    # Ends in : to allow appending unique id
-    # LINK_PREFIX = ('https://bison.usgs.gov/solr/occurrences/select/' +
-    #                '?q=occurrenceID:')
-    LINK_FIELD = 'bisonurl'
-    # For TSN query filtering on Binomial
-    NAME_KEY = 'ITISscientificName'
-    # For Occurrence query by TSN in hierarchy
-    HIERARCHY_KEY = 'hierarchy_homonym_string'
-    KINGDOM_KEY = 'kingdom'
-    TSN_KEY = 'TSNs'
-    # To limit query
-    MIN_POINT_COUNT = 20
-    MAX_POINT_COUNT = 5000000
-    BBOX = (24, -125, 50, -66)
-    BINOMIAL_REGEX = '/[A-Za-z]*[ ]{1,1}[A-Za-z]*/'
-    RECORD_FORMAT = 'BISON Solr API at https://bison.usgs.gov/doc/api.jsp'
-
-# .............................................................................
-class BisonQuery:
-    """BISON query constants enumeration"""
-    # Expected Response Dictionary Keys
-    TSN_LIST_KEYS = ['facet_counts', 'facet_fields', BISON.TSN_KEY]
-    RECORD_KEYS = ['response', 'docs']
-    COUNT_KEYS = ['response', 'numFound']
-    TSN_FILTERS = {'facet': True,
-                   'facet.limit': -1,
-                   'facet.mincount': BISON.MIN_POINT_COUNT,
-                   'facet.field': BISON.TSN_KEY,
-                   'rows': 0}
-    OCC_FILTERS = {'rows': BISON.MAX_POINT_COUNT}
-    # Common Q Filters
-    QFILTERS = {'decimalLatitude': (BISON.BBOX[0], BISON.BBOX[2]),
-                'decimalLongitude': (BISON.BBOX[1], BISON.BBOX[3]),
-                'basisOfRecord': [(False, 'living'), (False, 'fossil')]}
-    # Common Other Filters
-    FILTERS = {'wt': 'json',
-               'json.nl': 'arrarr'}
-    
 # ......................................................
 class Lifemapper:
     URL = 'http://client.lifemapper.org/api/v2'
