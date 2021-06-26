@@ -11,7 +11,6 @@ from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.frontend.json_to_html import json_to_html
 from lmtrex.frontend.templates import template, index_template
 from lmtrex.frontend.leaflet import leaflet
-import json
 
 # .............................................................................
 @cherrypy.expose
@@ -100,6 +99,9 @@ class FrontendSvc(_S2nService):
                 'icon_url':
                     provider_label_to_icon_url(response["s2n:provider"]),
                 'label': label,
+                'anchor':
+                    f"{response['s2n:service']}_"
+                    f"{response['s2n:provider'].lower()}",
                 'content': content
             })
 

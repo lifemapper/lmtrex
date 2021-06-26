@@ -15,5 +15,6 @@ def leaflet(map_info):
         'icon_url':
             provider_label_to_icon_url(map_info["provider"]),
         'label': f'{map_info["provider"]} Projection Map',
+        'anchor': map_info["provider"].lower(),
         'content': template('leaflet', {'map_info':json.dumps(map_info)})
     }]
