@@ -45,6 +45,8 @@ class OccurrenceSvc(_S2nService):
             output = self.get_failure(
                 provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
                 errors=[{'error': traceback}])
+        else:
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return output.response
 
     # ...............................................
@@ -57,6 +59,8 @@ class OccurrenceSvc(_S2nService):
             output = self.get_failure(
                 provider=ServiceProvider.MorphoSource[S2nKey.NAME], query_term=occid, 
                 errors=[{'error': traceback}])
+        else:
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return output.response
 
     # ...............................................
@@ -66,6 +70,9 @@ class OccurrenceSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
+        else:
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+
         return output.response
 
 
@@ -85,6 +92,8 @@ class OccurrenceSvc(_S2nService):
             output = self.get_failure(
                 provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=query_term, 
                 errors=[{'error': traceback}])
+        else:
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return output.response
 
     # ...............................................
@@ -134,8 +143,7 @@ class OccurrenceSvc(_S2nService):
 
         # Assemble
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], ','.join(provnames), records=allrecs,
-            record_format=S2n.RECORD_FORMAT)
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], ','.join(provnames), records=allrecs)
         return full_out
 
     # ...............................................

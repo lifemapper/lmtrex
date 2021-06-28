@@ -20,13 +20,16 @@ class NameSvc(_S2nService):
             output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
             traceback = get_traceback()
+            query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
             output = self.get_failure(
-                provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=namestr, 
+                provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=query_term, 
                 errors=[{'error': traceback}])
         else:
-            prov_query_list = output.provider_query
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+
             # Add occurrence count to name records
             if gbif_count is True:
+                prov_query_list = output.provider_query
                 keyfld = S2N_SCHEMA.get_gbif_taxonkey_fld()
                 cntfld = S2N_SCHEMA.get_gbif_occcount_fld()
                 urlfld = S2N_SCHEMA.get_gbif_occurl_fld()
@@ -46,7 +49,7 @@ class NameSvc(_S2nService):
                             namerec[cntfld] = outdict[S2nKey.COUNT]
                             namerec[urlfld] = outdict[S2nKey.OCCURRENCE_URL]
                             prov_query_list.extend(outdict[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL])
-     
+                # add count queries to list
                 output.set_value(S2nKey.PROVIDER_QUERY_URL, prov_query_list)
         return output.response
 
@@ -57,9 +60,12 @@ class NameSvc(_S2nService):
                 namestr, is_accepted=is_accepted, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
+            query_term = 'namestr={}&is_accepted={}&kingdom={}'.format(namestr, is_accepted, kingdom)
             output = self.get_failure(
-                provider=ServiceProvider.iDigBio[S2nKey.NAME], query_term=namestr, 
+                provider=ServiceProvider.iDigBio[S2nKey.NAME], query_term=query_term, 
                 errors=[{'error': traceback}])
+        else:
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return output.response
 
     # ...............................................

@@ -48,17 +48,23 @@ class MapSvc(_S2nService):
         queries = []
         for sname in scinames:
             # TODO: search on occurrenceset, then also pull projection layers
-            lout = LifemapperAPI.find_map_layers_by_name(
-                sname, prjscenariocodes=scenariocodes, color=color)
-            if len(lout.records) > 0:
-                stdrecs.extend(lout.records)
-                errmsgs.extend(lout.errors)
-                queries.extend(lout.provider_query)
+            try:
+                lout = LifemapperAPI.find_map_layers_by_name(
+                    sname, prjscenariocodes=scenariocodes, color=color)
+            except Exception as e:
+                traceback = get_traceback()
+                errmsgs.append({'error': traceback})
+            else:
+                if len(lout.records) > 0:
+                    stdrecs.extend(lout.records)
+                    errmsgs.extend(lout.errors)
+                    queries.extend(lout.provider_query)
         query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
             namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
             len(stdrecs), query_term, self.SERVICE_TYPE['endpoint'], LifemapperAPI.PROVIDER, 
-            provider_query=queries, records=stdrecs, errors=errmsgs)
+            provider_query=queries, records=stdrecs, 
+            record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errmsgs)
         return full_out.response
 
     # ...............................................
@@ -84,8 +90,7 @@ class MapSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
-            record_format=S2n.RECORD_FORMAT)
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs)
         return full_out
 
     # ...............................................

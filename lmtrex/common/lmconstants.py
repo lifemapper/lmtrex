@@ -148,34 +148,44 @@ class TST_VALUES:
 
 # .............................................................................
 class APIService:
-    Root = {'endpoint': '/api/v1', 'params': None}
+    Root = {'endpoint': '/api/v1', 'params': None,
+        S2nKey.RECORD_FORMAT: None}
     # Direct access to syftorium upload
-    Address = {'endpoint': 'address', 'params': None}
+    Address = {'endpoint': 'address', 'params': None,
+        S2nKey.RECORD_FORMAT: 'url string'}
     # Icons for service providers
     Badge = {
         'endpoint': 'badge', 
-        'params': ['provider', 'icon_status']}
+        'params': ['provider', 'icon_status'],
+        S2nKey.RECORD_FORMAT: 'image/png'}
     # Health for service providers
-    Heartbeat = {'endpoint': 'heartbeat', 'params': None}
+    Heartbeat = {'endpoint': 'heartbeat', 'params': None,
+        S2nKey.RECORD_FORMAT: 'Broker heartbeat service schema TBD'}
     # Metadata for map services
     Map = {
         'endpoint': 'map', 
-        'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color']}
+        'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color'],
+        S2nKey.RECORD_FORMAT: 'Broker map service schema TBD'}
     # Taxonomic Resolution
     Name = {
         'endpoint': 'name', 
-        'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom']}
+        'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom'],
+        S2nKey.RECORD_FORMAT: 'Broker name service schema TBD'}
     # Specimen occurrence records
-    Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only']}
+    Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only'],
+        S2nKey.RECORD_FORMAT: 'Broker occurrence service schema TBD'}
     # Specify guid resolver
     Resolve = {
         'endpoint': 'resolve', 
-        'params': ['provider', 'occid']}
+        'params': ['provider', 'occid'],
+        S2nKey.RECORD_FORMAT: 'Broker GUID resolver service schema TBD'}
     # TODO: Consider an Extension service for Digital Object Architecture
-    SpecimenExtension = {'endpoint': 'occext', 'params': None}
+    SpecimenExtension = {'endpoint': 'occext', 'params': None,
+        S2nKey.RECORD_FORMAT: 'Broker specimen extension service schema TBD'}
     Frontend = {
         'endpoint': 'frontend',
-        'params': ['occid', 'namestr']}
+        'params': ['occid', 'namestr'],
+        S2nKey.RECORD_FORMAT: 'Broker frontend service schema TBD'}
     
     @classmethod
     def get_other_endpoints(cls, api_svc):
