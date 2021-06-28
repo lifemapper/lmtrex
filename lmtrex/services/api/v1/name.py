@@ -41,14 +41,20 @@ class NameSvc(_S2nService):
                     else:
                         # Add more info to each record
                         try:
-                            outdict = GbifAPI.count_occurrences_for_taxon(taxon_key)
+                            count_output = GbifAPI.count_occurrences_for_taxon(taxon_key)
                         except Exception as e:
                             traceback = get_traceback()
                             print(traceback)
                         else:
-                            namerec[cntfld] = outdict[S2nKey.COUNT]
-                            namerec[urlfld] = outdict[S2nKey.OCCURRENCE_URL]
-                            prov_query_list.extend(outdict[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL])
+                            try:
+                                count_query = count_output.provider[S2nKey.PROVIDER_QUERY_URL][0]
+                                namerec[cntfld] = count_output.count
+                            except Exception as e:
+                                traceback = get_traceback()
+                                output.append_value(S2nKey.ERRORS, {'error': traceback})
+                            else:
+                                namerec[urlfld] = count_query
+                                prov_query_list.append(count_query)
                 # add count queries to list
                 output.set_value(S2nKey.PROVIDER_QUERY_URL, prov_query_list)
         return output.response
@@ -85,22 +91,19 @@ class NameSvc(_S2nService):
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
                     allrecs.append(goutput)
-                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
                     query_term = 'namestr={}&is_accepted={}&gbif_count={}'.format(
                         namestr, is_accepted, gbif_count)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
                     allrecs.append(isoutput)
-                    provnames.append(ServiceProvider.ITISSolr[S2nKey.NAME])
                     query_term = 'namestr={}&is_accepted={}&kingdom={}'.format(
                         namestr, is_accepted, kingdom)
             # TODO: enable filter parameters
             
         # Assemble
-        provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs)
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], records=allrecs)
 
         return full_out
 
@@ -168,9 +171,11 @@ if __name__ == '__main__':
     
     svc = NameSvc()
     out = svc.GET()
+    print_s2n_output(out)
     out = svc.GET(
         namestr='Tulipa sylvestris', is_accepted=False, gbif_parse=True, 
         gbif_count=True, kingdom=None)
+    print_s2n_output(out)
     out = svc.GET(
         namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
         gbif_count=True, kingdom=None)
