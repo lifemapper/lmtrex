@@ -1,10 +1,12 @@
 import os
+
+from lmtrex.config.local_constants import APP_PATH
 from lmtrex.services.api.v1.s2n_type import S2nKey
 
 # .............................................................................
 # hierarchySoFarWRanks <class 'list'>: ['41107:$Kingdom:Plantae$Subkingdom:Viridiplantae$Infrakingdom:Streptophyta$Superdivision:Embryophyta$Division:Tracheophyta$Subdivision:Spermatophytina$Class:Magnoliopsida$Superorder:Lilianae$Order:Poales$Family:Poaceae$Genus:Poa$Species:Poa annua$']
 # hierarchyTSN <class 'list'>: ['$202422$954898$846494$954900$846496$846504$18063$846542$846620$40351$41074$41107$']
-APP_PATH = '/opt/lifemapper'
+# APP_PATH = '/opt/lifemapper'
 CONFIG_DIR = 'config'
 TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
@@ -171,6 +173,9 @@ class APIService:
         'params': ['provider', 'occid']}
     # TODO: Consider an Extension service for Digital Object Architecture
     SpecimenExtension = {'endpoint': 'occext', 'params': None}
+    Frontend = {
+        'endpoint': 'frontend',
+        'params': ['occid', 'namestr']}
     
     @classmethod
     def get_other_endpoints(cls, api_svc):

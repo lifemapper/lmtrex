@@ -2,9 +2,13 @@
 """
 import cherrypy
 # import cherrypy_cors
+
+from lmtrex.config.local_constants import SCRATCH_PATH
 from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.occ import OccurrenceSvc
+from lmtrex.services.api.v1.badge import BadgeSvc
+from lmtrex.services.api.v1.frontend import FrontendSvc
 from lmtrex.services.api.v1.address import AddressSvc
 
 from lmtrex.common.lmconstants import (CHERRYPY_CONFIG_FILE)
@@ -39,8 +43,8 @@ def start_cherrypy_services():
     cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
     cherrypy.config.update(
         {'server.socket_port': 80,
-         'log.error_file': '@LMSCRATCHDISK@/log/cherrypyErrors.log',
-         'log.access_file': '@LMSCRATCHDISK@/log/cherrypyAccess.log',
+         'log.error_file': '{}/log/cherrypyErrors.log'.format(SCRATCH_PATH),
+         'log.access_file': '{}/log/cherrypyAccess.log'.format(SCRATCH_PATH),
          'response.timeout': 1000000,
          'tools.CORS.on': True,
          'tools.encode.encoding': 'utf-8',
@@ -48,7 +52,7 @@ def start_cherrypy_services():
          'tools.etags.autotags': True,
          'tools.sessions.on': True,
          'tools.sessions.storage_class': cherrypy.lib.sessions.FileSession,
-         'tools.sessions.storage_path': '@LMSCRATCHDISK@/sessions',
+         'tools.sessions.storage_path': '{}/sessions'.format(SCRATCH_PATH),
          '/static': {
              'tools.staticdir.on': True,
              'cors.expose.on': True
@@ -70,6 +74,9 @@ def start_cherrypy_services():
     
     # Badge services
     cherrypy.tree.mount(BadgeSvc(), BadgeSvc.endpoint(), conf)
+
+    # Frontend services
+    cherrypy.tree.mount(FrontendSvc(), FrontendSvc.endpoint(), conf)
     
 
 # .............................................................................
