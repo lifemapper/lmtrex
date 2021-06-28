@@ -7,7 +7,7 @@ from lmtrex.tools.utils import get_traceback
 # .............................................................................
 class LifemapperAPI(APIQuery):
     """Class to query Lifemapper portal APIs and return results"""
-    PROVIDER = ServiceProvider.Lifemapper[S2nKey.NAME]
+    PROVIDER = ServiceProvider.Lifemapper
     MAP_MAP = S2N_SCHEMA.get_lifemapper_map_map()
     
     # ...............................................

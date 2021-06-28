@@ -12,7 +12,7 @@ class ItisAPI(APIQuery):
         https://www.itis.gov/solr_documentation.html and 
         https://www.itis.gov/web_service.html
     """
-    PROVIDER = ServiceProvider.ITISSolr[S2nKey.NAME]
+    PROVIDER = ServiceProvider.ITISSolr
     NAME_MAP = S2N_SCHEMA.get_itis_name_map()
     
     # ...............................................
@@ -238,7 +238,7 @@ class ItisAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, count_key, records_key, record_format, query_term, service,
+            cls, output, count_key, records_key, query_term, service,
             provider_query=[], is_accepted=False, err={}):
         total = 0
         stdrecs = []
@@ -261,8 +261,7 @@ class ItisAPI(APIQuery):
                     stdrecs.append(newrec)
         prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
-            total, query_term, service, provider=prov_meta, record_format=record_format, 
-            records=stdrecs, errors=errmsgs)
+            total, query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs)
         
         return std_output
     
@@ -314,8 +313,9 @@ class ItisAPI(APIQuery):
                     query_term = '{}&is_accepted={}'.format(query_term, is_accepted)
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                    query_term, APIService.Name['endpoint'], provider_query=[api.url], is_accepted=is_accepted, err=api.error)
+                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
+                    APIService.Name['endpoint'], provider_query=[api.url], 
+                    is_accepted=is_accepted, err=api.error)
         return std_output
 
 # ...............................................
@@ -341,8 +341,9 @@ class ItisAPI(APIQuery):
             query_term = 'tsn={}&is_accepted=True'.format(tsn)
             # Standardize output from provider response
             std_output = cls._standardize_output(
-                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, ITIS.RECORD_FORMAT, 
-                query_term, APIService.Name['endpoint'], provider_query=[apiq.url], is_accepted=True, err=apiq.error)
+                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
+                APIService.Name['endpoint'], provider_query=[apiq.url], 
+                is_accepted=True, err=apiq.error)
 
         return std_output
 

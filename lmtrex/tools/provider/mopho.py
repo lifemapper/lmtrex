@@ -7,7 +7,7 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
-    PROVIDER = ServiceProvider.MorphoSource[S2nKey.NAME]
+    PROVIDER = ServiceProvider.MorphoSource
     OCCURRENCE_MAP = S2N_SCHEMA.get_mopho_occurrence_map()
     
     # ...............................................

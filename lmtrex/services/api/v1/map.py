@@ -58,8 +58,7 @@ class MapSvc(_S2nService):
             namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
             len(stdrecs), query_term, self.SERVICE_TYPE['endpoint'], LifemapperAPI.PROVIDER, 
-            provider_query=queries, record_format=Lifemapper.RECORD_FORMAT_MAP, 
-            records=stdrecs, errors=errmsgs)
+            provider_query=queries, records=stdrecs, errors=errmsgs)
         return full_out.response
 
     # ...............................................

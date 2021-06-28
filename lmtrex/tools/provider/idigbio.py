@@ -15,7 +15,7 @@ from lmtrex.tools.provider.api import APIQuery
 class IdigbioAPI(APIQuery):
     """Class to query iDigBio APIs and return results"""
     
-    PROVIDER = ServiceProvider.iDigBio[S2nKey.NAME]
+    PROVIDER = ServiceProvider.iDigBio
     OCCURRENCE_MAP = S2N_SCHEMA.get_idb_occurrence_map()
 
     # ...............................................

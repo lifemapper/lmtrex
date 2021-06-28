@@ -14,7 +14,7 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class GbifAPI(APIQuery):
     """Class to query GBIF APIs and return results"""
-    PROVIDER = ServiceProvider.GBIF[S2nKey.NAME]
+    PROVIDER = ServiceProvider.GBIF
     OCCURRENCE_MAP = S2N_SCHEMA.get_gbif_occurrence_map()
     NAME_MAP = S2N_SCHEMA.get_gbif_name_map()
     
@@ -279,7 +279,7 @@ class GbifAPI(APIQuery):
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
             total, query_term, APIService.Name['endpoint'], provider=prov_meta, 
-            record_format=GBIF.RECORD_FORMAT_NAME, records=stdrecs, errors=errmsgs)
+            records=stdrecs, errors=errmsgs)
         return std_output
         
     # ...............................................

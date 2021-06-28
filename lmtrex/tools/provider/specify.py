@@ -6,7 +6,7 @@ from lmtrex.tools.provider.api import APIQuery
 # .............................................................................
 class SpecifyPortalAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
-    PROVIDER = ServiceProvider.Specify[S2nKey.NAME]
+    PROVIDER = ServiceProvider.Specify
     OCCURRENCE_MAP = S2N_SCHEMA.get_specify_occurrence_map()
     # ...............................................
     def __init__(self, url=None, logger=None):
