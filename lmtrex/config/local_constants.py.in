@@ -1,0 +1,9 @@
+"""Local configuration values for lmtrex
+
+Note:
+    The RPM build creates local_constants.py with roll-specific values from the 
+    local_constants.py.in template. 
+"""
+
+APP_PATH = @LMHOME@
+SCRATCH_PATH = @LMSCRATCHDISK@

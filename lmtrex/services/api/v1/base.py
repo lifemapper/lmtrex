@@ -1,8 +1,6 @@
 import typing
 
-from lmtrex.common.lmconstants import (
-    APIService, Lifemapper, VALID_MAP_REQUESTS, ServiceProvider, BrokerParameters, 
-    VALID_ICON_OPTIONS)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider, BrokerParameters)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
