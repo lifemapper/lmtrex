@@ -83,7 +83,7 @@ class SpecifyPortalAPI(APIQuery):
                     else:
                         stdrecs.append(cls._standardize_sp7_record(rec))
                         
-        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs)
 

@@ -149,7 +149,7 @@ class LifemapperAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
-        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
             len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs )
 
@@ -172,7 +172,7 @@ class LifemapperAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
-        prov_meta = cls._init_provider_response_elt()
+        prov_meta = cls._get_provider_response_elt()
         std_output = S2nOutput(
             count=total, record_format=Lifemapper.RECORD_FORMAT_OCC, 
             records=stdrecs, provider=prov_meta, errors=errmsgs)

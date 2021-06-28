@@ -275,7 +275,7 @@ class GbifAPI(APIQuery):
             for r in goodrecs:
                 stdrecs.append(cls._standardize_name_record(r))
         total = len(stdrecs)
-        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
             total, query_term, APIService.Name['endpoint'], provider=prov_meta, 
@@ -325,7 +325,7 @@ class GbifAPI(APIQuery):
                             cls._standardize_record(r, GBIF.RECORD_FORMAT_OCCURRENCE))
                     except Exception as e:
                         errmsgs.append({'error': cls._get_error_message(err=e)})
-        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
             total, query_term, APIService.Occurrence['endpoint'], provider=prov_meta, 
             record_format=GBIF.RECORD_FORMAT_OCCURRENCE, records=stdrecs, errors=errmsgs)

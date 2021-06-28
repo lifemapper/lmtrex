@@ -259,7 +259,7 @@ class ItisAPI(APIQuery):
                 newrec = cls._standardize_record(doc, is_accepted=is_accepted)
                 if newrec:
                     stdrecs.append(newrec)
-        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, record_format=record_format, 
             records=stdrecs, errors=errmsgs)

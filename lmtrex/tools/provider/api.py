@@ -88,7 +88,7 @@ class APIQuery:
                         stdrecs.append(cls._standardize_record(r))
                     except Exception as e:
                         errmsgs.append({'error': cls._get_error_message(err=e)})
-        prov_meta = cls._init_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, record_format=record_format, 
             records=stdrecs, errors=errmsgs)
