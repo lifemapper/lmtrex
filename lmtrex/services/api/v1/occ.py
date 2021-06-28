@@ -171,7 +171,7 @@ class OccurrenceSvc(_S2nService):
         else:   
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors = self._standardize_params(
+                good_params, option_errors, is_fatal = self._standardize_params(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
             except Exception as e:
@@ -179,22 +179,27 @@ class OccurrenceSvc(_S2nService):
                 query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
                     occid, provider, count_only, dataset_key)
                 output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
-            else:    
-                # What to query
-                try:
-                    output = self.get_records(
-                        good_params['occid'], good_params['provider'], good_params['count_only'], 
-                        dataset_key=good_params['dataset_key'])
-
-                    # Add message on invalid parameters to output
-                    for err in option_errors:
-                        output.append_value(S2nKey.ERRORS, err)
-                except Exception as e:
-                    traceback = get_traceback()
-                    query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
-                        good_params['occid'], good_params['provider'], good_params['count_only'],
-                        good_params['dataset_key'])
-                    output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+            else:  
+                if is_fatal:
+                    raise cherrypy.HTTPError(
+                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
+                else:
+                    # Do Query!
+                    try:
+                        output = self.get_records(
+                            good_params['occid'], good_params['provider'], good_params['count_only'], 
+                            dataset_key=good_params['dataset_key'])
+    
+                        # Add message on invalid parameters to output
+                        for err in option_errors:
+                            output.append_value(S2nKey.ERRORS, err)
+                            
+                    except Exception as e:
+                        traceback = get_traceback()
+                        query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
+                            good_params['occid'], good_params['provider'], good_params['count_only'],
+                            good_params['dataset_key'])
+                        output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
         return output.response
     
 

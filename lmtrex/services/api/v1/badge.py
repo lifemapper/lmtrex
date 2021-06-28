@@ -1,4 +1,5 @@
 import cherrypy
+from http import HTTPStatus
 import os
 
 from lmtrex.common.lmconstants import (
@@ -41,7 +42,7 @@ class BadgeSvc(_S2nService):
         icon_fname = error_output = None
         prov_meta = self._get_s2n_provider_response_elt()
         try:
-            good_params, option_errors = self._standardize_params(
+            good_params, option_errors, is_fatal = self._standardize_params(
                 provider=provider, icon_status=icon_status)
         except Exception as e:
             # query term with original user strings
@@ -51,32 +52,28 @@ class BadgeSvc(_S2nService):
             error_output = self.get_failure(
                 query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
         else:
-            icon_status = good_params['icon_status']
-            try:
+            if is_fatal:
+                raise cherrypy.HTTPError(
+                    HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
+            else:
+                icon_status = good_params['icon_status']
                 provider = good_params['provider'][0]
-            except:
-                # failed to get provider
-                option_errors.append(
-                     {'error': 
-                      'Parameter provider containing one of {} options is required'.format(
-                          valid_providers)})
                 
-        # query term with processed parameters
-        query_term='provider={}&icon_status={}'.format(provider, icon_status)    
-        if not error_output and self._is_fatal(option_errors):
-            # respond to failures
-            error_output = self.get_failure(
-                query_term=query_term, provider=prov_meta, errors=option_errors)
-        
-        # Failed yet?
-        if not error_output:
-            # get icon file
-            try:
-                icon_fname = self.get_icon(provider, icon_status)
-            except Exception as e:
-                traceback = get_traceback()
-                error_output = self.get_failure(
-                    query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
+                query_term='provider={}&icon_status={}'.format(provider, icon_status)    
+                if not error_output and self._is_fatal(option_errors):
+                    # respond to failures
+                    error_output = self.get_failure(
+                        query_term=query_term, provider=prov_meta, errors=option_errors)
+                
+                # Failed yet?
+                if not error_output:
+                    # Find file!
+                    try:
+                        icon_fname = self.get_icon(provider, icon_status)
+                    except Exception as e:
+                        traceback = get_traceback()
+                        error_output = self.get_failure(
+                            query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
                 
         return icon_fname, error_output
 

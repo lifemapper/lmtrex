@@ -1,4 +1,5 @@
 import cherrypy
+from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, SPECIFY)
 from lmtrex.services.api.v1.base import _S2nService
@@ -116,22 +117,27 @@ class ResolveSvc(_S2nService):
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, option_errors = self._standardize_params(
+                good_params, option_errors, is_fatal = self._standardize_params(
                     occid=occid, provider=provider)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
+                query_term = 'occid={}&provider={}'.format(occid, provider)
+                output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
             else:
-                # What to query: address one occurrence record, with optional filters
-                try:
-                    output = self.get_records(good_params['occid'], good_params['provider'])
-
-                    # Add message on invalid parameters to output
-                    for err in option_errors.items():
-                        output.append_value(S2nKey.ERRORS, err)
-                except Exception as e:
-                    traceback = get_traceback()
-                    output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
+                if is_fatal:
+                    raise cherrypy.HTTPError(
+                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
+                else:
+                    try:
+                        output = self.get_records(good_params['occid'], good_params['provider'])
+    
+                        # Add message on invalid parameters to output
+                        for err in option_errors.items():
+                            output.append_value(S2nKey.ERRORS, err)
+                    except Exception as e:
+                        traceback = get_traceback()
+                        query_term = 'occid={}&provider={}'.format(good_params['occid'], good_params['provider'])
+                        output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
         return output.response
 
 

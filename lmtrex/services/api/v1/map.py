@@ -1,4 +1,5 @@
 import cherrypy
+from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
     APIService, ServiceProvider, Lifemapper, TST_VALUES)
@@ -121,26 +122,34 @@ class MapSvc(_S2nService):
             output = self._show_online(valid_providers)
         else:   
             try:
-                good_params, option_errors = self._standardize_params(
+                good_params, option_errors, is_fatal = self._standardize_params(
                     namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                     is_accepted=is_accepted, scenariocode=scenariocode, color=color)
             except Exception as e:
                 traceback = get_traceback()
-                output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
-            else:            
-                # What to query
-                try:
-                    # Query
-                    output = self.get_records(
-                        good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
-                        good_params['scenariocode'], good_params['color'])
-                    
-                    # Add message on invalid parameters to output
-                    for err in option_errors:
-                        output.append_value(S2nKey.ERRORS, err)
+                query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
+                            namestr, provider, gbif_parse, is_accepted, scenariocode, color)
+                output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+            else:
+                if is_fatal:
+                    raise cherrypy.HTTPError(
+                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
+                else:
+                    try:
+                        # Do Query!
+                        output = self.get_records(
+                            good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
+                            good_params['scenariocode'], good_params['color'])
                         
-                except Exception as e:
-                    output = self.get_failure(query_term=namestr, errors=[{'error': str(e)}])
+                        # Add message on invalid parameters to output
+                        for err in option_errors:
+                            output.append_value(S2nKey.ERRORS, err)
+                            
+                    except Exception as e:
+                        query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
+                                    good_params['namestr'], good_params['provider'], good_params['gbif_parse'],
+                                    good_params['is_accepted'], good_params['scenariocode'], good_params['color'])
+                        output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
         return output.response
 
 # .............................................................................

@@ -137,30 +137,38 @@ class NameSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
-        elif namestr.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
-            output = self._show_online(valid_providers)
         else:
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors = self._standardize_params(
+                good_params, option_errors, is_fatal = self._standardize_params(
                     namestr=namestr, provider=provider, is_accepted=is_accepted, 
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
             except Exception as e:
                 traceback = get_traceback()
+                query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
+                    namestr, provider, gbif_parse, is_accepted, gbif_count, kingdom=kingdom)
+
                 output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
             else:
-                try:
-                    # Query
-                    output = self.get_records(
-                        good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
-                        good_params['gbif_count'], good_params['kingdom'])
-
-                    # Add message on invalid parameters to output
-                    for err in option_errors:
-                        output.append_value(S2nKey.ERRORS, err)
+                if is_fatal:
+                    raise cherrypy.HTTPError(
+                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
+                else:
+                    try:
+                        # Do Query!
+                        output = self.get_records(
+                            good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
+                            good_params['gbif_count'], good_params['kingdom'])
     
-                except Exception as e:
-                    output = self.get_failure(query_term=namestr, errors=[{'error': str(e)}])
+                        # Add message on invalid parameters to output
+                        for err in option_errors:
+                            output.append_value(S2nKey.ERRORS, err)
+        
+                    except Exception as e:
+                        query_term='namestr={}&provider={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
+                            good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
+                            good_params['gbif_count'], good_params['kingdom'])
+                        output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
         return output.response
             
 
