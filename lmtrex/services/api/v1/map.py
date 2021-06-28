@@ -46,6 +46,7 @@ class MapSvc(_S2nService):
         # Second: get completed Lifemapper projections (map layers)
         stdrecs = []
         queries = []
+        prov_meta = LifemapperAPI._get_provider_response_elt()
         for sname in scinames:
             # TODO: search on occurrenceset, then also pull projection layers
             try:
@@ -55,16 +56,18 @@ class MapSvc(_S2nService):
                 traceback = get_traceback()
                 errmsgs.append({'error': traceback})
             else:
+                # take first provider metadata element
                 if len(lout.records) > 0:
                     stdrecs.extend(lout.records)
                     errmsgs.extend(lout.errors)
+                    # assemble all queries for provider metadata element
                     queries.extend(lout.provider_query)
+        prov_meta[S2nKey.PROVIDER_QUERY_URL] = queries
         query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
             namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
-            len(stdrecs), query_term, self.SERVICE_TYPE['endpoint'], LifemapperAPI.PROVIDER, 
-            provider_query=queries, records=stdrecs, 
-            record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errmsgs)
+            len(stdrecs), query_term, self.SERVICE_TYPE['endpoint'], prov_meta, 
+            records=stdrecs, record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errmsgs)
         return full_out.response
 
     # ...............................................
