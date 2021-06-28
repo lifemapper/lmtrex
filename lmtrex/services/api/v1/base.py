@@ -301,12 +301,23 @@ class _S2nService:
             val = user_kwargs[key]
             # Add valid providers to parameters
             if key == 'provider':
-                # for all services except Badge, no providers returns all valid providers
-                if not valid_requested_providers and self.SERVICE_TYPE != APIService.Badge:
-                    valid_requested_providers = valid_providers
-                good_params[key] = valid_requested_providers
+                # Save all valid providers
                 good_params['valid_providers'] = valid_providers
-                
+                # Calculate provider(s) to query
+                if self.SERVICE_TYPE == APIService.Badge:
+                    # Badge service requires exactly one valid provider
+                    if valid_requested_providers and len(valid_requested_providers) == 1:
+                        good_params[key] = valid_requested_providers[0]
+                    else:
+                        option_errors.append(
+                        {'error':
+                         'Parameter {} containing exactly one of {} options is required'.format(
+                             key, valid_providers)})
+                # Other services accept one or more, default to all valid
+                else:
+                    if not valid_requested_providers:
+                        good_params[key] = valid_providers
+                    
             # Do not edit namestr, maintain capitalization
             elif key == 'namestr':
                 good_params['namestr'] = val
@@ -338,7 +349,7 @@ class _S2nService:
                         # Add warning, not fatal, some valid providers may requested
                         option_errors.append(
                             {'warning':
-                             'Value {} for parameter scenariocode not in valid options {}'.format(
+                             'Ignoring invalid value {} for parameter scenariocode (valid options: {})'.format(
                                  badscen, valid_scens)})
                 # All other parameters have single value
                 else:
@@ -352,7 +363,7 @@ class _S2nService:
                     else:
                         good_params[key] = usr_val
                 
-        # Add defaults for missing parameters
+        # Fill in defaults for missing parameters
         for key in self.SERVICE_TYPE['params']:
             param_meta = BrokerParameters[key]
             try:

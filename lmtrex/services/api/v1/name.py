@@ -1,4 +1,5 @@
 import cherrypy
+from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
     APIService, S2N_SCHEMA, ServiceProvider, TST_VALUES)

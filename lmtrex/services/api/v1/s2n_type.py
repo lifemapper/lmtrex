@@ -43,11 +43,10 @@ class S2nKey:
 #     count: int
 #     query_term: str
 #     service: str
-#     provider: str
-#     provider_query: typing.List[str] = []
 #     record_format: str = ''
+#     provider: dict = {}
 #     records: typing.List[dict] = []
-#     errors: typing.List[str] = []
+#     errors: typing.List[dict] = []
 #
 # # .............................................................................
 # def print_s2n_output(out_obj, count_only=False):
@@ -55,7 +54,7 @@ class S2nKey:
 #     print('*** S^n output ***')
 #     elements = {
 #         'count': out_obj.count, 'provider': out_obj.provider, 
-#         'errors': out_obj.errors, 'provider_query': out_obj.provider_query, 
+#         'errors': out_obj.errors, 
 #         'query_term': out_obj.query_term, 'records': out_obj.records }    
 #     for name, attelt in elements.items():
 #         try:
@@ -75,9 +74,8 @@ class S2nKey:
 #     'count': int
 #     'query_term': str
 #     'service': str
-#     'provider': str
-#     'provider_query': typing.List[str] = []
 #     'record_format': str = ''
+#     'provider': dict = {}
 #     'records': typing.List[dict] = []
 #     'errors': typing.List[str] = []
 #      
@@ -87,7 +85,7 @@ class S2nKey:
 #             record_format='', records=[], errors=[]):
 #         so = {
 #             'count': count, 'query_term': query_term, 'service': service, 
-#             'provider': provider, 'provider_query': provider_query, 
+#             'provider': provider,  
 #             'record_format': record_format, 'records': records, 'errors': errors
 #             }
 #         return so
