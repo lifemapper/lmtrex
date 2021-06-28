@@ -13,6 +13,14 @@ class _S2nService:
 
     # ...............................................
     @classmethod
+    def _get_s2n_provider_response_elt(cls):
+        provider_element = { 
+            S2nKey.PROVIDER_CODE: ServiceProvider.Broker[S2nKey.PARAM],
+            S2nKey.PROVIDER_LABEL: ServiceProvider.Broker[S2nKey.NAME] }
+        return provider_element
+
+    # ...............................................
+    @classmethod
     def get_providers(cls, filter_params=None):
         """ Return a set of strings indicating all providers valid for this service. """
         provnames = set()

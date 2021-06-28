@@ -91,9 +91,10 @@ class MapSvc(_S2nService):
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble
-        provstr = ','.join(provnames)
+        prov_meta = self._get_s2n_provider_response_elt()
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs)
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            records=allrecs)
         return full_out
 
     # ...............................................

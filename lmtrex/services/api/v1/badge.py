@@ -39,6 +39,7 @@ class BadgeSvc(_S2nService):
     # ...............................................
     def get_error_or_iconfile(self, provider, valid_providers, icon_status):
         icon_fname = error_output = None
+        prov_meta = self._get_s2n_provider_response_elt()
         try:
             good_params, option_errors = self._standardize_params(
                 provider=provider, icon_status=icon_status)
@@ -48,7 +49,7 @@ class BadgeSvc(_S2nService):
             # failed to parse parameters
             traceback = get_traceback()
             error_output = self.get_failure(
-                query_term=query_term, errors=[{'error': traceback}])
+                query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
         else:
             icon_status = good_params['icon_status']
             try:
@@ -65,8 +66,7 @@ class BadgeSvc(_S2nService):
         if not error_output and self._is_fatal(option_errors):
             # respond to failures
             error_output = self.get_failure(
-                query_term=query_term, provider=','.join(valid_providers), 
-                errors=option_errors)
+                query_term=query_term, provider=prov_meta, errors=option_errors)
         
         # Failed yet?
         if not error_output:
@@ -75,7 +75,8 @@ class BadgeSvc(_S2nService):
                 icon_fname = self.get_icon(provider, icon_status)
             except Exception as e:
                 traceback = get_traceback()
-                error_output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                error_output = self.get_failure(
+                    query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
                 
         return icon_fname, error_output
 

@@ -102,8 +102,10 @@ class NameSvc(_S2nService):
             # TODO: enable filter parameters
             
         # Assemble
+        prov_meta = self._get_s2n_provider_response_elt()
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], records=allrecs)
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            records=allrecs)
 
         return full_out
 

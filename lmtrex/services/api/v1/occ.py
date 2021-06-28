@@ -110,7 +110,6 @@ class OccurrenceSvc(_S2nService):
             except:
                 query_term = 'invalid query term'
 
-        provnames = []
         for pr in req_providers:
             # Address single record
             if occid is not None:
@@ -118,32 +117,29 @@ class OccurrenceSvc(_S2nService):
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
                     allrecs.append(gbif_output)
-                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
                 # iDigBio
                 elif pr == ServiceProvider.iDigBio[S2nKey.PARAM]:
                     idb_output = self._get_idb_records(occid, count_only)
                     allrecs.append(idb_output)
-                    provnames.append(ServiceProvider.iDigBio[S2nKey.NAME])
                 # MorphoSource
                 elif pr == ServiceProvider.MorphoSource[S2nKey.PARAM]:
                     mopho_output = self._get_mopho_records(occid, count_only)
                     allrecs.append(mopho_output)
-                    provnames.append(ServiceProvider.MorphoSource[S2nKey.NAME])
                 # Specify
                 elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
                     sp_output = self._get_specify_records(occid, count_only)
                     allrecs.append(sp_output)
-                    provnames.append(ServiceProvider.Specify[S2nKey.NAME])
             # Filter by parameters
             elif dataset_key:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
                     allrecs.append(gbif_output)
-                    provnames.append(ServiceProvider.GBIF[S2nKey.NAME])
 
+        prov_meta = self._get_s2n_provider_response_elt()
         # Assemble
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], ','.join(provnames), records=allrecs)
+            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            records=allrecs)
         return full_out
 
     # ...............................................

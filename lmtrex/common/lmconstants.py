@@ -283,11 +283,20 @@ class ServiceProvider:
         S2nKey.NAME: 'MorphoSource', 
         S2nKey.PARAM: 'mopho', 
         S2nKey.SERVICES: [
-            APIService.SpecimenExtension['endpoint'], APIService.Occurrence['endpoint'], APIService.Badge['endpoint']],
+            APIService.Badge['endpoint'], APIService.Occurrence['endpoint'], 
+            APIService.SpecimenExtension['endpoint']],
         'icon': {'active': '{}/morpho_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/morpho_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/morpho_hover-01.png'.format(ICON_DIR)}
         }
+    # TODO: need a Broker badge
+    Broker = {
+        S2nKey.NAME: 'Spcoco Broker', 
+        S2nKey.PARAM: 'broker', 
+        S2nKey.SERVICES: [
+            #APIService.Badge['endpoint'], 
+            APIService.Map['endpoint'], APIService.Name['endpoint'], 
+            APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
     Specify = {
         S2nKey.NAME: 'Specify', 
         S2nKey.PARAM: 'specify', 
