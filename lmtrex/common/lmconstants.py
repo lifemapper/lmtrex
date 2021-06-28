@@ -1,6 +1,6 @@
 import os
 
-from lmtrex.common.local_constants import APP_PATH
+from lmtrex.config.local_constants import APP_PATH
 from lmtrex.services.api.v1.s2n_type import S2nKey
 
 # .............................................................................
