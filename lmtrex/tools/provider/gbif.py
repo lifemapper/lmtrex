@@ -153,9 +153,6 @@ class GbifAPI(APIQuery):
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
         issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
 
-        # Add icon url
-        newrec['{}:icon_url'.format(
-            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.GBIF[S2nKey.PARAM])
         # Add provider stuff
         for fldname, val in rec.items():
             # Leave out fields without value
@@ -197,9 +194,6 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_name_record(cls, rec):
         newrec = {}
-        # Add icon url
-        newrec['{}:icon_url'.format(
-            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.GBIF[S2nKey.PARAM])
         for fldname, val in rec.items():
             # Leave out fields without value
             if val:

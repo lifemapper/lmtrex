@@ -38,7 +38,7 @@ class BadgeSvc(_S2nService):
         return full_filename
 
     # ...............................................
-    def get_error_or_iconfile(self, provider, valid_providers, icon_status):
+    def get_error_or_iconfile(self, provider, icon_status):
         icon_fname = error_output = None
         prov_meta = self._get_s2n_provider_response_elt()
         try:
@@ -110,7 +110,7 @@ class BadgeSvc(_S2nService):
         if provider is None and icon_status is None:
             msg_output = self._show_online(valid_providers)
         else:
-            icon_fname, msg_output = self.get_error_or_iconfile(provider, valid_providers, icon_status)
+            icon_fname, msg_output = self.get_error_or_iconfile(provider, icon_status)
             
         if icon_fname:
             # Return image data

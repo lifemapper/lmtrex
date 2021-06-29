@@ -644,7 +644,6 @@ class S2N_SCHEMA:
         # Provider's URLs to this record
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
-        'icon_url': COMMUNITY_SCHEMA.S2N,
         # S2n standardization of common elements
         'status': COMMUNITY_SCHEMA.S2N,
         'scientific_name': COMMUNITY_SCHEMA.S2N,
@@ -669,7 +668,6 @@ class S2N_SCHEMA:
         # Provider's URLs to this record
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
-        'icon_url': COMMUNITY_SCHEMA.S2N,
 
         'endpoint': COMMUNITY_SCHEMA.S2N,
         'data_link': COMMUNITY_SCHEMA.S2N,
@@ -691,7 +689,6 @@ class S2N_SCHEMA:
         # Provider's URLs to this record
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
-        'icon_url': COMMUNITY_SCHEMA.S2N,
         # S2n resolution of non-standard contents
         'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
 
@@ -835,7 +832,7 @@ class S2N_SCHEMA:
             'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
             'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
         # Add urls
-        names_in_spcache.extend(['api_url', 'view_url', 'icon_url'])
+        names_in_spcache.extend(['api_url', 'view_url'])
         occschem = S2N_SCHEMA.OCCURRENCE
         sname_stdname = {}
         for fn in names_in_spcache:
@@ -862,7 +859,7 @@ class S2N_SCHEMA:
                 mopho_stdname['specimen.occurrence_id'] = std_name
             elif fn == 'uuid':
                 mopho_stdname['specimen.uuid'] = std_name
-            elif fn in ['specimen.specimen_id', 'view_url', 'api_url', 'icon_url']:
+            elif fn in ['specimen.specimen_id', 'view_url', 'api_url']:
                 mopho_stdname[fn] = std_name
         return mopho_stdname
     
@@ -872,7 +869,6 @@ class S2N_SCHEMA:
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
             'api_url': '{}:api_url'.format(s2n),
-            'icon_url': '{}:icon_url'.format(s2n),
             'status': '{}:status'.format(s2n),
             'scientificName': '{}:scientific_name'.format(s2n),
             'canonicalName': '{}:canonical_name'.format(s2n), 
@@ -897,7 +893,6 @@ class S2N_SCHEMA:
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
             'api_url': '{}:api_url'.format(s2n),
-            'icon_url': '{}:icon_url'.format(s2n),
             'usage': '{}:status'.format(s2n),
             'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
             'nameWOInd': '{}:canonical_name'.format(s2n), 
@@ -1054,57 +1049,4 @@ class Idigbio:
     def get_occurrence_data(cls, uuid):
         return '{}/{}'.format(Idigbio.REST_URL, uuid)
     
-
-# .............................................................................
-class HTTPStatus:
-    """HTTP 1.1 Status Codes
-
-    See:
-        http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-    """
-    # Informational 1xx
-    CONTINUE = 100
-    SWITCHING_PROTOCOLS = 101
-    # Successful 2xx
-    OK = 200
-    CREATED = 201
-    ACCEPTED = 202
-    NON_AUTHORITATIVE_INFORMATION = 203
-    NO_CONTENT = 204
-    RESET_CONTENT = 205
-    PARTIAL_CONTENT = 206
-    # Redirectional 3xx
-    MULTIPLE_CHOICES = 300
-    MOVED_PERMANENTLY = 301
-    FOUND = 302
-    SEE_OTHER = 303
-    NOT_MODIFIED = 204
-    USE_PROXY = 305
-    TEMPORARY_REDIRECT = 307
-    # Client Error 4xx
-    BAD_REQUEST = 400
-    UNAUTHORIZED = 401
-    FORBIDDEN = 403
-    NOT_FOUND = 404
-    METHOD_NOT_ALLOWED = 405
-    NOT_ACCEPTABLE = 406
-    PROXY_AUTHENTICATION_REQUIRED = 407
-    REQUEST_TIMEOUT = 408
-    CONFLICT = 409
-    GONE = 410
-    LENGTH_REQUIRED = 411
-    PRECONDITION_FAILED = 412
-    REQUEST_ENTITY_TOO_LARGE = 413
-    REQUEST_URI_TOO_LONG = 414
-    UNSUPPORTED_MEDIA_TYPE = 415
-    REQUEST_RANGE_NOT_SATISFIABLE = 416
-    EXPECTATION_FAILED = 417
-    # Server Error 5xx
-    INTERNAL_SERVER_ERROR = 500
-    NOT_IMPLEMENTED = 501
-    BAD_GATEWAY = 502
-    SERVICE_UNAVAILABLE = 503
-    GATEWAY_TIMEOUT = 504
-    HTTP_VERSION_NOT_SUPPORTED = 505
-
 

@@ -1,10 +1,12 @@
 import typing
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, BrokerParameters)
-from lmtrex.tools.provider.gbif import GbifAPI
-from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
 
+from lmtrex.tools.provider.gbif import GbifAPI
+from lmtrex.tools.provider.itis import ItisAPI
+
+import lmtrex.tools.utils as lmutil
 # .............................................................................
 class _S2nService:
     """Base S-to-the-N service, handles parameter names and acceptable values"""
@@ -14,9 +16,11 @@ class _S2nService:
     # ...............................................
     @classmethod
     def _get_s2n_provider_response_elt(cls):
+        s2ncode = ServiceProvider.Broker[S2nKey.PARAM]
         provider_element = { 
-            S2nKey.PROVIDER_CODE: ServiceProvider.Broker[S2nKey.PARAM],
-            S2nKey.PROVIDER_LABEL: ServiceProvider.Broker[S2nKey.NAME] }
+            S2nKey.PROVIDER_CODE: s2ncode,
+            S2nKey.PROVIDER_LABEL: ServiceProvider.Broker[S2nKey.NAME],
+            S2nKey.PROVIDER_ICON_URL: lmutil.get_icon_url(s2ncode) }
         return provider_element
 
     # ...............................................
@@ -100,7 +104,9 @@ class _S2nService:
             param_lst.append({p: pinfo})
         info['parameters'] = param_lst
         
-        output = S2nOutput(0, '', svc, errors=[info])
+        prov_meta = self._get_s2n_provider_response_elt()
+        
+        output = S2nOutput(0, '', svc, provider=prov_meta, errors=[info])
         return output
 
     # ...............................................

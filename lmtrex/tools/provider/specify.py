@@ -1,6 +1,6 @@
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, DWC, JSON_HEADERS, ServiceProvider, S2N_SCHEMA)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+    APIService, JSON_HEADERS, ServiceProvider, S2N_SCHEMA)
+from lmtrex.services.api.v1.s2n_type import S2nOutput
 from lmtrex.tools.provider.api import APIQuery
 
 # .............................................................................
@@ -20,9 +20,6 @@ class SpecifyPortalAPI(APIQuery):
     def _standardize_sp7_record(cls, rec):
         newrec = {}
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
-        # Add icon url
-        newrec['{}:icon_url'.format(
-            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.Specify[S2nKey.PARAM])
         # Add provider stuff
         for fldname, val in rec:
             # Leave out fields without value
@@ -40,9 +37,6 @@ class SpecifyPortalAPI(APIQuery):
     def _standardize_sp6_record(cls, rec):
         newrec = {}
         mapping = S2N_SCHEMA.get_specifycache_occurrence_map()
-        # Add icon url
-        newrec['{}:icon_url'.format(
-            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.Specify[S2nKey.PARAM])
         # Add provider stuff
         for fldname, val in rec.items():
             # Leave out fields without value

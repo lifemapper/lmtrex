@@ -1,14 +1,15 @@
 """Module containing functions for API Queries"""
+from http import HTTPStatus
 import requests
 import typing
 import urllib
 
-from lmtrex.common.lmconstants import (
-    HTTPStatus, ICON_API, URL_ESCAPES, ENCODING, TST_VALUES)
+from lmtrex.common.lmconstants import (URL_ESCAPES, ENCODING)
 from lmtrex.fileop.logtools import (log_warn)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.lm_xml import fromstring, deserialize
 
+import lmtrex.tools.utils as lmutil
 # .............................................................................
 class APIQuery:
     """Class to query APIs and return results.
@@ -48,16 +49,7 @@ class APIQuery:
             implemented in subclasses
         """
         raise Exception('Not implemented in base class')
-    
-    # ...............................................
-    @classmethod
-    def get_icon_url(cls, provider, icon_status=None):
-        """Add link to badge service with provider param and optionally icon_status."""
-        url = '{}?provider={}'.format(ICON_API, provider)
-        if icon_status:
-            url = '{}&icon_status={}'.format(url, icon_status)
-        return url
-    
+
     # ...............................................
     @classmethod
     def _standardize_output(
@@ -108,9 +100,11 @@ class APIQuery:
     # ...............................................
     @classmethod
     def _get_provider_response_elt(cls, prov_query_urls=[]):
+        provcode = cls.PROVIDER[S2nKey.PARAM]
         provider_element = { 
-            S2nKey.PROVIDER_CODE: cls.PROVIDER[S2nKey.PARAM],
+            S2nKey.PROVIDER_CODE: provcode,
             S2nKey.PROVIDER_LABEL: cls.PROVIDER[S2nKey.NAME],
+            S2nKey.PROVIDER_ICON_URL: lmutil.get_icon_url(provcode),
             S2nKey.PROVIDER_QUERY_URL: prov_query_urls}
         return provider_element
 

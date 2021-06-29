@@ -25,9 +25,6 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        # Add icon url
-        newrec['{}:icon_url'.format(
-            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.MorphoSource[S2nKey.PARAM])
         # Add provider stuff
         for fldname, val in rec.items():
             # Leave out fields without value

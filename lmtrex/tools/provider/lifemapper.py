@@ -59,9 +59,6 @@ class LifemapperAPI(APIQuery):
             return newrec
 
         # Success
-        # Add icon url
-        newrec['{}:icon_url'.format(
-            COMMUNITY_SCHEMA.S2N['code'])] = cls.get_icon_url(ServiceProvider.Lifemapper[S2nKey.PARAM])
         newrec[cls.MAP_MAP['endpoint']] = '{}/{}'.format(map_url, mapname)
         newrec[cls.MAP_MAP['layer_name']] = layer_name
         newrec[cls.MAP_MAP['status']] = stat

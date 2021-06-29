@@ -16,6 +16,7 @@ class S2nKey:
     PROVIDER = 'provider'
     PROVIDER_CODE = 'code'
     PROVIDER_LABEL = 'label'
+    PROVIDER_ICON_URL = 'icon_url'
     PROVIDER_QUERY_URL = 'query_url'
     # other S2N constant keys
     NAME = 'name'
