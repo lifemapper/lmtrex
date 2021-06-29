@@ -12,6 +12,8 @@ class S2nKey:
     QUERY_TERM = 'query_term'
     # output one service at a time
     SERVICE = 'service'
+    # status for individual provider queries
+    STATUS = 'status'
     # provider is a dictionary with keys code, label, query_url
     PROVIDER = 'provider'
     PROVIDER_CODE = 'code'
@@ -91,28 +93,30 @@ class S2nKey:
 #             }
 #         return so
 
-# .............................................................................
-class S2n:
-    RECORD_FORMAT = 'Lifemapper service broker schema TBD'
+# # .............................................................................
+# class S2n:
+#     RECORD_FORMAT = 'Lifemapper service broker schema TBD'
     
 # TODO: change query_term to a dictionary
 class S2nOutput(object):
     count: int
     query_term: str
     service: str
+    status: int
     provider: dict = {}
     record_format: str = ''
     records: typing.List[dict] = []
     errors: typing.List[dict] = []
      
     def __init__(
-            self, count, query_term, service, provider={}, record_format='S2n schema TBD', 
-            records=[], errors=[]):
+            self, count, query_term, service, status=None, provider={}, 
+            record_format='', records=[], errors=[]):
         # Dictionary is json-serializable
         self._response = {
             S2nKey.COUNT: count, 
             S2nKey.QUERY_TERM: query_term, 
             S2nKey.SERVICE: service, 
+            S2nKey.STATUS: status,
             S2nKey.PROVIDER: provider, 
             S2nKey.RECORD_FORMAT: record_format, 
             S2nKey.RECORDS: records, 
@@ -154,6 +158,10 @@ class S2nOutput(object):
     @property
     def service(self):
         return self._response[S2nKey.SERVICE]
+  
+    @property
+    def status(self):
+        return self._response[S2nKey.STATUS]
   
     @property
     def provider(self):
