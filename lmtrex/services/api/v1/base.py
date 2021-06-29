@@ -317,7 +317,9 @@ class _S2nService:
                              key, valid_providers)})
                 # Other services accept one or more, default to all valid
                 else:
-                    if not valid_requested_providers:
+                    if valid_requested_providers:
+                        good_params[key] = valid_requested_providers
+                    else:
                         good_params[key] = valid_providers
                     
             # Do not edit namestr, maintain capitalization
@@ -436,8 +438,6 @@ class _S2nService:
         if namestr and (gbif_parse or itis_match):
             usr_params['namestr'] = self.parse_name_with_gbif(namestr)
             
-        self._is_
-                
         return usr_params, option_errors, is_fatal
 
     # ..........................
