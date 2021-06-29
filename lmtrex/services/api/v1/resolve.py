@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, SPECIFY)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2n, S2nKey, print_s2n_output)
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, print_s2n_output)
 from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
 
@@ -68,7 +68,7 @@ class ResolveSvc(_S2nService):
         provstr = ','.join(provnames)
         full_out = S2nOutput(
             len(allrecs), None, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
-            record_format=S2n.RECORD_FORMAT)
+            record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return full_out
 
     # ...............................................

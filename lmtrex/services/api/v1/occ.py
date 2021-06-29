@@ -12,7 +12,7 @@ from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, print_s2n_output)
 
 # .............................................................................
 @cherrypy.expose
@@ -257,7 +257,7 @@ from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.resolve import ResolveSvc
-from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, print_s2n_output)
 
 from lmtrex.services.api.v1.occ import *
 

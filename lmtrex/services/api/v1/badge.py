@@ -91,9 +91,7 @@ class BadgeSvc(_S2nService):
         """Get one icon to indicate a provider in a GUI
         
         Args:
-            provider: string containing a comma delimited list of provider codes.  The icon 
-                for only the first provider will be returned.  If the string is not present
-                or 'all', the first provider in the default list of providers will be returned.
+            provider: string containing a single provider code.
             icon_status: string indicating which version of the icon to return, valid options are:
                 lmtrex.common.lmconstants.VALID_ICON_OPTIONS (active, inactive, hover) 
             stream: If true, return a generator for streaming output, else return
