@@ -58,7 +58,7 @@ class BadgeSvc(_S2nService):
                     HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
             else:
                 icon_status = good_params['icon_status']
-                provider = good_params['provider'][0]
+                provider = good_params['provider']
                 
                 query_term='provider={}&icon_status={}'.format(provider, icon_status)    
                 if not error_output and self._is_fatal(option_errors):
@@ -75,6 +75,11 @@ class BadgeSvc(_S2nService):
                         traceback = get_traceback()
                         error_output = self.get_failure(
                             query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
+                    else:
+                        if not icon_fname:
+                            error_output = self.get_failure(
+                                query_term=query_term, provider=prov_meta, 
+                                errors=[{'error': 'Provider {} has no available icons'.format(provider)}])
                 
         return icon_fname, error_output
 
@@ -139,6 +144,8 @@ if __name__ == '__main__':
     retval = svc.GET(provider='gbif', icon_status='active')
     print(retval)
     retval = svc.GET(provider='morphosource', icon_status='active')
+    print(retval)
+    retval = svc.GET(provider='morpho', icon_status='active')
     print(retval)
     # for pr in valid_providers:
     #     for stat in VALID_ICON_OPTIONS:
