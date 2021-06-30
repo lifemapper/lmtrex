@@ -199,29 +199,4 @@ if __name__ == '__main__':
     # print_s2n_output(out)
                 
 """
-https://broker-dev.spcoco.org/api/v1/name/Poa annua?provider=gbif
-https://broker-dev.spcoco.org/api/v1/name/occ/Plagioecia%20patina
-
-import cherrypy
-import json
-
-from lmtrex.common.lmconstants import (
-    ServiceProvider, APIService, TST_VALUES)
-from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
-from lmtrex.tools.provider.gbif import GbifAPI
-from lmtrex.tools.provider.itis import ItisAPI
-from lmtrex.tools.utils import get_traceback
-from lmtrex.services.api.v1.name import NameSvc
-
-ss = '41107:$Poa annua aquatica$Poa annua reptans$Aira pumila$Catabrosa pumila$Ochlopoa annua$Poa aestivalis$Poa algida$Poa annua annua$Poa annua eriolepis$Poa annua rigidiuscula$Poa annua reptans$'
-
-
-namestr = TST_VALUES.NAMES[4]
-svc = NameSvc()
-gparse = True
-prov = 'gbif'
-out = svc.GET(namestr=namestr, provider=prov, is_accepted=False, gbif_parse=gparse,gbif_count=True, kingdom=None)
-print_s2n_output(out)
-
 """

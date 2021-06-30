@@ -11,17 +11,19 @@ CONFIG_DIR = 'config'
 TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
-# Broker icon service
+# Point to production or dev services depending on current location
 if (FQDN.find('notyeti') >= 0 or FQDN.find('broker-dev') >= 0):
     ICON_API = 'https://broker-dev.spcoco.org/api/v1/badge'
+    SPECIFY_CACHE_API = 'https://dev.syftorium.org/api/v1/sp_cache'
 else:
     ICON_API = 'https://broker.spcoco.org/api/v1/badge'
+    SPECIFY_CACHE_API = 'https://syftorium.org/api/v1/sp_cache'
+
 
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
 SPECIFY7_RECORD_ENDPOINT = 'export/record'
 # TODO: create a script to switch between dev.syftorium.org and syftorium.org (production)
-SPECIFY_CACHE_API = 'https://dev.syftorium.org/api/v1/sp_cache'
 # SPECIFY_CACHE_API = 'https://syftorium.org/api/v1/sp_cache'
 SPECIFY_ARK_PREFIX = 'http://spcoco.org/ark:/'
 
