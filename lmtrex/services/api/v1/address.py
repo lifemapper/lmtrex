@@ -22,6 +22,8 @@ class AddressSvc(_S2nService):
 
 # .............................................................................
 if __name__ == '__main__':
-    # test
-    pass
+    svc = AddressSvc()
+    
+    retval = svc.GET()
+    print(retval)
     
