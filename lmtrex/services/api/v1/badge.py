@@ -23,7 +23,7 @@ class BadgeSvc(_S2nService):
         # iDigBio
         elif provider == ServiceProvider.iDigBio[S2nKey.PARAM]:
             fname = ServiceProvider.iDigBio['icon'][icon_status]
-        # iDigBio
+        # Lifemapper
         elif provider == ServiceProvider.Lifemapper[S2nKey.PARAM]:
             fname = ServiceProvider.Lifemapper['icon'][icon_status]
         # MorphoSource
@@ -32,10 +32,11 @@ class BadgeSvc(_S2nService):
         # Specify
         elif provider == ServiceProvider.Specify[S2nKey.PARAM]:
             fname = ServiceProvider.Specify['icon'][icon_status]
+        # Not yet defined
+        else:
+            return None
             
-        full_filename = os.path.join(IMG_PATH, fname)
-
-        return full_filename
+        return os.path.join(IMG_PATH, fname)
 
     # ...............................................
     def get_error_or_iconfile(self, provider, icon_status):

@@ -1,6 +1,6 @@
 import os
 
-from lmtrex.config.local_constants import APP_PATH
+from lmtrex.config.local_constants import APP_PATH, FQDN
 from lmtrex.services.api.v1.s2n_type import S2nKey
 
 # .............................................................................
@@ -12,8 +12,10 @@ TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
 # Broker icon service
-ICON_API = 'https://broker-dev.spcoco.org/api/v1/badge'
-# ICON_API = 'https://broker.spcoco.org/api/v1/badge'
+if (FQDN.find('notyeti') >= 0 or FQDN.find('broker-dev') >= 0):
+    ICON_API = 'https://broker-dev.spcoco.org/api/v1/badge'
+else:
+    ICON_API = 'https://broker.spcoco.org/api/v1/badge'
 
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
