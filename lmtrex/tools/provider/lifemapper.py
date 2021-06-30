@@ -114,8 +114,8 @@ class LifemapperAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_map_output(
-            cls, output, query_term, service, prjscenariocodes=None, color=None, count_only=False, 
-            provider_query=[], err={}):
+            cls, output, query_term, service, query_status=None, prjscenariocodes=None, color=None, count_only=False, 
+            query_urls=[], err={}):
         occ_layer_rec = None
         stdrecs = []
         errmsgs = []
@@ -146,7 +146,7 @@ class LifemapperAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs )
 
@@ -154,7 +154,8 @@ class LifemapperAPI(APIQuery):
     
     # ...............................................
     @classmethod
-    def _standardize_occ_output(cls, output, color=None, count_only=False, err={}):
+    def _standardize_occ_output(
+            cls, output, query_status=None, query_urls=[], color=None, count_only=False, err={}):
         stdrecs = []
         errmsgs = {}
         total = len(output)
@@ -169,10 +170,10 @@ class LifemapperAPI(APIQuery):
                     errmsgs.append({'error': cls._get_error_message(err=e)})
         
         # TODO: revisit record format for other map providers
-        prov_meta = cls._get_provider_response_elt()
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            count=total, record_format=Lifemapper.RECORD_FORMAT_OCC, 
-            records=stdrecs, provider=prov_meta, errors=errmsgs)
+            count=total, record_format=Lifemapper.RECORD_FORMAT_OCC, records=stdrecs, 
+            provider=prov_meta, errors=errmsgs)
 
         return std_output
 
@@ -216,9 +217,9 @@ class LifemapperAPI(APIQuery):
                 api_err = {'error': api.error}
             
             std_output = cls._standardize_map_output(
-                api.output, name, APIService.Map['endpoint'], provider_query=[api.url], 
-                prjscenariocodes=prjscenariocodes, color=color, count_only=False, 
-                err=api_err)
+                api.output, name, APIService.Map['endpoint'], query_status=api.status_code, 
+                query_urls=[api.url], prjscenariocodes=prjscenariocodes, color=color, 
+                count_only=False, err=api_err)
 
         return std_output
    

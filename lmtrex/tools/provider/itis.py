@@ -239,7 +239,7 @@ class ItisAPI(APIQuery):
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, query_term, service,
-            provider_query=[], is_accepted=False, err={}):
+            query_status=None, query_urls=[], is_accepted=False, err={}):
         total = 0
         stdrecs = []
         errmsgs = []
@@ -259,7 +259,7 @@ class ItisAPI(APIQuery):
                 newrec = cls._standardize_record(doc, is_accepted=is_accepted)
                 if newrec:
                     stdrecs.append(newrec)
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs)
         
@@ -314,8 +314,8 @@ class ItisAPI(APIQuery):
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
                     output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
-                    APIService.Name['endpoint'], provider_query=[api.url], 
-                    is_accepted=is_accepted, err=api.error)
+                    APIService.Name['endpoint'], query_status=api.status_code, 
+                    query_urls=[api.url], is_accepted=is_accepted, err=api.error)
         return std_output
 
 # ...............................................
@@ -342,7 +342,7 @@ class ItisAPI(APIQuery):
             # Standardize output from provider response
             std_output = cls._standardize_output(
                 output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
-                APIService.Name['endpoint'], provider_query=[apiq.url], 
+                APIService.Name['endpoint'], apiq.status_code, query_urls=[apiq.url], 
                 is_accepted=True, err=apiq.error)
 
         return std_output

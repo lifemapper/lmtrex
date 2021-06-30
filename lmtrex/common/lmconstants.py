@@ -73,8 +73,6 @@ CHERRYPY_CONFIG_FILE = os.path.join(APP_PATH, CONFIG_DIR, 'cherrypy.conf')
 # .............................................................................
 class TST_VALUES:
     SPECIFY_SOLR_COLLECTION = 'spcoco'
-    SPECIFY_SOLR_LOCATION = 'notyeti-192.lifemapper.org'
-
     KU_IPT_RSS_URL = 'http://ipt.nhm.ku.edu:8080/ipt/rss.do'
     ICH_RSS_URL = 'https://ichthyology.specify.ku.edu/export/rss'
 
@@ -128,23 +126,6 @@ class TST_VALUES:
         'Acer skutchii Rehder', 
         'Acer saccharum Marshall']
     ITIS_TSNS = [526853, 183671, 182662, 566578]
-
-# # .............................................................................
-# class APIService:
-#     Root = '/api/v1'
-#     # Service types
-#     Occurrence = 'occ'
-#     # TODO: Consider an Extension service for Digital Object Architecture
-#     SpecimenExtension = 'occext'
-#     Name = 'name'
-#     Map = 'map'
-#     Heartbeat = 'heartbeat'
-#     # Specify guid resolver
-#     Resolve = 'resolve'
-#     # Direct access to syftorium upload
-#     Address = 'address'
-#     # Icons for service providers
-#     Badge = 'badge'
 
 # .............................................................................
 class APIService:

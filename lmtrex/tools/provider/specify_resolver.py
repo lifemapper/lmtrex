@@ -45,7 +45,7 @@ class SpecifyResolverAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, provider_query=[], err={}):
+            cls, output, query_term, query_status=None, query_urls=[], err={}):
         errmsgs = []
         stdrecs = []
         total = 0
@@ -58,7 +58,7 @@ class SpecifyResolverAPI(APIQuery):
             except Exception as e:
                 errmsgs.append({'error': cls._get_error_message(err=e)})
                 
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, APIService.Resolve['endpoint'], provider=prov_meta, 
             records=stdrecs, errors=errmsgs)
@@ -106,7 +106,7 @@ class SpecifyResolverAPI(APIQuery):
                     api_err = {'error': api.error}
             
             # Standardize output from provider response
-            prov_meta = cls._get_provider_response_elt(prov_query_urls=[api.url])
+            prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
             std_output = S2nOutput(
                 count, 'count', APIService.Resolve['endpoint'], provider=prov_meta, errors=api_err)
         return std_output
@@ -157,7 +157,7 @@ class SpecifyResolverAPI(APIQuery):
             # Standardize output from provider response
             query_term = 'occid={}'.format(guid)
             std_output = cls._standardize_output(
-                api.output, query_term, provider_query=[api.url], err=api_err)
+                api.output, query_term, query_status=api.status_code, query_urls=[api.url], err=api_err)
         return std_output
 
     

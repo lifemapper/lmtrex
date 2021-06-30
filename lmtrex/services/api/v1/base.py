@@ -15,13 +15,27 @@ class _S2nService:
 
     # ...............................................
     @classmethod
-    def _get_s2n_provider_response_elt(cls):
+    def _get_s2n_provider_response_elt(cls, query_status=None, query_urls=[]):
+        provider_element = {}
         s2ncode = ServiceProvider.Broker[S2nKey.PARAM]
-        provider_element = { 
-            S2nKey.PROVIDER_CODE: s2ncode,
-            S2nKey.PROVIDER_LABEL: ServiceProvider.Broker[S2nKey.NAME],
-            S2nKey.PROVIDER_ICON_URL: lmutil.get_icon_url(s2ncode) }
+        provider_element[S2nKey.PROVIDER_CODE] = s2ncode
+        provider_element[S2nKey.PROVIDER_LABEL] = ServiceProvider.Broker[S2nKey.NAME]
+        provider_element[S2nKey.PROVIDER_ICON_URL] = lmutil.get_icon_url(s2ncode)
+        # Optional http status_code
+        try:
+            stat = int(query_status)
+        except: 
+            try:
+                stat = max(query_status)
+            except:
+                stat = None
+        if stat:
+            provider_element[S2nKey.PROVIDER_STATUS_CODE] = stat
+        # Optional URL queries
+        if query_urls:
+            provider_element[S2nKey.PROVIDER_QUERY_URL] = query_urls
         return provider_element
+
 
     # ...............................................
     @classmethod

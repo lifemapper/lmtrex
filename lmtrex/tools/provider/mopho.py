@@ -64,7 +64,8 @@ class MorphoSourceAPI(APIQuery):
             std_out = cls._standardize_output(
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
                 MorphoSource.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
-                provider_query=[api.url], count_only=count_only, err=api.error)
+                query_status=api.status_code, query_urls=[api.url], count_only=count_only, 
+                err=api.error)
         
         return std_out
 

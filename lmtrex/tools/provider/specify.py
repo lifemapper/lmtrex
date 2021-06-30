@@ -52,7 +52,7 @@ class SpecifyPortalAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, service, provider_query=[], count_only=False, err={}):
+            cls, output, query_term, service, query_status=None, query_urls=[], count_only=False, err={}):
         stdrecs = []
         total = 0
         is_specify_cache = False
@@ -77,7 +77,7 @@ class SpecifyPortalAPI(APIQuery):
                     else:
                         stdrecs.append(cls._standardize_sp7_record(rec))
                         
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs)
 
@@ -99,8 +99,8 @@ class SpecifyPortalAPI(APIQuery):
         """
         if url is None:
             std_output = cls._standardize_output(
-                {}, occid, APIService.Occurrence['endpoint'], provider_query=[], 
-                count_only=count_only, err='No URL to Specify record')
+                {}, occid, APIService.Occurrence['endpoint'], count_only=count_only, 
+                err='No URL to Specify record')
         elif url.startswith('http'):
             api = APIQuery(url, headers=JSON_HEADERS, logger=logger)
     
@@ -115,6 +115,6 @@ class SpecifyPortalAPI(APIQuery):
             query_term = 'occid={}&count_only={}'.format(occid, count_only)
             std_output = cls._standardize_output(
                 api.output, query_term, APIService.Occurrence['endpoint'], 
-                provider_query=[url], count_only=count_only, err=api_err)
+                query_status=api.status_code, query_urls=[url], count_only=count_only, err=api_err)
         
         return std_output

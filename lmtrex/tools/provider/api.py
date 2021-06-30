@@ -54,7 +54,7 @@ class APIQuery:
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, record_format, query_term, 
-            service, provider_query=[], count_only=False, err={}):
+            service, query_status=None, query_urls=[], count_only=False, err={}):
         errmsgs = []
         stdrecs = []
         total = 0
@@ -80,7 +80,7 @@ class APIQuery:
                         stdrecs.append(cls._standardize_record(r))
                     except Exception as e:
                         errmsgs.append({'error': cls._get_error_message(err=e)})
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, record_format=record_format, 
             records=stdrecs, errors=errmsgs)
@@ -99,13 +99,25 @@ class APIQuery:
 
     # ...............................................
     @classmethod
-    def _get_provider_response_elt(cls, prov_query_urls=[]):
+    def _get_provider_response_elt(cls, query_status=None, query_urls=[]):
+        provider_element = {}
         provcode = cls.PROVIDER[S2nKey.PARAM]
-        provider_element = { 
-            S2nKey.PROVIDER_CODE: provcode,
-            S2nKey.PROVIDER_LABEL: cls.PROVIDER[S2nKey.NAME],
-            S2nKey.PROVIDER_ICON_URL: lmutil.get_icon_url(provcode),
-            S2nKey.PROVIDER_QUERY_URL: prov_query_urls}
+        provider_element[S2nKey.PROVIDER_CODE] = provcode
+        provider_element[S2nKey.PROVIDER_LABEL] = cls.PROVIDER[S2nKey.NAME]
+        provider_element[S2nKey.PROVIDER_ICON_URL] = lmutil.get_icon_url(provcode)
+        # Optional http status_code
+        try:
+            stat = int(query_status)
+        except: 
+            try:
+                stat = max(query_status)
+            except:
+                stat = None
+        if stat:
+            provider_element[S2nKey.PROVIDER_STATUS_CODE] = stat
+        # Optional URL queries
+        if query_urls:
+            provider_element[S2nKey.PROVIDER_QUERY_URL] = query_urls
         return provider_element
 
     
@@ -305,6 +317,8 @@ class APIQuery:
         """
         self.output = {}
         self.error = None
+        self.status_code = None
+        self.reason = None
         errmsg = None
         try:
             if verify:
@@ -314,6 +328,14 @@ class APIQuery:
         except Exception as e:
             errmsg = self._get_error_message(err=e)
         else:
+            # Save server status
+            try:
+                self.status_code = response.status_code
+                self.reason = response.reason
+            except Exception:
+                self.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+                self.reason = 'Unknown API status_code/reason'
+            # Parse response
             if response.status_code == HTTPStatus.OK:
                 if output_type == 'json':
                     try:
@@ -341,8 +363,9 @@ class APIQuery:
                         msg='Unrecognized output type {}'.format(output_type))
             else:
                 errmsg = self._get_error_message(
-                    msg='code = {}, reason = {}'.format(
-                        response.status_code, response.reason))
+                    msg='URL {}, code = {}, reason = {}'.format(
+                        self.base_url, self.status_code, self.reason))
+
         if errmsg:
             self.error = errmsg
 
@@ -388,7 +411,14 @@ class APIQuery:
                 errmsg = self._get_error_message(
                     msg='code = {}, reason = {}'.format(ret_code, reason), 
                     err=e)
-
+        # Save server status
+        try:
+            self.status_code = response.status_code
+            self.reason = response.reason
+        except Exception:
+            self.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+            self.reason = 'Unknown API status_code/reason'
+        # Parse response
         if response.ok:
             try:
                 if output_type == 'json':
@@ -408,14 +438,9 @@ class APIQuery:
                         self.base_url, response.content),
                     err=e)
         else:
-            try:
-                ret_code = response.status_code
-                reason = response.reason
-            except Exception:
-                ret_code = HTTPStatus.INTERNAL_SERVER_ERROR
-                reason = 'Unknown Error'
             errmsg = self._get_error_message(
                 msg='URL {}, code = {}, reason = {}'.format(
-                    self.base_url, ret_code, reason))
+                    self.base_url, self.status_code, self.reason))
+            
         if errmsg is not None:
             self.error = errmsg

@@ -12,12 +12,11 @@ class S2nKey:
     QUERY_TERM = 'query_term'
     # output one service at a time
     SERVICE = 'service'
-    # status for individual provider queries
-    STATUS = 'status'
     # provider is a dictionary with keys code, label, query_url
     PROVIDER = 'provider'
     PROVIDER_CODE = 'code'
     PROVIDER_LABEL = 'label'
+    PROVIDER_STATUS_CODE = 'status_code'
     PROVIDER_ICON_URL = 'icon_url'
     PROVIDER_QUERY_URL = 'query_url'
     # other S2N constant keys
@@ -36,7 +35,8 @@ class S2nKey:
 
     @classmethod
     def response_provider_keys(cls):
-        return  set([cls.PROVIDER_CODE, cls.PROVIDER_LABEL, cls.PROVIDER_QUERY_URL])
+        return  set([cls.PROVIDER_CODE, cls.PROVIDER_LABEL, cls.PROVIDER_STATUS_CODE, 
+                     cls.PROVIDER_QUERY_URL])
 
 
 # # .............................................................................
@@ -102,21 +102,19 @@ class S2nOutput(object):
     count: int
     query_term: str
     service: str
-    status: int
     provider: dict = {}
     record_format: str = ''
     records: typing.List[dict] = []
     errors: typing.List[dict] = []
      
     def __init__(
-            self, count, query_term, service, status=None, provider={}, 
+            self, count, query_term, service, provider={}, 
             record_format='', records=[], errors=[]):
         # Dictionary is json-serializable
         self._response = {
             S2nKey.COUNT: count, 
             S2nKey.QUERY_TERM: query_term, 
             S2nKey.SERVICE: service, 
-            S2nKey.STATUS: status,
             S2nKey.PROVIDER: provider, 
             S2nKey.RECORD_FORMAT: record_format, 
             S2nKey.RECORDS: records, 
@@ -174,6 +172,10 @@ class S2nOutput(object):
     @property
     def provider_label(self):
         return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_LABEL]
+  
+    @property
+    def provider_status_code(self):
+        return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_STATUS_CODE]
   
     @property
     def provider_query(self):

@@ -127,8 +127,8 @@ class GbifAPI(APIQuery):
             query_term = 'occid={}&count_only={}'.format(occid, count_only)
             # Standardize output from provider response
             std_output = cls._standardize_occurrence_output(
-                api.output, query_term, provider_query=[api.url], count_only=count_only, 
-                err=api.error)
+                api.output, query_term, api.status_code, query_urls=[api.url], 
+                count_only=count_only, err=api.error)
         
         return std_output
 
@@ -238,9 +238,7 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_match_output(
-            cls, output, status, query_term, provider_query=[], 
-            err={}):
-            # Pull alternatives out of record
+            cls, output, record_status, query_term, query_status, query_urls=[], err={}):
         stdrecs = []
         errmsgs = []
         if err:
@@ -260,16 +258,16 @@ class GbifAPI(APIQuery):
             goodrecs = []
             # take primary output if matched
             if is_match:
-                if cls._test_record(status, output):
+                if cls._test_record(record_status, output):
                     goodrecs.append(output)
             for alt in alternatives:
-                if cls._test_record(status, alt):
+                if cls._test_record(record_status, alt):
                     goodrecs.append(alt)
             # Standardize name output
             for r in goodrecs:
                 stdrecs.append(cls._standardize_name_record(r))
         total = len(stdrecs)
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
             total, query_term, APIService.Name['endpoint'], provider=prov_meta, 
@@ -289,7 +287,7 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_occurrence_output(
-            cls, output, query_term, provider_query=[], count_only=False, err={}):
+            cls, output, query_term, query_status, query_urls=[], count_only=False, err={}):
         # GBIF.COUNT_KEY, GBIF.RECORDS_KEY, GBIF.RECORD_FORMAT_OCCURRENCE, 
         stdrecs = []
         total = 0
@@ -319,7 +317,7 @@ class GbifAPI(APIQuery):
                             cls._standardize_record(r, GBIF.RECORD_FORMAT_OCCURRENCE))
                     except Exception as e:
                         errmsgs.append({'error': cls._get_error_message(err=e)})
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=provider_query)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, APIService.Occurrence['endpoint'], provider=prov_meta, 
             record_format=GBIF.RECORD_FORMAT_OCCURRENCE, records=stdrecs, errors=errmsgs)
@@ -369,7 +367,7 @@ class GbifAPI(APIQuery):
                 api_err = {'error': api.error}
                 
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, provider_query=[api.url], count_only=count_only, 
+                api.output, query_term, query_urls=[api.url], count_only=count_only, 
                 err=api_err)
             
         return std_out
@@ -419,7 +417,7 @@ class GbifAPI(APIQuery):
             # Standardize output from provider response
             query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
             std_output = cls._standardize_match_output(
-                api.output, status, query_term, provider_query=[api.url], err=api.error)
+                api.output, status, query_term, api.status_code, query_urls=[api.url], err=api.error)
             
         return std_output
 
@@ -459,7 +457,7 @@ class GbifAPI(APIQuery):
                     simple_output[S2nKey.OCCURRENCE_URL] = None
                 else:
                     simple_output[S2nKey.OCCURRENCE_URL] = api.url
-        prov_meta = cls._get_provider_response_elt(prov_query_urls=[api.url])
+        prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
         std_output = S2nOutput(
             total, 'count', APIService.Occurrence['endpoint'], provider=prov_meta, errors=errmsgs)
         # # TODO: standardize_record and provide schema link

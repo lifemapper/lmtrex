@@ -522,6 +522,6 @@ if __name__ == '__main__':
         'dc92869c-1ed3-11e3-bfac-90b11c41863e',
         '21ac6644-5c55-44fd-b258-67eb66ea231d']
     
-    index_specify7_dataset(
-        zname, dwca_url, outpath, TST_VALUES.SPECIFY_SOLR_LOCATION, 
-        TST_VALUES.SPECIFY_SOLR_COLLECTION, testguids=occguids)
+    # index_specify7_dataset(
+    #     zname, dwca_url, outpath, TST_VALUES.SPECIFY_SOLR_LOCATION, 
+    #     TST_VALUES.SPECIFY_SOLR_COLLECTION, testguids=occguids)

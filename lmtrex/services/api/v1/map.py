@@ -4,7 +4,7 @@ from http import HTTPStatus
 from lmtrex.common.lmconstants import (
     APIService, ServiceProvider, Lifemapper, TST_VALUES)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nKey, S2n, S2nOutput, print_s2n_output)
+from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.lifemapper import LifemapperAPI
 from lmtrex.tools.utils import get_traceback
@@ -46,8 +46,8 @@ class MapSvc(_S2nService):
             scinames, errmsgs = self._match_gbif_names(namestr, is_accepted=is_accepted)
         # Second: get completed Lifemapper projections (map layers)
         stdrecs = []
+        statii = []
         queries = []
-        prov_meta = LifemapperAPI._get_provider_response_elt()
         for sname in scinames:
             # TODO: search on occurrenceset, then also pull projection layers
             try:
@@ -57,13 +57,14 @@ class MapSvc(_S2nService):
                 traceback = get_traceback()
                 errmsgs.append({'error': traceback})
             else:
-                # take first provider metadata element
+                # assemble all records, errors, statuses, queries for provider metadata element
                 if len(lout.records) > 0:
                     stdrecs.extend(lout.records)
                     errmsgs.extend(lout.errors)
-                    # assemble all queries for provider metadata element
+                    statii.append(lout.provider_status_code)
                     queries.extend(lout.provider_query)
-        prov_meta[S2nKey.PROVIDER_QUERY_URL] = queries
+        prov_meta = LifemapperAPI._get_provider_response_elt(
+            query_status=statii, query_urls=queries)
         query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
             namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
