@@ -206,20 +206,21 @@ class OccurrenceSvc(_S2nService):
 # .............................................................................
 if __name__ == '__main__':
     from lmtrex.common.lmconstants import TST_VALUES
-    occids = TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0:3]
+    # occids = TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0:3]
+    occids = ['84fe1494-c378-4657-be15-8c812b228bf4', 
+              '04c05e26-4876-4114-9e1d-984f78e89c15', 
+              '2facc7a2-dd88-44af-b95a-733cc27527d4']
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
-    out = svc.GET(occid='test', provider='mopho', count_only=False)
-    out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
+    # out = svc.GET(occid='test', provider='mopho', count_only=False)
+    # out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
     
-    occids = [None, '2facc7a2-dd88-44af-b95a-733cc27527d4']
-    # Get all providers
+    prov = 'gbif'
     for occid in occids:
-        for prov in svc.get_providers():
-            out = svc.GET(occid=occid, provider=prov, count_only=False)
-            outputs = out['records']
-            print_s2n_output(out)
+        out = svc.GET(occid=occid, provider=prov, count_only=False)
+        outputs = out['records']
+        print_s2n_output(out)
 
     x = 1
     
