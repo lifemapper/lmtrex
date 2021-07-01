@@ -43,8 +43,8 @@ class OccurrenceSvc(_S2nService):
             output = SpecifyPortalAPI.get_specify_record(occid, api_url, count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(
-                provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
+            output = SpecifyPortalAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errors=[{'error': traceback}])
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
@@ -57,8 +57,8 @@ class OccurrenceSvc(_S2nService):
                 occid, count_only=count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(
-                provider=ServiceProvider.MorphoSource[S2nKey.NAME], query_term=occid, 
+            output = MorphoSourceAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errors=[{'error': traceback}])
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
@@ -70,7 +70,9 @@ class OccurrenceSvc(_S2nService):
             output = IdigbioAPI.get_occurrences_by_occid(occid, count_only=count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(query_term=occid, errors=[{'error': traceback}])
+            output = IdigbioAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                errors=[{'error': traceback}])
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
 
@@ -90,8 +92,8 @@ class OccurrenceSvc(_S2nService):
                     dataset_key, count_only)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(
-                provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=query_term, 
+            output = GbifAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errors=[{'error': traceback}])
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
@@ -181,13 +183,11 @@ class OccurrenceSvc(_S2nService):
                 if fatal_errors:
                     error_description = '; '.join(fatal_errors)                            
                     http_status = HTTPStatus.BAD_REQUEST
+                    
             except Exception as e:
-                traceback = get_traceback()
-                # query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
-                #     occid, provider, count_only, dataset_key)
-                # output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
                 http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                error_description = traceback
+                error_description = get_traceback()
+                
             else:  
                 if http_status != HTTPStatus.BAD_REQUEST:
                     # Do Query!
@@ -201,13 +201,9 @@ class OccurrenceSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
                             
                     except Exception as e:
-                        traceback = get_traceback()
                         http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                        error_description = traceback
-                        # query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
-                        #     good_params['occid'], good_params['provider'], good_params['count_only'],
-                        #     good_params['dataset_key'])
-                        # output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                        error_description = get_traceback()
+
         if http_status == HTTPStatus.OK:
             return output.response
         else:

@@ -43,8 +43,8 @@ class ResolveSvc(_S2nService):
             output = SpecifyResolverAPI.query_for_guid(occid)
         except Exception as e:
             traceback = get_traceback()
-            output = self.get_failure(
-                provider=ServiceProvider.Specify[S2nKey.NAME], query_term=occid, 
+            output = SpecifyResolverAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errors=[{'error': traceback}])
         return output.response
 
@@ -108,6 +108,9 @@ class ResolveSvc(_S2nService):
         Note: 
             There will never be more than one record returned.
         """
+        error_description = None
+        http_status = HTTPStatus.OK
+
         valid_providers = self.get_valid_providers()
         if occid is None:
             output = self._show_online(valid_providers)
@@ -117,17 +120,17 @@ class ResolveSvc(_S2nService):
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, option_errors, is_fatal = self._standardize_params(
+                good_params, option_errors, fatal_errors = self._standardize_params(
                     occid=occid, provider=provider)
+                # Bad parameters
+                if fatal_errors:
+                    error_description = '; '.join(fatal_errors)                            
+                    http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
-                traceback = get_traceback()
-                query_term = 'occid={}&provider={}'.format(occid, provider)
-                output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                error_description = get_traceback()
+                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
             else:
-                if is_fatal:
-                    raise cherrypy.HTTPError(
-                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
-                else:
+                if http_status != HTTPStatus.BAD_REQUEST:
                     try:
                         output = self.get_records(good_params['occid'], good_params['provider'])
     
@@ -135,10 +138,12 @@ class ResolveSvc(_S2nService):
                         for err in option_errors.items():
                             output.append_value(S2nKey.ERRORS, err)
                     except Exception as e:
-                        traceback = get_traceback()
-                        query_term = 'occid={}&provider={}'.format(good_params['occid'], good_params['provider'])
-                        output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
-        return output.response
+                        error_description = get_traceback()
+                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+        if http_status == HTTPStatus.OK:
+            return output.response
+        else:
+            raise cherrypy.HTTPError(http_status, error_description)
 
 
 # .............................................................................

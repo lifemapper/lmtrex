@@ -64,31 +64,23 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_failure(
-        cls, count: int = 0, 
-        provider: dict = {}, 
-        errors: typing.List[dict] = [], 
-        query_term: str = '', 
-        service: str = '') -> S2nOutput:
+    def get_failure(cls, service=None, query_term='', errors=[]):
         """Output format for all (soon) S^n services
         
         Args:
-            count: number of records returned
-            record_format: schema for the records returned
-            records: list of records (dictionaries)
-            provider: original data provider
-            errors: list of info messages, warnings and errors (dictionaries)
-            provider_query: list of queries (url strings)
-            query_term: query term provided by the user, ex: name or id
             service: type of S^n services
+            query_term: query term provided by the user, ex: name or id
+            provider: original data provider metadata
+            errors: list of info messages, warnings and errors (dictionaries)
             
         Return:
             lmtrex.services.api.v1.S2nOutput object
         """
         if not service: 
             service = cls.SERVICE_TYPE['endpoint']
+        prov_meta = cls._get_s2n_provider_response_elt()
         all_output = S2nOutput(
-            count, query_term, service, provider=provider, errors=errors)
+            0, query_term, service, provider=prov_meta, errors=errors)
         return all_output
 
     # .............................................................................

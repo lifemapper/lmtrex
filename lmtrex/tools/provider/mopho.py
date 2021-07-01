@@ -1,8 +1,11 @@
+from http import HTTPStatus
+
 from lmtrex.common.lmconstants import (
     APIService, COMMUNITY_SCHEMA, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
 from lmtrex.fileop.logtools import (log_error, log_info)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils import get_traceback
 
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
@@ -57,7 +60,10 @@ class MorphoSourceAPI(APIQuery):
         try:
             api.query_by_get(verify=verify)
         except Exception as e:
-            std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_out = cls.get_api_failure(
+                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             # Standardize output from provider response
             query_term = 'occid={}&count_only={}'.format(occid, count_only)

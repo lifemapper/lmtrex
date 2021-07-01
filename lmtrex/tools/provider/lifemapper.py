@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from lmtrex.common.lmconstants import (
     APIService, COMMUNITY_SCHEMA, Lifemapper, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
@@ -210,7 +212,10 @@ class LifemapperAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            std_output = cls.get_failure(errors=[cls._get_error_message(err=e)])
+            tb = get_traceback()
+            std_output = cls.get_api_failure(
+                APIService.Map['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[cls._get_error_message(err=tb)])
         else:
             api_err = None
             if api.error:
@@ -239,7 +244,10 @@ class LifemapperAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            out = cls.get_api_failure(
+                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             try:
                 rec = api.output

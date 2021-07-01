@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from lmtrex.common.lmconstants import (
     APIService, COMMUNITY_SCHEMA, SYFTER, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
@@ -88,16 +90,21 @@ class SpecifyResolverAPI(APIQuery):
         try:
             cls.query_by_get(output_type='json')
         except Exception as e:
-            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_output = cls.get_api_failure(
+                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             try:
                 count = api.output['count']
             except:
                 if api.error is not None:
-                    std_output = cls.get_failure(
+                    std_output = cls.get_api_failure(
+                        APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
                         errors=[{'error': cls._get_error_message(err=api.error)}])
                 else:
-                    std_output = cls.get_failure(
+                    std_output = cls.get_api_failure(
+                        APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
                         errors=[{'error': cls._get_error_message(
                             msg='Missing `response` element')}])
             else:
@@ -149,7 +156,9 @@ class SpecifyResolverAPI(APIQuery):
         try:
             api.query_by_get(output_type='json')
         except Exception as e:
-            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            std_output = cls.get_api_failure(
+                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=e)}])
         else:
             api_err = None
             if api.error:

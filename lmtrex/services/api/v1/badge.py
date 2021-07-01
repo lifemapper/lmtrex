@@ -54,9 +54,8 @@ class BadgeSvc(_S2nService):
                 
         except Exception as e:
             # Unknown error
-            traceback = get_traceback()
             http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-            error_description = traceback
+            error_description = get_traceback()
             
         else:
             if http_status != HTTPStatus.BAD_REQUEST:
@@ -66,9 +65,8 @@ class BadgeSvc(_S2nService):
                 try:
                     icon_fname = self.get_icon(provider, icon_status)
                 except Exception as e:
-                    traceback = get_traceback()
                     http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                    error_description = traceback
+                    error_description = get_traceback()
                 else:
                     if not icon_fname:
                         http_status = HTTPStatus.NOT_IMPLEMENTED

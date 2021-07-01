@@ -1,3 +1,4 @@
+from http import HTTPStatus
 import urllib
 
 from lmtrex.common.lmconstants import (
@@ -5,6 +6,8 @@ from lmtrex.common.lmconstants import (
 from lmtrex.fileop.logtools import (log_info, log_error)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils import get_traceback
+
 
 # .............................................................................
 class ItisAPI(APIQuery):
@@ -296,16 +299,21 @@ class ItisAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_output = cls.get_api_failure(
+                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             try:
                 output = api.output['response']
             except:
                 if api.error is not None:
-                    std_output = cls.get_failure(
+                    std_output = cls.get_api_failure(
+                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
                         errors=[{'error': cls._get_error_message(err=api.error)}])
                 else:
-                    std_output = cls.get_failure(
+                    std_output = cls.get_api_failure(
+                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
                         errors=[{'error': cls._get_error_message(
                             msg='Missing `response` element')}])
             else:
@@ -336,7 +344,10 @@ class ItisAPI(APIQuery):
         try:
             apiq.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_output = cls.get_api_failure(
+                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             query_term = 'tsn={}&is_accepted=True'.format(tsn)
             # Standardize output from provider response

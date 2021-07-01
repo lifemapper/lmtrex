@@ -134,12 +134,8 @@ class MapSvc(_S2nService):
                     error_description = '; '.join(fatal_errors)                            
                     http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
-                traceback = get_traceback()
-                # query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
-                #             namestr, provider, gbif_parse, is_accepted, scenariocode, color)
-                # output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
                 http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                error_description = traceback
+                error_description = get_traceback()
             else:
                 if http_status != HTTPStatus.BAD_REQUEST:
                     try:
@@ -153,13 +149,8 @@ class MapSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
                             
                     except Exception as e:
-                        traceback = get_traceback()
                         http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                        error_description = traceback
-                        # query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
-                        #             good_params['namestr'], good_params['provider'], good_params['gbif_parse'],
-                        #             good_params['is_accepted'], good_params['scenariocode'], good_params['color'])
-                        # output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
+                        error_description = get_traceback()
         if http_status == HTTPStatus.OK:
             return output.response
         else:

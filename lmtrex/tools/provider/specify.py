@@ -1,7 +1,10 @@
+from http import HTTPStatus
+
 from lmtrex.common.lmconstants import (
     APIService, JSON_HEADERS, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nOutput
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils import get_traceback
 
 # .............................................................................
 class SpecifyPortalAPI(APIQuery):
@@ -107,7 +110,9 @@ class SpecifyPortalAPI(APIQuery):
             try:
                 api.query_by_get()
             except Exception as e:
-                std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+                std_output = cls.get_api_failure(
+                    APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                    errors=[{'error': cls._get_error_message(err=e)}])
             api_err = None
             if api.error:
                 api_err = {'error': api.error}

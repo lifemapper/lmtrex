@@ -7,6 +7,7 @@ from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.provider.idigbio import IdigbioAPI
 
 # .............................................................................
 @cherrypy.expose
@@ -20,9 +21,8 @@ class NameSvc(_S2nService):
             output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
             traceback = get_traceback()
-            query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
-            output = self.get_failure(
-                provider=ServiceProvider.GBIF[S2nKey.NAME], query_term=query_term, 
+            output = GbifAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errors=[{'error': traceback}])
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
@@ -66,9 +66,8 @@ class NameSvc(_S2nService):
                 namestr, is_accepted=is_accepted, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
-            query_term = 'namestr={}&is_accepted={}&kingdom={}'.format(namestr, is_accepted, kingdom)
-            output = self.get_failure(
-                provider=ServiceProvider.iDigBio[S2nKey.NAME], query_term=query_term, 
+            output = IdigbioAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errors=[{'error': traceback}])
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
@@ -83,7 +82,6 @@ class NameSvc(_S2nService):
         if namestr is not None:
             query_term = 'namestr={}&provider={}'.format(namestr, ','.join(req_providers))
             
-        provnames = []
         for pr in req_providers:
             # Address single record
             if namestr is not None:
@@ -150,13 +148,9 @@ class NameSvc(_S2nService):
                     error_description = '; '.join(fatal_errors)                            
                     http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
-                traceback = get_traceback()
-                error_description = traceback
+                error_description = get_traceback()
                 http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                # query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
-                #     namestr, provider, gbif_parse, is_accepted, gbif_count, kingdom=kingdom)
-                #
-                # output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
+
             else:
                 if http_status != HTTPStatus.BAD_REQUEST:
                     try:
@@ -170,13 +164,9 @@ class NameSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
         
                     except Exception as e:
-                        traceback = get_traceback()
+                        error_description = get_traceback()
                         http_status = HTTPStatus.INTERNAL_SERVER_ERROR
-                        error_description = traceback
-                        # query_term='namestr={}&provider={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
-                        #     good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
-                        #     good_params['gbif_count'], good_params['kingdom'])
-                        # output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
+
         if http_status == HTTPStatus.OK:
             return output.response
         else:

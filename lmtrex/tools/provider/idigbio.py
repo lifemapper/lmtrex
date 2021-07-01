@@ -1,4 +1,5 @@
 import csv
+from http import HTTPStatus
 import os
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
@@ -157,7 +158,9 @@ class IdigbioAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            std_out = cls.get_api_failure(
+                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=e)}])
         else:
             api_err = None
             if api.error:

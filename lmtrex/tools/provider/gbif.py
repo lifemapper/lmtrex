@@ -1,15 +1,17 @@
+from http import HTTPStatus
 import os
 import requests
 import urllib
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING, 
-    TST_VALUES)
+    APIService, COMMUNITY_SCHEMA, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING)
 from lmtrex.fileop.logtools import (log_info, log_error)
 
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils  import get_traceback
 
 # .............................................................................
 class GbifAPI(APIQuery):
@@ -66,37 +68,38 @@ class GbifAPI(APIQuery):
             return None
         return val
 
-    # ...............................................
-    @classmethod
-    def get_taxonomy(cls, taxon_key, logger=None):
-        """Return GBIF backbone taxonomy for this GBIF Taxon ID
-        """
-        std_output = {S2nKey.COUNT: 0}
-        errmsgs = []
-        std_recs = []
-        rec = {}
-        tax_api = GbifAPI(
-            service=GBIF.SPECIES_SERVICE, key=taxon_key, logger=logger)
-        try:
-            tax_api.query()
-        except Exception as e:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
-        else:
-            output = tax_api.output
-            elements_of_interest = [
-                'scientificName', 'kingdom', 'phylum', 'class', 'order', 
-                'family', 'genus', 'species', 'rank', 'genusKey', 'speciesKey', 
-                'taxonomicStatus', 'canonicalName', 'scientificName', 'kingdom', 
-                'phylum', 'class', 'order', 'family', 'genus', 'species', 
-                'rank', 'genusKey', 'speciesKey', 'taxonomicStatus', 
-                'canonicalName', 'acceptedKey', 'accepted', 'nubKey']
-            for fld in elements_of_interest:
-                rec[fld] = tax_api._get_output_val(output, fld)
-            std_recs.append(rec)
-            
-        std_output[S2nKey.RECORDS] = std_recs
-        std_output[S2nKey.ERRORS] = errmsgs
-        return std_output
+    # # ...............................................
+    # @classmethod
+    # def get_taxonomy(cls, taxon_key, logger=None):
+    #     """Return GBIF backbone taxonomy for this GBIF Taxon ID
+    #     """
+    #     std_output = {S2nKey.COUNT: 0}
+    #     errmsgs = []
+    #     std_recs = []
+    #     rec = {}
+    #     tax_api = GbifAPI(
+    #         service=GBIF.SPECIES_SERVICE, key=taxon_key, logger=logger)
+    #     try:
+    #         tax_api.query()
+    #     except Exception as e:
+    #         traceback = lmutil.get_traceback()
+    #         errmsgs.append({'error': traceback})
+    #     else:
+    #         output = tax_api.output
+    #         elements_of_interest = [
+    #             'scientificName', 'kingdom', 'phylum', 'class', 'order', 
+    #             'family', 'genus', 'species', 'rank', 'genusKey', 'speciesKey', 
+    #             'taxonomicStatus', 'canonicalName', 'scientificName', 'kingdom', 
+    #             'phylum', 'class', 'order', 'family', 'genus', 'species', 
+    #             'rank', 'genusKey', 'speciesKey', 'taxonomicStatus', 
+    #             'canonicalName', 'acceptedKey', 'accepted', 'nubKey']
+    #         for fld in elements_of_interest:
+    #             rec[fld] = tax_api._get_output_val(output, fld)
+    #         std_recs.append(rec)
+    #
+    #     std_output[S2nKey.RECORDS] = std_recs
+    #     std_output[S2nKey.ERRORS] = errmsgs
+    #     return std_output
 
     # ...............................................
     @classmethod
@@ -122,7 +125,10 @@ class GbifAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_output = cls.get_api_failure(
+                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             query_term = 'occid={}&count_only={}'.format(occid, count_only)
             # Standardize output from provider response
@@ -358,7 +364,10 @@ class GbifAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_out = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_out = cls.get_api_failure(
+                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             query_term = 'dataset_key={}&count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
@@ -412,7 +421,10 @@ class GbifAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
-            std_output = cls.get_failure(errors=[{'error': cls._get_error_message(err=e)}])
+            tb = get_traceback()
+            std_output = cls.get_api_failure(
+                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             # Standardize output from provider response
             query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
@@ -629,98 +641,9 @@ class GbifAPI(APIQuery):
 
 
 
-# .............................................................................
-def test_gbif():
-    """Test GBIF
-    """
-    taxon_id = 1000225
-    output = GbifAPI.get_taxonomy(taxon_id)
-    log_info('GBIF Taxonomy for {} = {}'.format(taxon_id, output))
-
-
-# .............................................................................
-def test_idigbio_taxon_ids():
-    """Test iDigBio taxon ids
-    """
-    in_f_name = '/tank/data/input/idigbio/taxon_ids.txt'
-    test_count = 20
-
-    out_list = '/tmp/idigbio_accepted_list.txt'
-    if os.path.exists(out_list):
-        os.remove(out_list)
-    out_f = open(out_list, 'w', encoding=ENCODING)
-
-    idig_list = []
-    with open(in_f_name, 'r', encoding=ENCODING) as in_f:
-        #          with line in file:
-        for _ in range(test_count):
-            line = in_f.readline()
-
-            if line is not None:
-                temp_vals = line.strip().split()
-                if len(temp_vals) < 3:
-                    log_error(('Missing data in line {}'.format(line)))
-                else:
-                    try:
-                        curr_gbif_taxon_id = int(temp_vals[0])
-                    except Exception:
-                        pass
-                    try:
-                        curr_reported_count = int(temp_vals[1])
-                    except Exception:
-                        pass
-                    temp_vals = temp_vals[1:]
-                    temp_vals = temp_vals[1:]
-                    curr_name = ' '.join(temp_vals)
-
-                output = GbifAPI.get_taxonomy(curr_gbif_taxon_id)
-                tax_status = output[6]
-
-                if tax_status == 'ACCEPTED':
-                    idig_list.append(
-                        [curr_gbif_taxon_id, curr_reported_count, curr_name])
-                    out_f.write(line)
-
-    out_f.close()
-    return idig_list
 
 
 # .............................................................................
 if __name__ == '__main__':
     # test
-    
-
-    namestr = TST_VALUES.NAMES[0]
-    clean_names = GbifAPI.parse_names(names=TST_VALUES.NAMES)
-    can_name = GbifAPI.parse_name(namestr)
-    try:
-        acc_name = can_name['canonicalName']
-    except Exception as e:
-        log_error('Failed to match {}'.format(namestr))
-    else:
-        acc_names = GbifAPI.match_name(acc_name, status='accepted')
-        log_info('Matched accepted names:')
-        for n in acc_names:
-            log_info('{}: {}, {}'.format(
-                n['scientificName'], n['status'], n['rank']))
-        log_info ('')
-        syn_names = GbifAPI.match_name(acc_name, status='synonym')
-        log_info('Matched synonyms:')
-        for n in syn_names:
-            log_info('{}: {}, {}'.format(
-                n['scientificName'], n['status'], n['rank']))
-        log_info ('')
-        
-        names = ['ursidae', 'Poa annua']
-        recs = GbifAPI.get_occurrences_by_dataset(TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0])
-        log_info('Returned {} records for dataset:'.format(len(recs)))
-        names = ['Poa annua']
-        for name in names:
-            pass
-            good_names = GbifAPI.match_name(
-                name, match_backbone=True, rank='species')
-            log_info('Matched {} with {} GBIF names:'.format(name, len(good_names)))
-            for n in good_names:
-                log_info('{}: {}, {}'.format(
-                    n['scientificName'], n['status'], n['rank']))
-            log_info ('')
+    pass

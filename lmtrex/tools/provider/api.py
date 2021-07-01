@@ -278,33 +278,21 @@ class APIQuery:
 
     # ...............................................
     @classmethod
-    def get_failure(
-        cls, count: int = 0, 
-        record_format: str = '',
-        records: typing.List[dict] = [], 
-        provider: dict = {}, 
-        errors: typing.List[dict] = [], 
-        query_term: str = '', 
-        service: str = '') -> S2nOutput:
+    def get_api_failure(
+            cls, service, provider_response_status, errors=[]):
         """Output format for all (soon) API queries
         
         Args:
-            count: number of records returned
-            record_format: schema for the records returned
-            records: list of records (dictionaries)
-            provider: original data provider
+            provider_response_status: HTTPStatus of provider query
             errors: list of info messages, warnings, errors (dictionaries)
-            provider_query: list of queries (url strings)
             service: type of S^n services
             
         Return:
             lmtrex.services.api.v1.S2nOutput object
         """
-        if not provider:
-            prov_meta = cls._get_provider_response_elt()
+        prov_meta = cls._get_provider_response_elt(query_status=provider_response_status)
         return S2nOutput(
-            count, query_term, service, provider=prov_meta, record_format=record_format, 
-            records=records, errors=errors)
+            0, '', service, provider=prov_meta, errors=errors)
 
     # ...............................................
     def query_by_get(self, output_type='json', verify=True):
@@ -343,15 +331,18 @@ class APIQuery:
                     except Exception as e:
                         output = response.content
                         if output.find(b'<html') != -1:
+                            self.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
                             errmsg = self._get_error_message(
                                 msg='Provider error', 
-                                err='Invalid JSON output ({})'.format(output))
+                                err='Invalid JSON response ({})'.format(output))
                         else:
                             try:
                                 self.output = deserialize(fromstring(output))
                             except:
+                                self.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
                                 errmsg = self._get_error_message(
-                                    msg='Provider error', err=e)
+                                    msg='Provider error', err='Unrecognized output {}'.format(
+                                        output))
                 elif output_type == 'xml':
                     try:
                         output = fromstring(response.text)
@@ -359,6 +350,7 @@ class APIQuery:
                     except Exception as e:
                         self.output = response.text
                 else:
+                    self.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
                     errmsg = self._get_error_message(
                         msg='Unrecognized output type {}'.format(output_type))
             else:
