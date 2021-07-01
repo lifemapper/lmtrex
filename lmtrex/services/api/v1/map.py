@@ -116,6 +116,9 @@ class MapSvc(_S2nService):
             list of dictionaries of Lifemapper records corresponding to 
             maps with URLs and their layers in the Lifemapper archive
         """
+        error_description = None
+        http_status = HTTPStatus.OK
+        
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
@@ -123,19 +126,20 @@ class MapSvc(_S2nService):
             output = self._show_online(valid_providers)
         else:   
             try:
-                good_params, option_errors, is_fatal = self._standardize_params(
+                good_params, option_errors, fatal_errors = self._standardize_params(
                     namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                     is_accepted=is_accepted, scenariocode=scenariocode, color=color)
+                # Bad parameters
+                if fatal_errors:
+                    error_description = '; '.join(fatal_errors)                            
+                    http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
                 traceback = get_traceback()
                 query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
                             namestr, provider, gbif_parse, is_accepted, scenariocode, color)
                 output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
             else:
-                if is_fatal:
-                    raise cherrypy.HTTPError(
-                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
-                else:
+                if http_status != HTTPStatus.BAD_REQUEST:
                     try:
                         # Do Query!
                         output = self.get_records(
@@ -147,11 +151,17 @@ class MapSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
                             
                     except Exception as e:
-                        query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
-                                    good_params['namestr'], good_params['provider'], good_params['gbif_parse'],
-                                    good_params['is_accepted'], good_params['scenariocode'], good_params['color'])
-                        output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
-        return output.response
+                        traceback = get_traceback()
+                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                        error_description = traceback
+                        # query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
+                        #             good_params['namestr'], good_params['provider'], good_params['gbif_parse'],
+                        #             good_params['is_accepted'], good_params['scenariocode'], good_params['color'])
+                        # output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
+        if http_status == HTTPStatus.OK:
+            return output.response
+        else:
+            raise cherrypy.HTTPError(http_status, error_description)
 
 # .............................................................................
 if __name__ == '__main__':

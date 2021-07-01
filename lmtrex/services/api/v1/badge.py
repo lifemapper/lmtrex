@@ -40,48 +40,42 @@ class BadgeSvc(_S2nService):
 
     # ...............................................
     def get_error_or_iconfile(self, provider, icon_status):
-        icon_fname = error_output = None
-        prov_meta = self._get_s2n_provider_response_elt()
+        icon_fname = None
+        error_description = None
+        http_status = HTTPStatus.OK
+        # prov_meta = self._get_s2n_provider_response_elt()
         try:
-            good_params, option_errors, is_fatal = self._standardize_params(
+            good_params, option_errors, fatal_errors = self._standardize_params(
                 provider=provider, icon_status=icon_status)
+            # Bad parameters
+            if fatal_errors:
+                error_description = '; '.join(fatal_errors)                            
+                http_status = HTTPStatus.BAD_REQUEST
+                
         except Exception as e:
-            # query term with original user strings
-            query_term='provider={}&icon_status={}'.format(provider, icon_status)
-            # failed to parse parameters
+            # Unknown error
             traceback = get_traceback()
-            error_output = self.get_failure(
-                query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
+            http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+            error_description = traceback
+            
         else:
-            if is_fatal:
-                raise cherrypy.HTTPError(
-                    HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
-            else:
+            if http_status != HTTPStatus.BAD_REQUEST:
                 icon_status = good_params['icon_status']
-                provider = good_params['provider']
+                provider = good_params['provider']                
+                # Find file!
+                try:
+                    icon_fname = self.get_icon(provider, icon_status)
+                except Exception as e:
+                    traceback = get_traceback()
+                    http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                    error_description = traceback
+                else:
+                    if not icon_fname:
+                        http_status = HTTPStatus.NOT_IMPLEMENTED
+                        error_description = 'Badge {} not implemented for provider {}'.format(
+                            icon_status, provider)                        
                 
-                query_term='provider={}&icon_status={}'.format(provider, icon_status)    
-                if not error_output and self._is_fatal(option_errors):
-                    # respond to failures
-                    error_output = self.get_failure(
-                        query_term=query_term, provider=prov_meta, errors=option_errors)
-                
-                # Failed yet?
-                if not error_output:
-                    # Find file!
-                    try:
-                        icon_fname = self.get_icon(provider, icon_status)
-                    except Exception as e:
-                        traceback = get_traceback()
-                        error_output = self.get_failure(
-                            query_term=query_term, provider=prov_meta, errors=[{'error': traceback}])
-                    else:
-                        if not icon_fname:
-                            error_output = self.get_failure(
-                                query_term=query_term, provider=prov_meta, 
-                                errors=[{'error': 'Provider {} has no available icons'.format(provider)}])
-                
-        return icon_fname, error_output
+        return icon_fname, http_status, error_description
 
 
     # ...............................................
@@ -107,16 +101,19 @@ class BadgeSvc(_S2nService):
         Return:
             a file containing the requested icon
         """
-        icon_fname = None
-        
         valid_providers = self.get_valid_providers()
-        # empty query
+        
+        # return info for empty request
         if provider is None and icon_status is None:
             msg_output = self._show_online(valid_providers)
+            boutput = self.get_json_service_info(msg_output)
+            return boutput
+        
+        # return image or error for icon request
         else:
-            icon_fname, msg_output = self.get_error_or_iconfile(provider, icon_status)
-            
-        if icon_fname:
+            icon_fname, http_status, error_description = self.get_error_or_iconfile(
+                provider, icon_status)
+        if http_status == HTTPStatus.OK:
             # Return image data
             cherrypy.response.headers['Content-Type'] = ICON_CONTENT
             ifile = open(icon_fname, mode='rb')
@@ -127,9 +124,9 @@ class BadgeSvc(_S2nService):
                 ifile.close()
                 return icontent
         else:
-            # Must have failed
-            boutput = self.get_json_service_info(msg_output)
-            return boutput
+            # Failed
+            raise cherrypy.HTTPError(http_status, error_description)
+
     
 
 # .............................................................................
@@ -143,9 +140,12 @@ if __name__ == '__main__':
     print(retval)
     retval = svc.GET(provider='gbif', icon_status='active')
     print(retval)
-    retval = svc.GET(provider='morphosource', icon_status='active')
-    print(retval)
-    retval = svc.GET(provider='morpho', icon_status='active')
+    try:
+        retval = svc.GET(provider='morphosource', icon_status='active')
+        print(retval)
+    except:
+        print('Failed correctly')
+    retval = svc.GET(provider='mopho', icon_status='active')
     print(retval)
     # for pr in valid_providers:
     #     for stat in VALID_ICON_OPTIONS:

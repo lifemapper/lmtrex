@@ -304,7 +304,7 @@ class _S2nService:
         """
         good_params = {}
         option_errors = []
-        is_fatal = False
+        fatal_errs = []
         
         # Allows None or comma-delimited list
         valid_requested_providers, invalid_providers = self.get_valid_requested_params(
@@ -330,11 +330,9 @@ class _S2nService:
                     if valid_requested_providers and len(valid_requested_providers) == 1:
                         good_params[key] = valid_requested_providers[0]
                     else:
-                        is_fatal = True
-                        option_errors.append(
-                        {'error':
-                         'Parameter {} containing exactly one of {} options is required'.format(
-                             key, valid_providers)})
+                        fatal_errs.append(
+                            'Parameter {} containing exactly one of {} options is required'.format(
+                                key, valid_providers)) 
                 # Other services accept one or more, default to all valid
                 else:
                     if valid_requested_providers:
@@ -350,17 +348,13 @@ class _S2nService:
             elif key == 'icon_status':
                 valid_stat = BrokerParameters[key]['options']
                 if val is None:
-                    is_fatal = True
-                    option_errors.append(
-                        {'error':
-                         'Parameter {} containing one of {} options is required'.format(
-                             key, valid_stat)})
+                    fatal_errs.append(
+                        'Parameter {} containing one of {} options is required'.format(
+                             key, valid_stat))
                 elif val not in valid_stat:
-                    is_fatal = True
-                    option_errors.append(
-                        {'error':
-                         'Value {} for parameter {} not in valid options {}'.format(
-                             val, key, valid_stat)})
+                    fatal_errs.append(
+                        'Value {} for parameter {} not in valid options {}'.format(
+                             val, key, valid_stat))
                 else:
                     good_params[key] = val
                     
@@ -381,11 +375,8 @@ class _S2nService:
                 else:
                     usr_val, valid_options = self._fix_type_new(key, val)
                     if valid_options is not None and val not in valid_options:
-                        is_fatal = True
-                        option_errors.append(
-                            {'error': 
-                             'Value {} for parameter {} is not in valid options {}'.format(
-                                 val, key, BrokerParameters[key]['options'])})
+                        fatal_errs.append('Value {} for parameter {} is not in valid options {}'.format(
+                                 val, key, BrokerParameters[key]['options']))
                         good_params[key] = None
                     else:
                         good_params[key] = usr_val
@@ -398,7 +389,7 @@ class _S2nService:
             except:
                 good_params[key] = param_meta['default']
             
-        return good_params, option_errors, is_fatal
+        return good_params, option_errors, fatal_errs
 
     # ...............................................
     def _standardize_params(
@@ -442,7 +433,7 @@ class _S2nService:
             'icon_status': icon_status}
         
         valid_providers = self.get_valid_providers(filter_params=filter_params)
-        usr_params, option_errors, is_fatal = self._process_params(user_kwargs, valid_providers)
+        usr_params, option_errors, fatal_errors = self._process_params(user_kwargs, valid_providers)
 
         # Remove gbif_parse and itis_match flags
         gbif_parse = itis_match = False
@@ -458,7 +449,7 @@ class _S2nService:
         if namestr and (gbif_parse or itis_match):
             usr_params['namestr'] = self.parse_name_with_gbif(namestr)
             
-        return usr_params, option_errors, is_fatal
+        return usr_params, option_errors, fatal_errors
 
     # ..........................
     @staticmethod
