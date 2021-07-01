@@ -135,9 +135,11 @@ class MapSvc(_S2nService):
                     http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
                 traceback = get_traceback()
-                query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
-                            namestr, provider, gbif_parse, is_accepted, scenariocode, color)
-                output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                # query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&scenariocode={}&color={}'.format(
+                #             namestr, provider, gbif_parse, is_accepted, scenariocode, color)
+                # output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                error_description = traceback
             else:
                 if http_status != HTTPStatus.BAD_REQUEST:
                     try:

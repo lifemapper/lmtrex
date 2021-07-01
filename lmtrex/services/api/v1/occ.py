@@ -163,6 +163,9 @@ class OccurrenceSvc(_S2nService):
             list of dictionaries of records corresponding to specimen 
             occurrences in the provider database
         """
+        error_description = None
+        http_status = HTTPStatus.OK
+        
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
             output = self._show_online(valid_providers)
@@ -171,19 +174,22 @@ class OccurrenceSvc(_S2nService):
         else:   
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors, is_fatal = self._standardize_params(
+                good_params, option_errors, fatal_errors = self._standardize_params(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
+                # Bad parameters
+                if fatal_errors:
+                    error_description = '; '.join(fatal_errors)                            
+                    http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
                 traceback = get_traceback()
-                query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
-                    occid, provider, count_only, dataset_key)
-                output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                # query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
+                #     occid, provider, count_only, dataset_key)
+                # output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                error_description = traceback
             else:  
-                if is_fatal:
-                    raise cherrypy.HTTPError(
-                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
-                else:
+                if http_status != HTTPStatus.BAD_REQUEST:
                     # Do Query!
                     try:
                         output = self.get_records(
@@ -196,11 +202,16 @@ class OccurrenceSvc(_S2nService):
                             
                     except Exception as e:
                         traceback = get_traceback()
-                        query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
-                            good_params['occid'], good_params['provider'], good_params['count_only'],
-                            good_params['dataset_key'])
-                        output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
-        return output.response
+                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                        error_description = traceback
+                        # query_term='occid={}&provider={}&count_only={}&dataset_key={}'.format(
+                        #     good_params['occid'], good_params['provider'], good_params['count_only'],
+                        #     good_params['dataset_key'])
+                        # output = self.get_failure(query_term=query_term, errors=[{'error': traceback}])
+        if http_status == HTTPStatus.OK:
+            return output.response
+        else:
+            raise cherrypy.HTTPError(http_status, error_description)
     
 
 # .............................................................................
@@ -210,6 +221,11 @@ if __name__ == '__main__':
     occids = ['84fe1494-c378-4657-be15-8c812b228bf4', 
               '04c05e26-4876-4114-9e1d-984f78e89c15', 
               '2facc7a2-dd88-44af-b95a-733cc27527d4']
+    occids = ['01493b05-4310-4f28-9d81-ad20860311f3', '01559f57-62ca-45ba-80b1-d2aafdc46f44', 
+              '015f35b8-655a-4720-9b88-c1c09f6562cb', '016613ba-4e65-44d5-94d1-e24605afc7e1', 
+              '0170cead-c9cd-48ba-9819-6c5d2e59947e', '01792c67-910f-4ad6-8912-9b1341cbd983', 
+              '017ea8f2-fc5a-4660-92ec-c203daaaa631', '018728bb-c376-4562-9ccb-8e3c3fd70df6', 
+              '018a34a9-55da-4503-8aee-e728ba4be146', '019b547a-79c7-47b3-a5ae-f11d30c2b0de']
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()

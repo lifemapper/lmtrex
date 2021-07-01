@@ -133,26 +133,32 @@ class NameSvc(_S2nService):
             dictionaries of records corresponding to names in the provider 
             taxonomy.
         """
+        error_description = None
+        http_status = HTTPStatus.OK
+
         valid_providers = self.get_valid_providers()
         if namestr is None:
             output = self._show_online(valid_providers)
         else:
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors, is_fatal = self._standardize_params(
+                good_params, option_errors, fatal_errors = self._standardize_params(
                     namestr=namestr, provider=provider, is_accepted=is_accepted, 
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
+                # Bad parameters
+                if fatal_errors:
+                    error_description = '; '.join(fatal_errors)                            
+                    http_status = HTTPStatus.BAD_REQUEST
             except Exception as e:
                 traceback = get_traceback()
-                query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
-                    namestr, provider, gbif_parse, is_accepted, gbif_count, kingdom=kingdom)
-
-                output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
+                error_description = traceback
+                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                # query_term='namestr={}&provider={}&gbif_parse={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
+                #     namestr, provider, gbif_parse, is_accepted, gbif_count, kingdom=kingdom)
+                #
+                # output = self.get_failure(query_term=namestr, errors=[{'error': traceback}])
             else:
-                if is_fatal:
-                    raise cherrypy.HTTPError(
-                        HTTPStatus.BAD_REQUEST, 'Request includes one or more invalid parameters')
-                else:
+                if http_status != HTTPStatus.BAD_REQUEST:
                     try:
                         # Do Query!
                         output = self.get_records(
@@ -164,11 +170,17 @@ class NameSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
         
                     except Exception as e:
-                        query_term='namestr={}&provider={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
-                            good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
-                            good_params['gbif_count'], good_params['kingdom'])
-                        output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
-        return output.response
+                        traceback = get_traceback()
+                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                        error_description = traceback
+                        # query_term='namestr={}&provider={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
+                        #     good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
+                        #     good_params['gbif_count'], good_params['kingdom'])
+                        # output = self.get_failure(query_term=query_term, errors=[{'error': str(e)}])
+        if http_status == HTTPStatus.OK:
+            return output.response
+        else:
+            raise cherrypy.HTTPError(http_status, error_description)
             
 
 # .............................................................................
