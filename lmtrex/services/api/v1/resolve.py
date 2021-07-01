@@ -135,7 +135,7 @@ class ResolveSvc(_S2nService):
                         output = self.get_records(good_params['occid'], good_params['provider'])
     
                         # Add message on invalid parameters to output
-                        for err in option_errors.items():
+                        for err in option_errors:
                             output.append_value(S2nKey.ERRORS, err)
                     except Exception as e:
                         error_description = get_traceback()

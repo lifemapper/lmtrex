@@ -179,7 +179,10 @@ class S2nOutput(object):
   
     @property
     def provider_query(self):
-        return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL]
+        try:
+            return self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL]
+        except:
+            return None
   
     @property
     def record_format(self):
