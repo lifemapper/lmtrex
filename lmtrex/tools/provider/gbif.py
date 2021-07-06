@@ -153,47 +153,49 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_occurrence_record(cls, rec):
         newrec = {}
-        # Fieldname modification from no namespace to S2N
-        issue_field = 'issues'
         to_list_fields = ['associatedSequences', 'associatedReferences']
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
-        issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
+        # Handle issue field 
+        issue_field = 'issues'
+        issue_newfldname = cls.OCCURRENCE_MAP[issue_field]
+        issue_dict = {}
 
         # Add provider stuff
         for fldname, val in rec.items():
-            # Leave out fields without value
+            # Leave out fields without value, except 'issues', handled below
             if val and fldname in cls.OCCURRENCE_MAP.keys():
                 # simple name mapping
                 newfldname = cls.OCCURRENCE_MAP[fldname]
-                # parse into list
+                # Modify/parse into list
                 if fldname in to_list_fields:
                     if val:
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
                         newrec[newfldname] = elts
+                # Modify int date elements to string (to match iDigBio)
+                elif fldname in to_str_fields:
+                    newrec[fldname] = str(val)
+                # Save ID field, plus use to construct URLs
+                elif fldname == GBIF.OCC_ID_FIELD:
+                    newrec[newfldname] =  val
+                    newrec['{}:view_url'.format(
+                            COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_view(val)
+                    newrec['{}:api_url'.format(
+                            COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_data(val)
                 # expand fields to include code and definition
                 elif fldname == issue_field:
-                    stdname = cls.OCCURRENCE_MAP[fldname]
-                    issue_dict = {}
+                    # Expand list into dictionary with descriptions if present, fill at the end
+                    issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
                     for tmp in val:
                         code = tmp.strip()
-                        # return a dictionary with code: description
                         try:
                             issue_dict[code] = issue_map[code]
                         except:
                             issue_dict[code] = 'No description for {} provided'.format(code)
-                    newrec[stdname] =  issue_dict
-                # Modify int date elements to string (to match iDigBio)
-                elif fldname in to_str_fields:
-                    newrec[fldname] = str(val)
                 else:
-                    # Also use ID field to construct URLs
-                    if fldname == GBIF.OCC_ID_FIELD:
-                        newrec['{}:view_url'.format(
-                                COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_view(val)
-                        newrec['{}:api_url'.format(
-                                COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_data(val)
                     newrec[newfldname] =  val
+        # Include 'issues' for providers/aggregators that report them, even if not in provider response
+        newrec[issue_newfldname] =  issue_dict
         return newrec
     
     # ...............................................

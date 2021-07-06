@@ -232,7 +232,7 @@ if __name__ == '__main__':
     for occid in occids:
         out = svc.GET(occid=occid, provider=prov, count_only=False)
         outputs = out['records']
-        print_s2n_output(out)
+        print_s2n_output(out, do_print_rec=True)
 
     x = 1
     

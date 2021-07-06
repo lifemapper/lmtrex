@@ -93,7 +93,7 @@ class IdigbioAPI(APIQuery):
             pass
         else:
             for fldname, val in stripped_rec.items():
-                # Leave out fields without value
+                # Leave out fields without value, except 'issues', handled below
                 if val and fldname in cls.OCCURRENCE_MAP.keys():
                     if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
                         lst = val.split('|')
@@ -103,8 +103,10 @@ class IdigbioAPI(APIQuery):
                     #     # Modify string date elements to int like GBIF and Specify?
                     else:
                         newrec[fldname] =  val
-            # Pull optional 'flags' element from 'indexTerms' field
+            # Include 'issues' for providers/aggregators that report them, even if not in provider response
+            issue_dict = {}
             try:
+                # Pull optional 'flags' element from 'indexTerms' field
                 issue_codes = rec['indexTerms']['flags']
             except Exception:
                 pass
@@ -120,7 +122,7 @@ class IdigbioAPI(APIQuery):
                             issue_dict[code] = issue_map[code]
                         except:
                             issue_dict[code] = 'TBD'
-                    newrec[stdname] = issue_dict
+            newrec[stdname] = issue_dict
         return newrec
 
     # ...............................................
