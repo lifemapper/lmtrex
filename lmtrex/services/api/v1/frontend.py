@@ -46,7 +46,7 @@ class FrontendSvc(_S2nService):
                 errors=[{ 'error': traceback }]
             )
 
-        if good_params['occid'] is None:
+        if good_params['occid'] is None and good_params['namestr'] is None:
             cherrypy.response.status = 400
             return index_template(
                 'Invalid request URL'
