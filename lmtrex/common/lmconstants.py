@@ -251,7 +251,11 @@ class ServiceProvider:
     ITISSolr = {
         S2nKey.NAME: 'ITIS', 
         S2nKey.PARAM: 'itis', 
-        S2nKey.SERVICES: [APIService.Name['endpoint']]}
+        S2nKey.SERVICES: [APIService.Badge['endpoint'], APIService.Name['endpoint']],
+        'icon': {'active': '{}/itis_active.png'.format(ICON_DIR),
+                 'inactive': '{}/itis_inactive.png'.format(ICON_DIR),
+                 'hover': '{}/itis_hover.png'.format(ICON_DIR)}
+        }
     Lifemapper = {
         S2nKey.NAME: 'Lifemapper', 
         S2nKey.PARAM: 'lm', 
@@ -282,7 +286,12 @@ class ServiceProvider:
     Specify = {
         S2nKey.NAME: 'Specify', 
         S2nKey.PARAM: 'specify', 
-        S2nKey.SERVICES: [APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
+        S2nKey.SERVICES: [
+            APIService.Badge['endpoint'], APIService.Occurrence['endpoint'], 
+            APIService.Resolve['endpoint']],
+        'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
+                 'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
+                 'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
     Syfter = {
         }
     
