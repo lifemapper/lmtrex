@@ -85,23 +85,23 @@ class FrontendSvc(_S2nService):
         sections = []
 
         for response in [*occurrence_info, *name_info]:
-            label = f"{response['s2n:provider']} (Species information)" \
+            label = f"{response['s2n:provider']['label']} (Species information)" \
                 if response['s2n:service'] == 'name' \
-                else response['s2n:provider']
+                else response['s2n:provider']['label']
             content = json_to_html(map_fields(response))
             if 's2n:view_url' in response:
                 content = template('view_url', {
                     'view_url': response['s2n:view_url'],
-                    'label': response["s2n:provider"],
+                    'label': response["s2n:provider"]['label'],
                     'content': content
                 })
             sections.append({
                 'icon_url':
-                    provider_label_to_icon_url(response["s2n:provider"]),
+                    provider_label_to_icon_url(response["s2n:provider"]['code']),
                 'label': label,
                 'anchor':
                     f"{response['s2n:service']}_"
-                    f"{response['s2n:provider'].lower()}",
+                    f"{response['s2n:provider']['code'].lower()}",
                 'content': content
             })
 
