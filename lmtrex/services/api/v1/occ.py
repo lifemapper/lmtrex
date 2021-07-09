@@ -83,11 +83,9 @@ class OccurrenceSvc(_S2nService):
     def _get_gbif_records(self, occid, dataset_key, count_only):
         try:
             if occid is not None:
-                query_term = 'occid={}&count_only={}'.format(occid, count_only)
                 output = GbifAPI.get_occurrences_by_occid(
                     occid, count_only=count_only)
             elif dataset_key is not None:
-                query_term = 'dataset_key={}&count_only={}'.format(dataset_key, count_only)
                 output = GbifAPI.get_occurrences_by_dataset(
                     dataset_key, count_only)
         except Exception as e:

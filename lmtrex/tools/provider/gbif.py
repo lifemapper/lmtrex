@@ -378,8 +378,8 @@ class GbifAPI(APIQuery):
                 api_err = {'error': api.error}
                 
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, query_urls=[api.url], count_only=count_only, 
-                err=api_err)
+                api.output, query_term, api.status_code, query_urls=[api.url], 
+                count_only=count_only, err=api_err)
             
         return std_out
 
