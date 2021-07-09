@@ -275,14 +275,6 @@ class ServiceProvider:
                  'inactive': '{}/morpho_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/morpho_hover-01.png'.format(ICON_DIR)}
         }
-    # TODO: need a Broker badge
-    Broker = {
-        S2nKey.NAME: 'Spcoco Broker', 
-        S2nKey.PARAM: 'broker', 
-        S2nKey.SERVICES: [
-            #APIService.Badge['endpoint'], 
-            APIService.Map['endpoint'], APIService.Name['endpoint'], 
-            APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
     Specify = {
         S2nKey.NAME: 'Specify', 
         S2nKey.PARAM: 'specify', 
@@ -292,8 +284,16 @@ class ServiceProvider:
         'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
                  'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
                  'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
-    Syfter = {
-        }
+    # TODO: need a Broker badge
+    Broker = {
+        S2nKey.NAME: 'Spcoco Broker', 
+        S2nKey.PARAM: 'broker', 
+        S2nKey.SERVICES: [
+            #APIService.Badge['endpoint'], 
+            APIService.Map['endpoint'], APIService.Name['endpoint'], 
+            APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
+    # Syfter = {
+    #     }
     
 # ....................
     @classmethod
@@ -316,18 +316,16 @@ class ServiceProvider:
         elif param_or_name in (
             ServiceProvider.Specify[S2nKey.NAME], ServiceProvider.Specify[S2nKey.PARAM]):
             return ServiceProvider.Specify
+        elif param_or_name in (
+            ServiceProvider.Broker[S2nKey.NAME], ServiceProvider.Broker[S2nKey.PARAM]):
+            return ServiceProvider.Broker
         else:
             return None
 # ....................
     @classmethod
     def is_valid_param(cls, param):
-        if param in (
-            ServiceProvider.GBIF[S2nKey.PARAM], 
-            ServiceProvider.iDigBio[S2nKey.PARAM], 
-            ServiceProvider.ITISSolr[S2nKey.PARAM], 
-            ServiceProvider.Lifemapper[S2nKey.PARAM], 
-            ServiceProvider.MorphoSource[S2nKey.PARAM],
-            ServiceProvider.Specify[S2nKey.PARAM]):
+        params = [svc[S2nKey.PARAM] for svc in cls.all()]
+        if param in params:
             return True
         return False
 # ....................
@@ -352,9 +350,9 @@ class ServiceProvider:
     @classmethod
     def all(cls):
         return [
-            ServiceProvider.GBIF, ServiceProvider.iDigBio, 
-            ServiceProvider.ITISSolr, ServiceProvider.Lifemapper, 
-            ServiceProvider.MorphoSource, ServiceProvider.Specify]
+            ServiceProvider.GBIF, ServiceProvider.iDigBio, ServiceProvider.ITISSolr, 
+            ServiceProvider.Lifemapper, ServiceProvider.MorphoSource, 
+            ServiceProvider.Specify, ServiceProvider.Broker]
 
  # .............................................................................
 
