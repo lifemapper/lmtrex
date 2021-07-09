@@ -171,8 +171,6 @@ class OccurrenceSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
-            output = self._show_online(valid_providers)
         else:   
             # No filter_params defined for Name service yet
             try:
@@ -225,6 +223,7 @@ if __name__ == '__main__':
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
+    out = svc.GET(dataset_key=dskeys[0], provider='gbif', count_only=True)
     # out = svc.GET(occid='test', provider='mopho', count_only=False)
     # out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
     
