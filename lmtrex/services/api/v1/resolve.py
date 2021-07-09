@@ -109,7 +109,7 @@ class ResolveSvc(_S2nService):
             There will never be more than one record returned.
         """
         error_description = None
-        http_status = HTTPStatus.OK
+        http_status = int(HTTPStatus.OK)
 
         valid_providers = self.get_valid_providers()
         if occid is None:
@@ -125,10 +125,10 @@ class ResolveSvc(_S2nService):
                 # Bad parameters
                 if fatal_errors:
                     error_description = '; '.join(fatal_errors)                            
-                    http_status = HTTPStatus.BAD_REQUEST
+                    http_status = int(HTTPStatus.BAD_REQUEST)
             except Exception as e:
                 error_description = get_traceback()
-                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
             else:
                 if http_status != HTTPStatus.BAD_REQUEST:
                     try:
@@ -139,7 +139,7 @@ class ResolveSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
                     except Exception as e:
                         error_description = get_traceback()
-                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                        http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
         if http_status == HTTPStatus.OK:
             return output.response
         else:

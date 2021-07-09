@@ -164,7 +164,7 @@ class OccurrenceSvc(_S2nService):
             occurrences in the provider database
         """
         error_description = None
-        http_status = HTTPStatus.OK
+        http_status = int(HTTPStatus.OK)
         
         valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
@@ -178,10 +178,10 @@ class OccurrenceSvc(_S2nService):
                 # Bad parameters
                 if fatal_errors:
                     error_description = '; '.join(fatal_errors)                            
-                    http_status = HTTPStatus.BAD_REQUEST
+                    http_status = int(HTTPStatus.BAD_REQUEST)
                     
             except Exception as e:
-                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                 error_description = get_traceback()
                 
             else:  
@@ -197,7 +197,7 @@ class OccurrenceSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
                             
                     except Exception as e:
-                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                        http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                         error_description = get_traceback()
 
         if http_status == HTTPStatus.OK:

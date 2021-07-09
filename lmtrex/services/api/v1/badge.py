@@ -42,7 +42,7 @@ class BadgeSvc(_S2nService):
     def get_error_or_iconfile(self, provider, icon_status):
         icon_fname = None
         error_description = None
-        http_status = HTTPStatus.OK
+        http_status = int(HTTPStatus.OK)
         # prov_meta = self._get_s2n_provider_response_elt()
         try:
             good_params, option_errors, fatal_errors = self._standardize_params(
@@ -50,11 +50,11 @@ class BadgeSvc(_S2nService):
             # Bad parameters
             if fatal_errors:
                 error_description = '; '.join(fatal_errors)                            
-                http_status = HTTPStatus.BAD_REQUEST
+                http_status = int(HTTPStatus.BAD_REQUEST)
                 
         except Exception as e:
             # Unknown error
-            http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+            http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
             error_description = get_traceback()
             
         else:
@@ -65,11 +65,11 @@ class BadgeSvc(_S2nService):
                 try:
                     icon_fname = self.get_icon(provider, icon_status)
                 except Exception as e:
-                    http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                    http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                     error_description = get_traceback()
                 else:
                     if not icon_fname:
-                        http_status = HTTPStatus.NOT_IMPLEMENTED
+                        http_status = int(HTTPStatus.NOT_IMPLEMENTED)
                         error_description = 'Badge {} not implemented for provider {}'.format(
                             icon_status, provider)                        
                 

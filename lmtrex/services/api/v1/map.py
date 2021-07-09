@@ -117,7 +117,7 @@ class MapSvc(_S2nService):
             maps with URLs and their layers in the Lifemapper archive
         """
         error_description = None
-        http_status = HTTPStatus.OK
+        http_status = int(HTTPStatus.OK)
         
         valid_providers = self.get_valid_providers()
         if namestr is None:
@@ -132,9 +132,9 @@ class MapSvc(_S2nService):
                 # Bad parameters
                 if fatal_errors:
                     error_description = '; '.join(fatal_errors)                            
-                    http_status = HTTPStatus.BAD_REQUEST
+                    http_status = int(HTTPStatus.BAD_REQUEST)
             except Exception as e:
-                http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                 error_description = get_traceback()
             else:
                 if http_status != HTTPStatus.BAD_REQUEST:
@@ -149,7 +149,7 @@ class MapSvc(_S2nService):
                             output.append_value(S2nKey.ERRORS, err)
                             
                     except Exception as e:
-                        http_status = HTTPStatus.INTERNAL_SERVER_ERROR
+                        http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                         error_description = get_traceback()
         if http_status == HTTPStatus.OK:
             return output.response

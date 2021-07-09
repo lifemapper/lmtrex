@@ -2,7 +2,7 @@ import sys
 import traceback
 from uuid import UUID
 
-from lmtrex.common.lmconstants import ICON_API
+from lmtrex.common.lmconstants import APIService, ICON_API, ServiceProvider
 
 # ......................................................
 def is_valid_uuid(uuid_to_test, version=4):
@@ -44,9 +44,11 @@ def get_traceback():
 # ...............................................
 def get_icon_url(provider_code, icon_status=None):
     """Add link to badge service with provider param and optionally icon_status."""
-    url = '{}?provider={}'.format(ICON_API, provider_code)
-    if icon_status:
-        url = '{}&icon_status={}'.format(url, icon_status)
+    url = None
+    if ServiceProvider.is_valid_service(provider_code, APIService.Badge['endpoint']):
+        url = '{}?provider={}'.format(ICON_API, provider_code)
+        if icon_status:
+            url = '{}&icon_status={}'.format(url, icon_status)
     return url
     
 

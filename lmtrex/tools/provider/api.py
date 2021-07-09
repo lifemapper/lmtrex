@@ -104,7 +104,9 @@ class APIQuery:
         provcode = cls.PROVIDER[S2nKey.PARAM]
         provider_element[S2nKey.PROVIDER_CODE] = provcode
         provider_element[S2nKey.PROVIDER_LABEL] = cls.PROVIDER[S2nKey.NAME]
-        provider_element[S2nKey.PROVIDER_ICON_URL] = lmutil.get_icon_url(provcode)
+        icon_url = lmutil.get_icon_url(provcode)
+        if icon_url:
+            provider_element[S2nKey.PROVIDER_ICON_URL] = icon_url
         # Optional http status_code
         try:
             stat = int(query_status)
