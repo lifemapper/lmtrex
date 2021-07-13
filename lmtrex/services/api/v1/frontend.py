@@ -46,7 +46,13 @@ class FrontendSvc(_S2nService):
                 errors=[{ 'error': traceback }]
             )
 
-        if good_params['occid'] is None:
+        if not good_params['occid']:
+            good_params['occid'] = None
+
+        if not good_params['namestr']:
+            good_params['namestr'] = None
+
+        if good_params['occid'] is None and good_params['namestr'] is None:
             cherrypy.response.status = 400
             return index_template(
                 'Invalid request URL'
@@ -61,7 +67,7 @@ class FrontendSvc(_S2nService):
             for response in \
                 OccurrenceSvc().GET(occid=good_params['occid'])['records']
             if len(response['records'])>0
-        ]
+        ] if good_params['occid'] else []
 
         scientific_names = [
             response['dwc:scientificName']
