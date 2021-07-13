@@ -23,6 +23,9 @@ class BadgeSvc(_S2nService):
         # iDigBio
         elif provider == ServiceProvider.iDigBio[S2nKey.PARAM]:
             fname = ServiceProvider.iDigBio['icon'][icon_status]
+        # ITIS
+        elif provider == ServiceProvider.ITISSolr[S2nKey.PARAM]:
+            fname = ServiceProvider.ITISSolr['icon'][icon_status]
         # Lifemapper
         elif provider == ServiceProvider.Lifemapper[S2nKey.PARAM]:
             fname = ServiceProvider.Lifemapper['icon'][icon_status]
@@ -136,7 +139,7 @@ if __name__ == '__main__':
     # print(retval)
     retval = svc.GET()
     print(retval)
-    retval = svc.GET(provider='gbif', icon_status='active')
+    retval = svc.GET(provider='itis', icon_status='active')
     print(retval)
     try:
         retval = svc.GET(provider='morphosource', icon_status='active')
