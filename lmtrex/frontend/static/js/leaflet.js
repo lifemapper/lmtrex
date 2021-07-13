@@ -71,6 +71,7 @@ function drawMap(response, map, mapDetails) {
     infoSection: [],
   };
 
+  const layerCounts = {};
   const layers = response.records[0].records
     .sort(
       (
@@ -83,23 +84,37 @@ function drawMap(response, map, mapDetails) {
           ? 1
           : -1
     )
-    .map((record) => ({
-      ...lifemapperLayerVariations[record['s2n:layer_type']],
-      tileLayer: {
-        mapUrl: record['s2n:endpoint'],
-        options: {
-          layers: record['s2n:layer_name'],
-          service: 'wms',
-          version: '1.0',
-          height: '400',
-          format: 'image/png',
-          request: 'getmap',
-          srs: 'epsg:3857',
-          width: '800',
-          ...lifemapperLayerVariations[record['s2n:layer_type']],
+    .map((record) => {
+      layerCounts[record['s2n:layer_type']] ??= 0;
+      layerCounts[record['s2n:layer_type']] += 1;
+
+      if(layerCounts[record['s2n:layer_type']] > 10)
+        return undefined;
+
+      return {
+        ...lifemapperLayerVariations[record['s2n:layer_type']],
+        layerLabel:
+          `${
+            lifemapperLayerVariations[record['s2n:layer_type']].layerLabel
+          } (${layerCounts[record['s2n:layer_type']]})`,
+        isDefault: layerCounts[record['s2n:layer_type']] === 1,
+        tileLayer: {
+          mapUrl: record['s2n:endpoint'],
+          options: {
+            layers: record['s2n:layer_name'],
+            opacity: 0.5,
+            service: 'wms',
+            version: '1.0',
+            height: '400',
+            format: 'image/png',
+            request: 'getmap',
+            srs: 'epsg:3857',
+            width: '800',
+            ...lifemapperLayerVariations[record['s2n:layer_type']],
+          },
         },
-      },
-    }));
+      };
+    }).filter(record=>record);
 
   const modificationTime = response.records[0].records[0]['s2n:modtime'];
   messages.infoSection.push(`Model Creation date: ${modificationTime}`);
@@ -124,13 +139,15 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
     ...coMapTileServers.map(({ transparent, layerLabel }) => ({
       transparent,
       layerLabel,
+      isDefault: true,
       tileLayer:
         leafletTileServers[transparent ? 'overlays' : 'baseMaps'][layerLabel],
     })),
     ...listOfLayersRaw.map(
-      ({ transparent, layerLabel, tileLayer: { mapUrl, options } }) => ({
+      ({ transparent, layerLabel, isDefault, tileLayer: { mapUrl, options } }) => ({
         transparent,
         layerLabel,
+        isDefault: isDefault,
         tileLayer: L.tileLayer.wms(mapUrl, options),
       })
     ),
@@ -141,13 +158,19 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
       listOfLayers.map(({ layerLabel, tileLayer }) => [layerLabel, tileLayer])
     );
 
-  const allLayers = Object.values(formatLayersDict(listOfLayers));
+  const enabledLayers = Object.values(formatLayersDict(
+    listOfLayers.filter(({isDefault})=>
+      isDefault
+    )
+  ));
   const overlayLayers = formatLayersDict(
-    listOfLayers.filter(({ transparent }) => transparent)
+    listOfLayers.filter(({ transparent }) =>
+      transparent
+    )
   );
 
   const map = L.map(mapContainer, {
-    layers: allLayers,
+    layers: enabledLayers,
   }).setView([0, 0], 1);
 
   const layerGroup = L.control.layers({}, overlayLayers);
