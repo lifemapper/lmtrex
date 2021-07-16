@@ -134,6 +134,8 @@ function drawMap(response, map, mapDetails) {
   void showCOMap(map, layers);
 }
 
+const DEFAULT_CENTER = [0,0];
+const DEFAULT_ZOOM = 2;
 async function showCOMap(mapContainer, listOfLayersRaw) {
   const listOfLayers = [
     ...coMapTileServers.map(({ transparent, layerLabel }) => ({
@@ -170,8 +172,12 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
   );
 
   const map = L.map(mapContainer, {
+    maxZoom: 23,
     layers: enabledLayers,
-  }).setView([0, 0], 1);
+  }).setView(
+    DEFAULT_CENTER,
+    DEFAULT_ZOOM
+  );
 
   const layerGroup = L.control.layers({}, overlayLayers);
   layerGroup.addTo(map);
