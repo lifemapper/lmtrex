@@ -7,10 +7,14 @@
   --t3: #000;
   --red: #f00;
   --green: #0f0;
+
+  --size: 1rem;
+  --double-size: 2rem;
+  --icon-size: 24px;
 }
 
 body {
-  margin: 1rem;
+  margin: var(--size);
   background: var(--b2);
   font-family: "Calibri", sans-serif;
 }
@@ -22,7 +26,7 @@ body {
 main.sections {
   display: flex;
   flex-direction: column;
-  row-gap: 2rem;
+  row-gap: var(--double-size);
 }
 
 .section {
@@ -39,17 +43,19 @@ main.sections {
 
 .section-header-icon {
   background: var(--b3);
-  padding: 1rem;
+  padding: var(--size);
+  width: calc(var(--double-size) + var(--icon-size));
+  height: calc(var(--double-size) + var(--icon-size));
 }
 
 .section-header::after {
   content: "\25BC";
-  padding: 1rem;
+  padding: var(--size);
 }
 
 .section-header-name {
   flex: 1;
-  padding: 1rem;
+  padding: var(--size);
 }
 
 .section.section-collapsed .section-header::after {
@@ -61,5 +67,5 @@ main.sections {
 }
 
 .section-body {
-  padding: 1rem;
+  padding: var(--size);
 }
