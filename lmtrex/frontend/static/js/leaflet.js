@@ -73,6 +73,10 @@ function drawMap(response, map, mapDetails) {
 
   const layerCounts = {};
   const layers = response.records[0].records
+    .filter(record=>
+      typeof record['s2n:sdm_projection_scenario_code'] !== 'string' ||
+      record['s2n:sdm_projection_scenario_code'] === 'worldclim-curr'
+    )
     .sort(
       (
         { 's2n:layer_type': layerTypeLeft },
@@ -85,24 +89,29 @@ function drawMap(response, map, mapDetails) {
           : -1
     )
     .map((record) => {
-      layerCounts[record['s2n:layer_type']] ??= 0;
-      layerCounts[record['s2n:layer_type']] += 1;
+      const layerType = record['s2n:layer_type'];
+      layerCounts[layerType] ??= 0;
+      layerCounts[layerType] += 1;
 
-      if(layerCounts[record['s2n:layer_type']] > 10)
+      if(layerCounts[layerType] > 10)
         return undefined;
 
+      const showLayerNumber = response.records[0].records.filter(record=>
+        record['s2n:layer_type'] === layerType
+      ).length !== 1;
+
       return {
-        ...lifemapperLayerVariations[record['s2n:layer_type']],
+        ...lifemapperLayerVariations[layerType],
         layerLabel:
           `${
-            lifemapperLayerVariations[record['s2n:layer_type']].layerLabel
-          } (${layerCounts[record['s2n:layer_type']]})`,
-        isDefault: layerCounts[record['s2n:layer_type']] === 1,
+            lifemapperLayerVariations[layerType].layerLabel
+          }${showLayerNumber ? ` (${layerCounts[layerType]})`:''}`,
+        isDefault: layerCounts[layerType] === 1,
         tileLayer: {
           mapUrl: record['s2n:endpoint'],
           options: {
             layers: record['s2n:layer_name'],
-            opacity: 0.5,
+            opacity: 0.7,
             service: 'wms',
             version: '1.0',
             height: '400',
@@ -110,7 +119,7 @@ function drawMap(response, map, mapDetails) {
             request: 'getmap',
             srs: 'epsg:3857',
             width: '800',
-            ...lifemapperLayerVariations[record['s2n:layer_type']],
+            ...lifemapperLayerVariations[layerType],
           },
         },
       };
