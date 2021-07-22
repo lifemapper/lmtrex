@@ -158,18 +158,18 @@ class MapSvc(_S2nService):
 
 # .............................................................................
 if __name__ == '__main__':
-    # test    
-    names = TST_VALUES.NAMES[5:9]
-    names = ['Tulipa sylvestris']
-#     names = ['Plagioecia patina']
-    names = ['Phlox longifolia Nutt']
-    names.insert(0, None)
-    svc = MapSvc()
-    for namestr in names:
-        for scodes in (None, 'worldclim-curr'):
-            for prov in svc.get_providers():
-                out = svc.GET(namestr=namestr, scenariocode=scodes, provider=prov)
-                print_s2n_output(out, do_print_rec=True)
+    pass
+#     names = TST_VALUES.NAMES[5:9]
+#     names = ['Tulipa sylvestris']
+# #     names = ['Plagioecia patina']
+#     names = ['Phlox longifolia Nutt']
+#     names.insert(0, None)
+#     svc = MapSvc()
+#     for namestr in names:
+#         for scodes in (None, 'worldclim-curr'):
+#             for prov in svc.get_providers():
+#                 out = svc.GET(namestr=namestr, scenariocode=scodes, provider=prov)
+#                 print_s2n_output(out, do_print_rec=True)
 
 """
 http://broker-dev.spcoco.org/api/v1/map/?provider=lm&namestr=test

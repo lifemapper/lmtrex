@@ -175,23 +175,23 @@ class NameSvc(_S2nService):
 
 # .............................................................................
 if __name__ == '__main__':
-
-    # test
-    # test_names = TST_VALUES.NAMES[0:4]
-    test_names = [None, 'poa', 'Tulipa sylvestris']
-    
-    
-    svc = NameSvc()
-    out = svc.GET()
-    print_s2n_output(out)
-    out = svc.GET(
-        namestr='Tulipa sylvestris', is_accepted=False, gbif_parse=True, 
-        gbif_count=True, kingdom=None)
-    print_s2n_output(out)
-    out = svc.GET(
-        namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
-        gbif_count=True, kingdom=None)
-    print_s2n_output(out)
+    pass
+    # # test
+    # # test_names = TST_VALUES.NAMES[0:4]
+    # test_names = [None, 'poa', 'Tulipa sylvestris']
+    #
+    #
+    # svc = NameSvc()
+    # out = svc.GET()
+    # print_s2n_output(out)
+    # out = svc.GET(
+    #     namestr='Tulipa sylvestris', is_accepted=False, gbif_parse=True, 
+    #     gbif_count=True, kingdom=None)
+    # print_s2n_output(out)
+    # out = svc.GET(
+    #     namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
+    #     gbif_count=True, kingdom=None)
+    # print_s2n_output(out)
     # for namestr in test_names:
     #     for prov in svc.get_providers():
     #         out = svc.GET(
