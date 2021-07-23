@@ -208,29 +208,77 @@ class OccurrenceSvc(_S2nService):
 
 # .............................................................................
 if __name__ == '__main__':
-    pass
-    # from lmtrex.common.lmconstants import TST_VALUES
-    # # occids = TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0:3]
-    # occids = ['84fe1494-c378-4657-be15-8c812b228bf4', 
-    #           '04c05e26-4876-4114-9e1d-984f78e89c15', 
-    #           '2facc7a2-dd88-44af-b95a-733cc27527d4']
-    # occids = ['01493b05-4310-4f28-9d81-ad20860311f3', '01559f57-62ca-45ba-80b1-d2aafdc46f44', 
-    #           '015f35b8-655a-4720-9b88-c1c09f6562cb', '016613ba-4e65-44d5-94d1-e24605afc7e1', 
-    #           '0170cead-c9cd-48ba-9819-6c5d2e59947e', '01792c67-910f-4ad6-8912-9b1341cbd983', 
-    #           '017ea8f2-fc5a-4660-92ec-c203daaaa631', '018728bb-c376-4562-9ccb-8e3c3fd70df6', 
-    #           '018a34a9-55da-4503-8aee-e728ba4be146', '019b547a-79c7-47b3-a5ae-f11d30c2b0de']
-    #
-    # dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
-    # svc = OccurrenceSvc()
-    # out = svc.GET(dataset_key=dskeys[0], provider='gbif', count_only=True)
-    # # out = svc.GET(occid='test', provider='mopho', count_only=False)
-    # # out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
-    #
-    # prov = 'gbif'
-    # for occid in occids:
-    #     out = svc.GET(occid=occid, provider=prov, count_only=False)
-    #     outputs = out['records']
-    #     print_s2n_output(out, do_print_rec=True)
-    #
-    # x = 1
+
+    from lmtrex.common.lmconstants import TST_VALUES
+    occids = TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0:3]
     
+    dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
+    svc = OccurrenceSvc()
+    # out = svc.GET(occid='test', provider='mopho', count_only=False)
+    # out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
+    
+    occids = ['84fe1494-c378-4657-be15-8c812b228bf4', '04c05e26-4876-4114-9e1d-984f78e89c15', '2facc7a2-dd88-44af-b95a-733cc27527d4']
+    occids = ['01493b05-4310-4f28-9d81-ad20860311f3', '01559f57-62ca-45ba-80b1-d2aafdc46f44', 
+              '015f35b8-655a-4720-9b88-c1c09f6562cb', '016613ba-4e65-44d5-94d1-e24605afc7e1', 
+              '0170cead-c9cd-48ba-9819-6c5d2e59947e', '01792c67-910f-4ad6-8912-9b1341cbd983', 
+              '017ea8f2-fc5a-4660-92ec-c203daaaa631', '018728bb-c376-4562-9ccb-8e3c3fd70df6', 
+              '018a34a9-55da-4503-8aee-e728ba4be146', '019b547a-79c7-47b3-a5ae-f11d30c2b0de']
+    # Get all providers
+    for occid in occids:
+        for prov in ['gbif']: #svc.get_providers():
+            out = svc.GET(occid=occid, provider=prov, count_only=False)
+            outputs = out['records']
+            print_s2n_output(out)
+     
+    x = 1
+    
+"""
+https://broker.spcoco.org/api/v1/occ/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+https://broker-dev.spcoco.org/api/v1/occ/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+
+import cherrypy
+
+from lmtrex.common.lmconstants import (ServiceProvider, APIService)
+
+from lmtrex.tools.provider.gbif import GbifAPI
+from lmtrex.tools.provider.idigbio import IdigbioAPI
+from lmtrex.tools.provider.mopho import MorphoSourceAPI
+from lmtrex.tools.provider.specify import SpecifyPortalAPI
+from lmtrex.tools.utils import get_traceback
+
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.services.api.v1.resolve import ResolveSvc
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
+
+from lmtrex.services.api.v1.occ import *
+
+from lmtrex.common.lmconstants import TST_VALUES
+
+occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0]]
+svc = OccurrenceSvc()
+
+# Get all providers 
+# Specify success
+occid = occids[-1]
+
+# Morphosource success
+occid = TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0]
+
+out = svc.GET(occid=occid, count_only=False)
+
+specify_occ = gbif_occ = idig_occ = mopho_occ = None 
+outputs = out['records']
+for pout in outputs:
+    if pout['count'] > 0:
+        if pout['provider'] == 'Specify':
+            specify_occ = pout['records'][0]
+        elif pout['provider'] == 'GBIF':
+            gbif_occ = pout['records'][0]
+        elif pout['provider'] == 'iDigBio':
+            idig_occ = pout['records'][0]
+        elif pout['provider'] == 'MorphoSource':
+            mopho_occ = pout['records'][0]
+
+
+"""
+>>>>>>> 69392ea6a68465938af928e0c961f2ab6b169121
