@@ -394,7 +394,8 @@ SPCOCO_FIELDS = [
 
 # ......................................................
 class Lifemapper:
-    URL = 'http://client.lifemapper.org/api/v2'
+    URL = 'http://joe-124.lifemapper.org/api/v2'
+    # URL = 'http://client.lifemapper.org/api/v2'
     OCC_RESOURCE = 'sdmproject'
     PROJ_RESOURCE = 'sdmproject'
     MAP_RESOURCE = 'ogc' 
