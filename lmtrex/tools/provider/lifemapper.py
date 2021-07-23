@@ -4,7 +4,7 @@ from lmtrex.common.lmconstants import (
     APIService, COMMUNITY_SCHEMA, Lifemapper, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo
 
 # .............................................................................
 class LifemapperAPI(APIQuery):
@@ -117,21 +117,20 @@ class LifemapperAPI(APIQuery):
     @classmethod
     def _standardize_map_output(
             cls, output, query_term, service, query_status=None, prjscenariocodes=None, color=None, count_only=False, 
-            query_urls=[], err={}):
+            query_urls=[], errinfo={}):
         occ_layer_rec = None
         stdrecs = []
-        errmsgs = []
-        if err:
-            errmsgs.append(err)
+            
         # Records
         if len(output) == 0:
-            errmsgs.append({'error': cls._get_error_message(
-                'Failed to return any map layers for {}'.format(query_term))})
+            msg = cls._get_error_message('Failed to return any map layers for {}'.format(query_term))
+            errinfo = add_errinfo(errinfo, 'info', msg)
         else:
             try:
                 occ_url = output[0]['occurrenceSet']['metadataUrl']
             except Exception as e:
-                errmsgs.append({'error': cls._get_error_message('Failed to return occurrence URL')})
+                msg = cls._get_error_message('Failed to return occurrence URL')
+                errinfo = add_errinfo(errinfo, 'error', msg)
             else:
                 occ_rec = cls._get_occurrenceset_record(occ_url)
                 occ_layer_rec = cls._standardize_layer_record(occ_rec)
@@ -145,37 +144,36 @@ class LifemapperAPI(APIQuery):
                     if r2:
                         stdrecs.append(r2)
                 except Exception as e:
-                    errmsgs.append({'error': cls._get_error_message(err=e)})
+                    msg = cls._get_error_message(err=e)
+                    errinfo = add_errinfo(errinfo, 'error', msg)
         
         # TODO: revisit record format for other map providers
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs )
+            len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errinfo)
 
         return std_output
     
     # ...............................................
     @classmethod
     def _standardize_occ_output(
-            cls, output, query_status=None, query_urls=[], color=None, count_only=False, err={}):
+            cls, output, query_status=None, query_urls=[], color=None, count_only=False, errinfo={}):
         stdrecs = []
-        errmsgs = {}
         total = len(output)
-        if err:
-            errmsgs.append(err)
         # Records]
         if not count_only:
             for r in output:
                 try:
                     stdrecs.append(cls._standardize_occ_record(r, color=color))
                 except Exception as e:
-                    errmsgs.append({'error': cls._get_error_message(err=e)})
+                    msg = cls._get_error_message(err=e)
+                    errinfo = add_errinfo(errinfo, 'error', msg)
         
         # TODO: revisit record format for other map providers
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             count=total, record_format=Lifemapper.RECORD_FORMAT_OCC, records=stdrecs, 
-            provider=prov_meta, errors=errmsgs)
+            provider=prov_meta, errors=errinfo)
 
         return std_output
 
@@ -204,6 +202,7 @@ class LifemapperAPI(APIQuery):
             Lifemapper contains only 'Accepted' name froms the GBIF Backbone 
             Taxonomy and this method requires them for success.
         """
+        errinfo = {}
         other_filters[Lifemapper.NAME_KEY] = name
         other_filters[Lifemapper.ATOM_KEY] = 0
         api = LifemapperAPI(
@@ -213,18 +212,17 @@ class LifemapperAPI(APIQuery):
             api.query_by_get()
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
+            
             std_output = cls.get_api_failure(
-                APIService.Map['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[cls._get_error_message(err=tb)])
+                APIService.Map['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
-            api_err = None
-            if api.error:
-                api_err = {'error': api.error}
+            errinfo = add_errinfo(errinfo, 'error', api.error)
             
             std_output = cls._standardize_map_output(
                 api.output, name, APIService.Map['endpoint'], query_status=api.status_code, 
                 query_urls=[api.url], prjscenariocodes=prjscenariocodes, color=color, 
-                count_only=False, err=api_err)
+                count_only=False, errinfo=errinfo)
 
         return std_output
    
@@ -240,14 +238,15 @@ class LifemapperAPI(APIQuery):
                 prints to stdout    
         """
         rec = None
+        errinfo = {}
         api = APIQuery(url)            
         try:
             api.query_by_get()
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             out = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             try:
                 rec = api.output

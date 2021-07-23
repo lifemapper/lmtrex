@@ -105,11 +105,11 @@ class S2nOutput(object):
     provider: dict = {}
     record_format: str = ''
     records: typing.List[dict] = []
-    errors: typing.List[dict] = []
+    errors: dict = {}
      
     def __init__(
             self, count, query_term, service, provider={}, 
-            record_format='', records=[], errors=[]):
+            record_format='', records=[], errors={}):
         # Dictionary is json-serializable
         self._response = {
             S2nKey.COUNT: count, 
@@ -131,7 +131,7 @@ class S2nOutput(object):
             raise Exception('Unrecognized property {}'.format(prop))
         
     def append_value(self, prop, value):
-        if prop in (S2nKey.RECORDS, S2nKey.ERRORS):
+        if prop == S2nKey.RECORDS:
             # Append or set
             self._response[prop].append(value)
         elif prop == S2nKey.PROVIDER_QUERY_URL:
@@ -140,6 +140,13 @@ class S2nOutput(object):
         else:
             raise Exception(
                 'Property {} is not a multi-value element, use `set_value`'.format(prop))
+
+    def append_error(self, error_type, error_desc):
+        # Append or set
+        try:
+            self._response[S2nKey.ERRORS][error_type].append(error_desc)
+        except:
+            self._response[S2nKey.ERRORS][error_type] = [error_desc]
 
     @property
     def response(self):
@@ -157,9 +164,9 @@ class S2nOutput(object):
     def service(self):
         return self._response[S2nKey.SERVICE]
   
-    @property
-    def status(self):
-        return self._response[S2nKey.STATUS]
+    # @property
+    # def status(self):
+    #     return self._response[S2nKey.STATUS]
   
     @property
     def provider(self):

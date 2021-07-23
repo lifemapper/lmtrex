@@ -8,6 +8,7 @@ from lmtrex.common.lmconstants import (URL_ESCAPES, ENCODING)
 from lmtrex.fileop.logtools import (log_warn)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.lm_xml import fromstring, deserialize
+from lmtrex.tools.utils import add_errinfo, combine_errinfo, get_traceback
 
 import lmtrex.tools.utils as lmutil
 # .............................................................................
@@ -54,36 +55,37 @@ class APIQuery:
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, record_format, query_term, 
-            service, query_status=None, query_urls=[], count_only=False, err={}):
-        errmsgs = []
+            service, query_status=None, query_urls=[], count_only=False, errinfo={}):
         stdrecs = []
         total = 0
-        if err:
-            errmsgs.append(err)
         # Count
         try:
             total = output[count_key]
         except:
-            errmsgs.append({'error': cls._get_error_message(
-                msg='Missing `{}` element'.format(count_key))})
+            msg = cls._get_error_message(msg='Missing `{}` element'.format(count_key))
+            try:
+                errinfo['warning'].append(msg)
+            except:
+                errinfo['warning'] = [msg]
         # Records
         if not count_only:
             try:
                 recs = output[records_key]
             except:
-                errmsgs.append(
-                    {'error': cls._get_error_message(msg='Missing `{}` element'.format(
-                        records_key))})
+                msg = cls._get_error_message(msg='Output missing `{}` element'.format(records_key))
+                errinfo = add_errinfo(errinfo, 'warning', msg)
             else:
                 for r in recs:
                     try:
                         stdrecs.append(cls._standardize_record(r))
                     except Exception as e:
-                        errmsgs.append({'error': cls._get_error_message(err=e)})
+                        msg = cls._get_error_message(err=e)
+                        errinfo = add_errinfo(errinfo, 'error', msg)
+                            
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, service, provider=prov_meta, record_format=record_format, 
-            records=stdrecs, errors=errmsgs)
+            records=stdrecs, errors=errinfo)
 
         return std_output
 
@@ -281,7 +283,7 @@ class APIQuery:
     # ...............................................
     @classmethod
     def get_api_failure(
-            cls, service, provider_response_status, errors=[]):
+            cls, service, provider_response_status, errinfo={}):
         """Output format for all (soon) API queries
         
         Args:
@@ -294,7 +296,7 @@ class APIQuery:
         """
         prov_meta = cls._get_provider_response_elt(query_status=provider_response_status)
         return S2nOutput(
-            0, '', service, provider=prov_meta, errors=errors)
+            0, '', service, provider=prov_meta, errors=errinfo)
 
     # ...............................................
     def query_by_get(self, output_type='json', verify=True):

@@ -66,7 +66,7 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_failure(cls, service=None, query_term='', errors=[]):
+    def get_failure(cls, service=None, query_term='', errors={}):
         """Output format for all (soon) S^n services
         
         Args:
@@ -114,7 +114,7 @@ class _S2nService:
         
         prov_meta = self._get_s2n_provider_response_elt()
         
-        output = S2nOutput(0, '', svc, provider=prov_meta, errors=[info])
+        output = S2nOutput(0, '', svc, provider=prov_meta, errors=info)
         return output
 
     # ...............................................
@@ -280,7 +280,7 @@ class _S2nService:
         return False
 
     # ...............................................
-    def _process_params(self, user_kwargs, valid_providers):
+    def _process_params(self, user_kwargs):
         """
         Modify all user provided key/value pairs to change keys to lower case, 
         and change values to the expected type (string, int, float, boolean).
@@ -297,42 +297,14 @@ class _S2nService:
             Do we need not_in_valid_options for error message?
         """
         good_params = {}
-        option_errors = []
-        fatal_errs = []
+        errinfo = {}
         
-        # Allows None or comma-delimited list
-        valid_requested_providers, invalid_providers = self.get_valid_requested_params(
-            user_kwargs['provider'], valid_providers)
-
-        for ip in invalid_providers:
-            # Add warning, not fatal, some valid providers may requested
-            option_errors.append(
-                {'warning':
-                 'Value {} for parameter provider not in valid options {}'.format(
-                     ip, valid_providers)})
-
         # Correct all parameter keys/values present
         for key in self.SERVICE_TYPE['params']:
             val = user_kwargs[key]
-            # Add valid providers to parameters
+            # Done in calling function
             if key == 'provider':
-                # Save all valid providers
-                good_params['valid_providers'] = valid_providers
-                # Calculate provider(s) to query
-                if self.SERVICE_TYPE == APIService.Badge:
-                    # Badge service requires exactly one valid provider
-                    if valid_requested_providers and len(valid_requested_providers) == 1:
-                        good_params[key] = valid_requested_providers[0]
-                    else:
-                        fatal_errs.append(
-                            'Parameter {} containing exactly one of {} options is required'.format(
-                                key, valid_providers)) 
-                # Other services accept one or more, default to all valid
-                else:
-                    if valid_requested_providers:
-                        good_params[key] = valid_requested_providers
-                    else:
-                        good_params[key] = valid_providers
+                pass
                     
             # Do not edit namestr, maintain capitalization
             elif key == 'namestr':
@@ -342,11 +314,13 @@ class _S2nService:
             elif key == 'icon_status':
                 valid_stat = BrokerParameters[key]['options']
                 if val is None:
-                    fatal_errs.append(
+                    errinfo = lmutil.add_errinfo(
+                        errinfo, 'error', 
                         'Parameter {} containing one of {} options is required'.format(
-                             key, valid_stat))
+                            key, valid_stat))
                 elif val not in valid_stat:
-                    fatal_errs.append(
+                    errinfo = lmutil.add_errinfo(
+                        errinfo, 'error',
                         'Value {} for parameter {} not in valid options {}'.format(
                              val, key, valid_stat))
                 else:
@@ -361,16 +335,18 @@ class _S2nService:
                     # But include message for invalid options
                     for badscen in invalid_scens:
                         # Add warning, not fatal, some valid providers may requested
-                        option_errors.append(
-                            {'warning':
-                             'Ignoring invalid value {} for parameter scenariocode (valid options: {})'.format(
-                                 badscen, valid_scens)})
+                        errinfo = lmutil.add_errinfo(
+                            errinfo, 'warning', 
+                            'Ignoring invalid value {} for parameter scenariocode (valid options: {})'.format(
+                                badscen, valid_scens))
                 # All other parameters have single value
                 else:
                     usr_val, valid_options = self._fix_type_new(key, val)
                     if valid_options is not None and val not in valid_options:
-                        fatal_errs.append('Value {} for parameter {} is not in valid options {}'.format(
-                                 val, key, BrokerParameters[key]['options']))
+                        errinfo = lmutil.add_errinfo(
+                            errinfo, 'error',
+                            'Value {} for parameter {} is not in valid options {}'.format(
+                                val, key, BrokerParameters[key]['options']))
                         good_params[key] = None
                     else:
                         good_params[key] = usr_val
@@ -383,7 +359,45 @@ class _S2nService:
             except:
                 good_params[key] = param_meta['default']
             
-        return good_params, option_errors, fatal_errs
+        return good_params, errinfo
+
+    # ...............................................
+    def _get_providers(self, usr_req_providers, filter_params=None):
+        providers = []
+        errinfo = {}
+        
+        valid_providers = self.get_valid_providers(filter_params=filter_params)
+        # Allows None or comma-delimited list
+        valid_requested_providers, invalid_providers = self.get_valid_requested_params(
+            usr_req_providers, valid_providers)
+
+        # # TODO: Delete? Not used elsewhere
+        # prov_vals['valid_providers'] = valid_providers
+        # prov_vals['invalid_providers'] = invalid_providers
+
+        if self.SERVICE_TYPE != APIService.Badge:
+            if valid_requested_providers:
+                providers = valid_requested_providers
+            else:
+                providers = valid_providers
+        else:
+            if valid_requested_providers:
+                providers = valid_requested_providers[0]
+            else:
+                providers = None
+                errinfo = lmutil.add_errinfo(
+                    errinfo, 'error',
+                    'Parameter provider containing exactly one of {} options is required'.format(
+                        valid_providers))
+                
+        if invalid_providers:
+            for ip in invalid_providers:
+                errinfo = lmutil.add_errinfo(
+                    errinfo, 'warning',
+                    'Value {} for parameter provider not in valid options {}'.format(
+                        ip, valid_providers))
+        
+        return providers, errinfo
 
     # ...............................................
     def _standardize_params(
@@ -426,8 +440,11 @@ class _S2nService:
             'width': width, 
             'icon_status': icon_status}
         
-        valid_providers = self.get_valid_providers(filter_params=filter_params)
-        usr_params, option_errors, fatal_errors = self._process_params(user_kwargs, valid_providers)
+        providers, prov_errinfo = self._get_providers(provider, filter_params=filter_params)
+        usr_params, errinfo = self._process_params(user_kwargs)
+        # consolidate parameters and errors
+        usr_params['provider'] = providers
+        errinfo = lmutil.combine_errinfo(errinfo, prov_errinfo)
 
         # Remove gbif_parse and itis_match flags
         gbif_parse = itis_match = False
@@ -443,7 +460,7 @@ class _S2nService:
         if namestr and (gbif_parse or itis_match):
             usr_params['namestr'] = self.parse_name_with_gbif(namestr)
             
-        return usr_params, option_errors, fatal_errors
+        return usr_params, errinfo
 
     # ..........................
     @staticmethod

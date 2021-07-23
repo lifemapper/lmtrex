@@ -4,7 +4,7 @@ from lmtrex.common.lmconstants import (
     APIService, COMMUNITY_SCHEMA, SYFTER, ServiceProvider, S2N_SCHEMA)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import get_traceback, add_errinfo, combine_errinfo
 
 # .............................................................................
 class SpecifyResolverAPI(APIQuery):
@@ -47,23 +47,20 @@ class SpecifyResolverAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, query_status=None, query_urls=[], err={}):
-        errmsgs = []
+            cls, output, query_term, query_status=None, query_urls=[], errinfo={}):
         stdrecs = []
         total = 0
-        if err:
-            errmsgs.append(err)
         if output:
             try:
                 stdrecs.append(cls._standardize_record(output))
                 total = 1
             except Exception as e:
-                errmsgs.append({'error': cls._get_error_message(err=e)})
+                errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
                 
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             total, query_term, APIService.Resolve['endpoint'], provider=prov_meta, 
-            records=stdrecs, errors=errmsgs)
+            records=stdrecs, errors=errinfo)
 
         return std_output
 
@@ -85,37 +82,30 @@ class SpecifyResolverAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
+        errinfo = {}
         api = SpecifyResolverAPI(logger=logger)
 
         try:
             cls.query_by_get(output_type='json')
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_output = cls.get_api_failure(
-                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             try:
                 count = api.output['count']
             except:
-                if api.error is not None:
-                    std_output = cls.get_api_failure(
-                        APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(err=api.error)}])
-                else:
-                    std_output = cls.get_api_failure(
-                        APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(
-                            msg='Missing `response` element')}])
+                errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(msg='Missing `response` element'))
+                std_output = cls.get_api_failure(
+                    APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
-                api_err = None
-                if api.error:
-                    api_err = {'error': api.error}
+                errinfo = add_errinfo(errinfo, 'error', api.error)
             
             # Standardize output from provider response
             prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
             std_output = S2nOutput(
-                count, 'count', APIService.Resolve['endpoint'], provider=prov_meta, errors=api_err)
+                count, 'count', APIService.Resolve['endpoint'], provider=prov_meta, errors=errinfo)
         return std_output
 
     # ...............................................
@@ -151,22 +141,22 @@ class SpecifyResolverAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
+        errinfo = {}
         api = SpecifyResolverAPI(ident=guid, logger=logger)
 
         try:
             api.query_by_get(output_type='json')
         except Exception as e:
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
             std_output = cls.get_api_failure(
-                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=e)}])
+                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
-            api_err = None
             if api.error:
-                api_err = {'error': api.error}
+                errinfo['error'] =  [api.error]
             # Standardize output from provider response
             query_term = 'occid={}'.format(guid)
             std_output = cls._standardize_output(
-                api.output, query_term, query_status=api.status_code, query_urls=[api.url], err=api_err)
+                api.output, query_term, query_status=api.status_code, query_urls=[api.url], errinfo=errinfo)
         return std_output
 
     

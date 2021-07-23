@@ -11,6 +11,7 @@ from lmtrex.fileop.ready_file import ready_filename
 
 from lmtrex.services.api.v1.s2n_type import S2nKey
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils import add_errinfo
 
 # .............................................................................
 class IdigbioAPI(APIQuery):
@@ -153,6 +154,7 @@ class IdigbioAPI(APIQuery):
         
         Todo: enable paging
         """
+        errinfo = {}
         qf = {Idigbio.QKEY: 
               '{"' + Idigbio.OCCURRENCEID_FIELD + '":"' + occid + '"}'}
         api = IdigbioAPI(other_filters=qf, logger=logger)
@@ -160,18 +162,17 @@ class IdigbioAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e)) 
             std_out = cls.get_api_failure(
                 APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=e)}])
+                errinfo=errinfo)
         else:
-            api_err = None
-            if api.error:
-                api_err = {'error': api.error}
+            errinfo = add_errinfo(errinfo, 'error', api.error)
             query_term = 'occid={}&count_only={}'.format(occid, count_only)
             std_out = cls._standardize_output(
                 api.output, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, Idigbio.RECORD_FORMAT, 
                 query_term, APIService.Occurrence['endpoint'], query_status=api.status_code, 
-                query_urls=[api.url], count_only=count_only, err=api_err)
+                query_urls=[api.url], count_only=count_only, errinfo=errinfo)
         
         return std_out
 

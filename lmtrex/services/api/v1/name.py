@@ -23,7 +23,7 @@ class NameSvc(_S2nService):
             traceback = get_traceback()
             output = GbifAPI.get_api_failure(
                 self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
-                errors=[{'error': traceback}])
+                errinfo={'error': [traceback]})
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
 
@@ -68,7 +68,7 @@ class NameSvc(_S2nService):
             traceback = get_traceback()
             output = IdigbioAPI.get_api_failure(
                 self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
-                errors=[{'error': traceback}])
+                errinfo={'error': [traceback]})
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return output.response
@@ -140,13 +140,15 @@ class NameSvc(_S2nService):
         else:
             # No filter_params defined for Name service yet
             try:
-                good_params, option_errors, fatal_errors = self._standardize_params(
+                good_params, errinfo = self._standardize_params(
                     namestr=namestr, provider=provider, is_accepted=is_accepted, 
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
                 # Bad parameters
-                if fatal_errors:
-                    error_description = '; '.join(fatal_errors)                            
+                try:
+                    error_description = '; '.join(errinfo['error'])                            
                     http_status = int(HTTPStatus.BAD_REQUEST)
+                except:
+                    pass
             except Exception as e:
                 error_description = get_traceback()
                 http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -160,8 +162,11 @@ class NameSvc(_S2nService):
                             good_params['gbif_count'], good_params['kingdom'])
     
                         # Add message on invalid parameters to output
-                        for err in option_errors:
-                            output.append_value(S2nKey.ERRORS, err)
+                        try:
+                            for err in errinfo['warning']:
+                                output.append_error('warning', err)
+                        except:
+                            pass
         
                     except Exception as e:
                         error_description = get_traceback()
@@ -176,29 +181,27 @@ class NameSvc(_S2nService):
 # .............................................................................
 if __name__ == '__main__':
     pass
-    # # test
-    # # test_names = TST_VALUES.NAMES[0:4]
-    # test_names = [None, 'poa', 'Tulipa sylvestris']
-    #
-    #
-    # svc = NameSvc()
+    # test_names = TST_VALUES.NAMES[0:4]
+    test_names = ['poa', 'Tulipa sylvestris']
+    
+    svc = NameSvc()
     # out = svc.GET()
     # print_s2n_output(out)
     # out = svc.GET(
     #     namestr='Tulipa sylvestris', is_accepted=False, gbif_parse=True, 
     #     gbif_count=True, kingdom=None)
     # print_s2n_output(out)
-    # out = svc.GET(
-    #     namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
-    #     gbif_count=True, kingdom=None)
-    # print_s2n_output(out)
-    # for namestr in test_names:
-    #     for prov in svc.get_providers():
-    #         out = svc.GET(
-    #             namestr=namestr, provider=prov, is_accepted=False, gbif_parse=True, 
-    #             gbif_count=True, kingdom=None)
-    #         print_s2n_output(out)
-    # print_s2n_output(out)
+    out = svc.GET(
+        namestr='Tulipa sylvestris', provider='gbifx', is_accepted=False, gbif_parse=True, 
+        gbif_count=True, kingdom=None)
+    print_s2n_output(out)
+    for namestr in test_names:
+        for prov in svc.get_providers():
+            out = svc.GET(
+                namestr=namestr, provider=prov, is_accepted=False, gbif_parse=True, 
+                gbif_count=True, kingdom=None)
+            print_s2n_output(out)
+    print_s2n_output(out)
                 
 """
 """

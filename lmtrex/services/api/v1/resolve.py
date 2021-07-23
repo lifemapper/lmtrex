@@ -45,7 +45,7 @@ class ResolveSvc(_S2nService):
             traceback = get_traceback()
             output = SpecifyResolverAPI.get_api_failure(
                 self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
-                errors=[{'error': traceback}])
+                errinfo={'error': [traceback]})
         return output.response
 
     # ...............................................
@@ -120,12 +120,15 @@ class ResolveSvc(_S2nService):
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, option_errors, fatal_errors = self._standardize_params(
+                good_params, errinfo = self._standardize_params(
                     occid=occid, provider=provider)
                 # Bad parameters
-                if fatal_errors:
-                    error_description = '; '.join(fatal_errors)                            
+                try:
+                    error_description = '; '.join(errinfo['error'])                            
                     http_status = int(HTTPStatus.BAD_REQUEST)
+                except:
+                    pass
+
             except Exception as e:
                 error_description = get_traceback()
                 http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -135,8 +138,12 @@ class ResolveSvc(_S2nService):
                         output = self.get_records(good_params['occid'], good_params['provider'])
     
                         # Add message on invalid parameters to output
-                        for err in option_errors:
-                            output.append_value(S2nKey.ERRORS, err)
+                        try:
+                            for err in errinfo['warning']:
+                                output.append_error('warning', err)
+                        except:
+                            pass
+
                     except Exception as e:
                         error_description = get_traceback()
                         http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)

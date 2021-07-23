@@ -1,11 +1,11 @@
 from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
-from lmtrex.fileop.logtools import (log_error, log_info)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+    APIService, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
+from lmtrex.fileop.logtools import (log_info)
+from lmtrex.services.api.v1.s2n_type import S2nKey
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import add_errinfo, get_traceback
 
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
@@ -49,6 +49,7 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def get_occurrences_by_occid_page1(cls, occid, count_only=False, logger=None):
         start = 0
+        errinfo = {}
         api = MorphoSourceAPI(
             resource=MorphoSource.OCC_RESOURCE, 
             q_filters={MorphoSource.OCCURRENCEID_KEY: occid},
@@ -61,17 +62,20 @@ class MorphoSourceAPI(APIQuery):
             api.query_by_get(verify=verify)
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_out = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             # Standardize output from provider response
             query_term = 'occid={}&count_only={}'.format(occid, count_only)
+            if api.error:
+                errinfo['error'] =  [api.error]
+
             std_out = cls._standardize_output(
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
                 MorphoSource.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
                 query_status=api.status_code, query_urls=[api.url], count_only=count_only, 
-                err=api.error)
+                err=errinfo)
         
         return std_out
 

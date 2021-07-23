@@ -288,10 +288,10 @@ class ServiceProvider:
     Broker = {
         S2nKey.NAME: 'Spcoco Broker', 
         S2nKey.PARAM: 'broker', 
-        S2nKey.SERVICES: [
-            #APIService.Badge['endpoint'], 
-            APIService.Map['endpoint'], APIService.Name['endpoint'], 
-            APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
+        S2nKey.SERVICES: []}
+            # #APIService.Badge['endpoint'], 
+            # APIService.Map['endpoint'], APIService.Name['endpoint'], 
+            # APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
     # Syfter = {
     #     }
     

@@ -48,12 +48,14 @@ class BadgeSvc(_S2nService):
         http_status = int(HTTPStatus.OK)
         # prov_meta = self._get_s2n_provider_response_elt()
         try:
-            good_params, option_errors, fatal_errors = self._standardize_params(
+            good_params, errinfo = self._standardize_params(
                 provider=provider, icon_status=icon_status)
             # Bad parameters
-            if fatal_errors:
-                error_description = '; '.join(fatal_errors)                            
+            try:
+                error_description = '; '.join(errinfo['error'])                            
                 http_status = int(HTTPStatus.BAD_REQUEST)
+            except:
+                pass
                 
         except Exception as e:
             # Unknown error

@@ -35,7 +35,7 @@ class FrontendSvc(_S2nService):
         """
 
         try:
-            good_params, option_errors, fatal_errors = self._standardize_params(
+            good_params, errors = self._standardize_params(
                 namestr=namestr,
                 occid=occid
             )

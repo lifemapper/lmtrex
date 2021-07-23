@@ -6,7 +6,7 @@ from lmtrex.common.lmconstants import (
 from lmtrex.fileop.logtools import (log_info, log_error)
 from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo
 
 
 # .............................................................................
@@ -242,21 +242,18 @@ class ItisAPI(APIQuery):
     @classmethod
     def _standardize_output(
             cls, output, count_key, records_key, query_term, service,
-            query_status=None, query_urls=[], is_accepted=False, err={}):
+            query_status=None, query_urls=[], is_accepted=False, errinfo={}):
         total = 0
         stdrecs = []
-        errmsgs = []
-        if err:
-            errmsgs.append(err)
 
         try:
             total = output[count_key]
         except Exception as e:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
         try:
             docs = output[records_key]
-        except:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
+        except Exception as e:
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
         else:
             for doc in docs:
                 newrec = cls._standardize_record(doc, is_accepted=is_accepted)
@@ -264,7 +261,7 @@ class ItisAPI(APIQuery):
                     stdrecs.append(newrec)
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs)
+            total, query_term, service, provider=prov_meta, records=stdrecs, errors=errinfo)
         
         return std_output
     
@@ -289,6 +286,7 @@ class ItisAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
+        errinfo = {}
         q_filters = {ITIS.NAME_KEY: sciname}
         query_term = 'namestr={}'.format(sciname)
         if kingdom is not None:
@@ -308,22 +306,22 @@ class ItisAPI(APIQuery):
                 output = api.output['response']
             except:
                 if api.error is not None:
+                    errinfo['error'] = [cls._get_error_message(err=api.error)]
                     std_output = cls.get_api_failure(
-                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(err=api.error)}])
+                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
                 else:
+                    errinfo['error'] = [cls._get_error_message(msg='Missing `response` element')]
                     std_output = cls.get_api_failure(
-                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(
-                            msg='Missing `response` element')}])
+                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
                 if is_accepted:
                     query_term = '{}&is_accepted={}'.format(query_term, is_accepted)
+                errinfo = add_errinfo(errinfo, 'error', api.error)
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
                     output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
                     APIService.Name['endpoint'], query_status=api.status_code, 
-                    query_urls=[api.url], is_accepted=is_accepted, err=api.error)
+                    query_urls=[api.url], is_accepted=is_accepted, errinfo=errinfo)
         return std_output
 
 # ...............................................
@@ -339,22 +337,25 @@ class ItisAPI(APIQuery):
         Ex: https://services.itis.gov/?q=tsn:566578&wt=json
         """
         output = {}
+        errinfo = {}
         apiq = ItisAPI(
             ITIS.SOLR_URL, q_filters={ITIS.TSN_KEY: tsn}, logger=logger)
         try:
             apiq.query()
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_output = cls.get_api_failure(
                 APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                errinfo=errinfo)
         else:
             query_term = 'tsn={}&is_accepted=True'.format(tsn)
+            errinfo = add_errinfo(errinfo, 'error', apiq.error)
             # Standardize output from provider response
             std_output = cls._standardize_output(
                 output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
                 APIService.Name['endpoint'], apiq.status_code, query_urls=[apiq.url], 
-                is_accepted=True, err=apiq.error)
+                is_accepted=True, errinfo=errinfo)
 
         return std_output
 

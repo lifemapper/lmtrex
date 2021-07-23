@@ -52,6 +52,35 @@ def get_icon_url(provider_code, icon_status=None):
     return url
     
 
+# ...............................................
+def combine_errinfo(errinfo1, errinfo2):
+    """Combine 2 dictionaries with keys 'error', 'warning' and 'info'"""
+    errinfo = {}
+    for key in ('error', 'warning', 'info'):
+        try:
+            lst = errinfo1[key]
+        except:
+            lst = []
+        try:
+            lst2 = errinfo2[key]
+        except:
+            lst2 = []
+        
+        if lst or lst2:
+            lst.extend(lst2)
+            errinfo[key] = lst
+    return errinfo
+
+# ...............................................
+def add_errinfo(errinfo, key, val):
+    """Combine 2 dictionaries with keys 'error', 'warning' and 'info'"""
+    if val and key in ('error', 'warning', 'info'):
+        try:
+            errinfo[key].append(val)
+        except:
+            errinfo[key] = [val]
+    return errinfo
+    
 
 if __name__ == '__main__':
     import doctest
