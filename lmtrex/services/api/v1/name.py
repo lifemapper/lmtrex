@@ -101,9 +101,10 @@ class NameSvc(_S2nService):
             
         # Assemble
         prov_meta = self._get_s2n_provider_response_elt()
+        # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
             len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
-            records=allrecs)
+            records=allrecs, errors={})
 
         return full_out
 
