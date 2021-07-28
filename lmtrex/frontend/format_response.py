@@ -16,7 +16,7 @@ def format_list(values: List[any]) -> str:
             formatted list
     """
     if not values:
-        return "[]"
+        return "(no data)"
     else:
         fields = {
             "[%d]" % index: value for index, value in enumerate(values)
@@ -35,8 +35,13 @@ def format_string(value: str) -> str:
         str:
             formatted string
     """
-    return f"""<label>
-        <textarea class="text" readonly>{value}</textarea>
+    return f"""<label class="textbox-container">
+        <div
+            class="textbox"
+            aria-role="textbox"
+            aria-multiline="true"
+            aria-readonly="true"
+        >{value}</div>
     </label>"""
 
 
@@ -112,7 +117,7 @@ def format_dict(
             formatted list
     """
     if not fields:
-        return "{}"
+        return "(no data)"
     else:
         fields = [
             format_line(label, format_value(value))
