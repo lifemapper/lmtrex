@@ -286,8 +286,8 @@ class ServiceProvider:
                  'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
     # TODO: need a Broker badge
     Broker = {
-        S2nKey.NAME: 'Spcoco Broker', 
-        S2nKey.PARAM: 'broker', 
+        S2nKey.NAME: 'Specify Network', 
+        S2nKey.PARAM: 'specifynetwork', 
         S2nKey.SERVICES: []}
             # #APIService.Badge['endpoint'], 
             # APIService.Map['endpoint'], APIService.Name['endpoint'], 
@@ -507,7 +507,7 @@ class MorphoSource:
 
     @classmethod
     def get_occurrence_view(cls, local_id):
-        return '{}/000S{}'.format(MorphoSource.VIEW_URL, local_id)
+        return '{}/0000S{}'.format(MorphoSource.VIEW_URL, local_id)
 
     @classmethod
     def get_occurrence_data(cls, occurrence_id):
@@ -631,7 +631,8 @@ class S2N_SCHEMA:
         All field values are strings unless otherwise indicated
     """
     NAME = {
-        # Provider's URLs to this record
+        # Provider's URLs to this record in dictionary
+        # 'provider_links': COMMUNITY_SCHEMA.S2N,
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
         # S2n standardization of common elements
@@ -647,6 +648,12 @@ class S2N_SCHEMA:
         # GBIF-specific fields
         'gbif_confidence': COMMUNITY_SCHEMA.S2N,
         'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
+        
+        # Occurrence data for this name
+        # 'occurrences': COMMUNITY_SCHEMA.S2N,
+        # 'provider': COMMUNITY_SCHEMA.S2N,
+        # 'count': COMMUNITY_SCHEMA.S2N,
+        # 'occurrence_url': COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
         S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
 
@@ -655,7 +662,8 @@ class S2N_SCHEMA:
         'itis_credibility': COMMUNITY_SCHEMA.S2N,
         }
     MAP = {
-        # Provider's URLs to this record
+        # Provider's URLs to this record in dictionary
+        # 'provider_links': COMMUNITY_SCHEMA.S2N,
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
 
@@ -676,9 +684,11 @@ class S2N_SCHEMA:
         'vendor_specific_parameters': COMMUNITY_SCHEMA.S2N,     # dictionary with queryparameter/value
         }
     OCCURRENCE = {
-        # Provider's URLs to this record
+        # Provider's URLs to this record in dictionary
+        # 'provider_links': COMMUNITY_SCHEMA.S2N,
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
+
         # S2n resolution of non-standard contents
         'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
 
@@ -701,6 +711,8 @@ class S2N_SCHEMA:
         'modified': COMMUNITY_SCHEMA.DCT,
         'type': COMMUNITY_SCHEMA.DCT,
         
+        # # Dictionary of contents
+        # 'taxon': COMMUNITY_SCHEMA.S2N,     # dictionary of taxonomic elements 
         'taxonRank': COMMUNITY_SCHEMA.DWC,
         'kingdom': COMMUNITY_SCHEMA.DWC,
         'phylum': COMMUNITY_SCHEMA.DWC,
