@@ -27,8 +27,8 @@ class _S2nService:
         # Status will be 200 if anyone ever sees this
         provider_element[S2nKey.PROVIDER_STATUS_CODE] = 200
         # Optional URL queries
-        standardized_url = '{}/{}/{}'.format(
-            FQDN, APIService.Root['endpoint'], self.SERVICE_TYPE['endpoint'])
+        standardized_url = '{}{}/{}'.format(
+            FQDN, APIService.Root['endpoint'], cls.SERVICE_TYPE['endpoint'])
         if query_term:
             standardized_url = '{}?{}'.format(standardized_url, query_term)
         provider_element[S2nKey.PROVIDER_QUERY_URL] = [standardized_url]
