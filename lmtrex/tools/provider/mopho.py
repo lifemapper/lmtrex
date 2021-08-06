@@ -75,7 +75,7 @@ class MorphoSourceAPI(APIQuery):
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
                 MorphoSource.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
                 query_status=api.status_code, query_urls=[api.url], count_only=count_only, 
-                err=errinfo)
+                errinfo=errinfo)
         
         return std_out
 
