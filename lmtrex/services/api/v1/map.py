@@ -94,7 +94,7 @@ class MapSvc(_S2nService):
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble
-        prov_meta = self._get_s2n_provider_response_elt()
+        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
             len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 

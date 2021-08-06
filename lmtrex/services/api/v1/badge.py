@@ -3,7 +3,7 @@ from http import HTTPStatus
 import os
 
 from lmtrex.common.lmconstants import (
-    BrokerParameters, IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
+    IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
 
 from lmtrex.tools.utils import get_traceback
 
@@ -46,7 +46,6 @@ class BadgeSvc(_S2nService):
         icon_fname = None
         error_description = None
         http_status = int(HTTPStatus.OK)
-        # prov_meta = self._get_s2n_provider_response_elt()
         try:
             good_params, errinfo = self._standardize_params(
                 provider=provider, icon_status=icon_status)

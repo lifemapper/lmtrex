@@ -75,14 +75,15 @@ class ResolveSvc(_S2nService):
     def get_records(self, occid, req_providers):
         allrecs = []
         # for response metadata
-        query_term = occid
+        provstr = ','.join(req_providers)
+        query_term = 'occid={}&provider={}'.format(occid, provstr)
         for pr in req_providers:
             # Address single record
             if pr == ServiceProvider.Specify[S2nKey.PARAM]:
                 sp_output = self.resolve_specify_guid(occid)
                 allrecs.append(sp_output)
         # Assemble
-        prov_meta = self._get_s2n_provider_response_elt()
+        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         full_out = S2nOutput(
             len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})

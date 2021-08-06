@@ -101,7 +101,7 @@ class OccurrenceSvc(_S2nService):
     def get_records(self, occid, req_providers, count_only, dataset_key=None):
         allrecs = []
         # for response metadata
-        query_term = ''
+        query_term = None
         provstr = ','.join(req_providers)
         if occid is not None:
             query_term = 'occid={}&provider={}&count_only={}'.format(occid, provstr, count_only)
@@ -109,7 +109,7 @@ class OccurrenceSvc(_S2nService):
             try:
                 query_term = 'dataset_key={}&provider={}&count_only={}'.format(dataset_key, provstr, count_only)
             except:
-                query_term = 'invalid query term'
+                pass
 
         for pr in req_providers:
             # Address single record
@@ -136,7 +136,7 @@ class OccurrenceSvc(_S2nService):
                     gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
                     allrecs.append(gbif_output)
 
-        prov_meta = self._get_s2n_provider_response_elt()
+        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         # Assemble
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(

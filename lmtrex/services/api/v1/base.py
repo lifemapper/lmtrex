@@ -1,6 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, BrokerParameters)
+from lmtrex.config.local_constants import FQDN
 from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
 
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -15,7 +16,7 @@ class _S2nService:
 
     # ...............................................
     @classmethod
-    def _get_s2n_provider_response_elt(cls, query_status=None, query_urls=[]):
+    def _get_s2n_provider_response_elt(cls, query_term=None):
         provider_element = {}
         s2ncode = ServiceProvider.Broker[S2nKey.PARAM]
         provider_element[S2nKey.PROVIDER_CODE] = s2ncode
@@ -23,19 +24,14 @@ class _S2nService:
         icon_url = lmutil.get_icon_url(s2ncode)
         if icon_url:
             provider_element[S2nKey.PROVIDER_ICON_URL] = icon_url
-        # Optional http status_code
-        try:
-            stat = int(query_status)
-        except: 
-            try:
-                stat = max(query_status)
-            except:
-                stat = None
-        if stat:
-            provider_element[S2nKey.PROVIDER_STATUS_CODE] = stat
+        # Status will be 200 if anyone ever sees this
+        provider_element[S2nKey.PROVIDER_STATUS_CODE] = 200
         # Optional URL queries
-        if query_urls:
-            provider_element[S2nKey.PROVIDER_QUERY_URL] = query_urls
+        standardized_url = '{}/{}/{}'.format(
+            FQDN, APIService.Root['endpoint'], self.SERVICE_TYPE['endpoint'])
+        if query_term:
+            standardized_url = '{}?{}'.format(standardized_url, query_term)
+        provider_element[S2nKey.PROVIDER_QUERY_URL] = [standardized_url]
         return provider_element
 
 
@@ -66,7 +62,7 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_failure(cls, service=None, query_term='', errors={}):
+    def get_failure(cls, service=None, query_term=None, errors={}):
         """Output format for all (soon) S^n services
         
         Args:
@@ -80,7 +76,7 @@ class _S2nService:
         """
         if not service: 
             service = cls.SERVICE_TYPE['endpoint']
-        prov_meta = cls._get_s2n_provider_response_elt()
+        prov_meta = cls._get_s2n_provider_response_elt(query_term=query_term)
         all_output = S2nOutput(
             0, query_term, service, provider=prov_meta, errors=errors)
         return all_output
