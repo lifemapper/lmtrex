@@ -9,7 +9,6 @@ class S2nKey:
     RECORD_FORMAT = 'record_format'
     RECORDS = 'records'
     ERRORS = 'errors'
-    QUERY_TERM = 'query_term'
     # output one service at a time
     SERVICE = 'service'
     # provider is a dictionary with keys code, label, query_url
@@ -31,7 +30,7 @@ class S2nKey:
     def response_keys(cls):
         return  set([
             cls.COUNT, cls.RECORD_FORMAT, cls.RECORDS, cls.ERRORS,  
-            cls.QUERY_TERM, cls.SERVICE, cls.PROVIDER])
+            cls.SERVICE, cls.PROVIDER])
 
     @classmethod
     def response_provider_keys(cls):
@@ -97,10 +96,9 @@ class S2nKey:
 # class S2n:
 #     RECORD_FORMAT = 'Lifemapper service broker schema TBD'
     
-# TODO: remove query_term, query_url takes over
+# provider element's query_url replaces query_term
 class S2nOutput(object):
     count: int
-    query_term: str
     service: str
     provider: dict = {}
     record_format: str = ''
@@ -108,12 +106,10 @@ class S2nOutput(object):
     errors: dict = {}
      
     def __init__(
-            self, count, query_term, service, provider={}, 
-            record_format='', records=[], errors={}):
+            self, count, service, provider={}, record_format='', records=[], errors={}):
         # Dictionary is json-serializable
         self._response = {
             S2nKey.COUNT: count, 
-            S2nKey.QUERY_TERM: query_term, 
             S2nKey.SERVICE: service, 
             S2nKey.PROVIDER: provider, 
             S2nKey.RECORD_FORMAT: record_format, 
@@ -157,16 +153,8 @@ class S2nOutput(object):
         return self._response[S2nKey.COUNT]
   
     @property
-    def query_term(self):
-        return self._response[S2nKey.QUERY_TERM]
-  
-    @property
     def service(self):
         return self._response[S2nKey.SERVICE]
-  
-    # @property
-    # def status(self):
-    #     return self._response[S2nKey.STATUS]
   
     @property
     def provider(self):

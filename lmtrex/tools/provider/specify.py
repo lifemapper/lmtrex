@@ -55,7 +55,7 @@ class SpecifyPortalAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, service, query_status=None, query_urls=[], count_only=False, errinfo={}):
+            cls, output, service, query_status=None, query_urls=[], count_only=False, errinfo={}):
         stdrecs = []
         total = 0
         is_specify_cache = False
@@ -79,7 +79,7 @@ class SpecifyPortalAPI(APIQuery):
                         
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, service, provider=prov_meta, records=stdrecs, errors=errinfo)
+            total, service, provider=prov_meta, records=stdrecs, errors=errinfo)
 
         return std_output
 
@@ -115,9 +115,8 @@ class SpecifyPortalAPI(APIQuery):
             else:
                 errinfo = add_errinfo(errinfo,'error', api.error)
                 # Standardize output from provider response
-                query_term = 'occid={}&count_only={}'.format(occid, count_only)
                 std_output = cls._standardize_output(
-                    api.output, query_term, APIService.Occurrence['endpoint'], 
-                    query_status=api.status_code, query_urls=[url], count_only=count_only, errinfo=errinfo)
+                    api.output, APIService.Occurrence['endpoint'], query_status=api.status_code, 
+                    query_urls=[url], count_only=count_only, errinfo=errinfo)
         
         return std_output

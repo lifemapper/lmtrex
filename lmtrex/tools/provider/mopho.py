@@ -67,13 +67,12 @@ class MorphoSourceAPI(APIQuery):
                 APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             # Standardize output from provider response
-            query_term = 'occid={}&count_only={}'.format(occid, count_only)
             if api.error:
                 errinfo['error'] =  [api.error]
 
             std_out = cls._standardize_output(
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
-                MorphoSource.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
+                MorphoSource.RECORD_FORMAT, APIService.Occurrence['endpoint'], 
                 query_status=api.status_code, query_urls=[api.url], count_only=count_only, 
                 errinfo=errinfo)
         

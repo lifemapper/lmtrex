@@ -85,7 +85,7 @@ class ResolveSvc(_S2nService):
         # Assemble
         prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
         return full_out
 

@@ -80,7 +80,8 @@ class NameSvc(_S2nService):
         # for response metadata
         query_term = ''
         if namestr is not None:
-            query_term = 'namestr={}&provider={}'.format(namestr, ','.join(req_providers))
+            query_term = 'namestr={}&provider={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
+                namestr, ','.join(req_providers), is_accepted, gbif_count, kingdom)
             
         for pr in req_providers:
             # Address single record
@@ -89,21 +90,17 @@ class NameSvc(_S2nService):
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
                     allrecs.append(goutput)
-                    query_term = 'namestr={}&is_accepted={}&gbif_count={}'.format(
-                        namestr, is_accepted, gbif_count)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
                     allrecs.append(isoutput)
-                    query_term = 'namestr={}&is_accepted={}&kingdom={}'.format(
-                        namestr, is_accepted, kingdom)
             # TODO: enable filter parameters
             
         # Assemble
         prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
 
         return full_out

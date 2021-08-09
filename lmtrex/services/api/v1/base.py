@@ -78,7 +78,7 @@ class _S2nService:
             service = cls.SERVICE_TYPE['endpoint']
         prov_meta = cls._get_s2n_provider_response_elt(query_term=query_term)
         all_output = S2nOutput(
-            0, query_term, service, provider=prov_meta, errors=errors)
+            0, service, provider=prov_meta, errors=errors)
         return all_output
 
     # .............................................................................

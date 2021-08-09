@@ -47,7 +47,7 @@ class SpecifyResolverAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, query_status=None, query_urls=[], errinfo={}):
+            cls, output, query_status=None, query_urls=[], errinfo={}):
         stdrecs = []
         total = 0
         if output:
@@ -154,9 +154,8 @@ class SpecifyResolverAPI(APIQuery):
             if api.error:
                 errinfo['error'] =  [api.error]
             # Standardize output from provider response
-            query_term = 'occid={}'.format(guid)
             std_output = cls._standardize_output(
-                api.output, query_term, query_status=api.status_code, query_urls=[api.url], errinfo=errinfo)
+                api.output, query_status=api.status_code, query_urls=[api.url], errinfo=errinfo)
         return std_output
 
     

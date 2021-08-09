@@ -54,8 +54,8 @@ class APIQuery:
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, count_key, records_key, record_format, query_term, 
-            service, query_status=None, query_urls=[], count_only=False, errinfo={}):
+            cls, output, count_key, records_key, record_format, service, query_status=None, 
+            query_urls=[], count_only=False, errinfo={}):
         stdrecs = []
         total = 0
         # Count
@@ -84,7 +84,7 @@ class APIQuery:
                             
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, service, provider=prov_meta, record_format=record_format, 
+            total, service, provider=prov_meta, record_format=record_format, 
             records=stdrecs, errors=errinfo)
 
         return std_output

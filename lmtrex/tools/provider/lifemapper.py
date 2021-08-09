@@ -116,16 +116,13 @@ class LifemapperAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_map_output(
-            cls, output, query_term, service, query_status=None, prjscenariocodes=None, color=None, count_only=False, 
+            cls, output, service, query_status=None, prjscenariocodes=None, color=None, count_only=False, 
             query_urls=[], errinfo={}):
         occ_layer_rec = None
         stdrecs = []
             
         # Records
-        if len(output) == 0:
-            msg = cls._get_error_message('Failed to return any map layers for {}'.format(query_term))
-            errinfo = add_errinfo(errinfo, 'info', msg)
-        else:
+        if len(output) > 0:
             try:
                 occ_url = output[0]['occurrence_set']['metadata_url']
             except Exception as e:
@@ -150,7 +147,7 @@ class LifemapperAPI(APIQuery):
         # TODO: revisit record format for other map providers
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errinfo)
+            len(stdrecs), service, provider=prov_meta, records=stdrecs, errors=errinfo)
 
         return std_output
     
@@ -220,7 +217,7 @@ class LifemapperAPI(APIQuery):
             errinfo = add_errinfo(errinfo, 'error', api.error)
             
             std_output = cls._standardize_map_output(
-                api.output, name, APIService.Map['endpoint'], query_status=api.status_code, 
+                api.output, APIService.Map['endpoint'], query_status=api.status_code, 
                 query_urls=[api.url], prjscenariocodes=prjscenariocodes, color=color, 
                 count_only=False, errinfo=errinfo)
 

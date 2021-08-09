@@ -140,7 +140,7 @@ class OccurrenceSvc(_S2nService):
         # Assemble
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
         return full_out
 

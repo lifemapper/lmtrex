@@ -66,10 +66,10 @@ class MapSvc(_S2nService):
                     stdrecs.extend(lout.records)
         prov_meta = LifemapperAPI._get_provider_response_elt(
             query_status=statii, query_urls=queries)
-        query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
-            namestr, is_accepted, scenariocodes, color)
+        # query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
+        #     namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
-            len(stdrecs), query_term, self.SERVICE_TYPE['endpoint'], prov_meta, 
+            len(stdrecs), self.SERVICE_TYPE['endpoint'], prov_meta, 
             records=stdrecs, record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errinfo)
         return full_out.response
 
@@ -97,7 +97,7 @@ class MapSvc(_S2nService):
         prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
         return full_out
 

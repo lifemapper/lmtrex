@@ -134,10 +134,9 @@ class GbifAPI(APIQuery):
             if api.error:
                 errinfo['error'] =  [api.error]
                 
-            query_term = 'occid={}&count_only={}'.format(occid, count_only)
             # Standardize output from provider response
             std_output = cls._standardize_occurrence_output(
-                api.output, query_term, api.status_code, query_urls=[api.url], 
+                api.output, api.status_code, query_urls=[api.url], 
                 count_only=count_only, errinfo=errinfo)
         
         return std_output
@@ -250,7 +249,7 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_match_output(
-            cls, output, record_status, query_term, query_status, query_urls=[], errinfo={}):
+            cls, output, record_status, query_status, query_urls=[], errinfo={}):
         stdrecs = []
         try:
             alternatives = output.pop('alternatives')
@@ -280,7 +279,7 @@ class GbifAPI(APIQuery):
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
-            total, query_term, APIService.Name['endpoint'], provider=prov_meta, 
+            total, APIService.Name['endpoint'], provider=prov_meta, 
             records=stdrecs, errors=errinfo)
         return std_output
         
@@ -297,7 +296,7 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_occurrence_output(
-            cls, output, query_term, query_status, query_urls=[], count_only=False, errinfo={}):
+            cls, output, query_status, query_urls=[], count_only=False, errinfo={}):
         # GBIF.COUNT_KEY, GBIF.RECORDS_KEY, GBIF.RECORD_FORMAT_OCCURRENCE, 
         stdrecs = []
         total = 0
@@ -325,7 +324,7 @@ class GbifAPI(APIQuery):
                         errinfo['error'].append(msg)
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, APIService.Occurrence['endpoint'], provider=prov_meta, 
+            total, APIService.Occurrence['endpoint'], provider=prov_meta, 
             record_format=GBIF.RECORD_FORMAT_OCCURRENCE, records=stdrecs, errors=errinfo)
 
         return std_output
@@ -370,14 +369,12 @@ class GbifAPI(APIQuery):
                 APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
                 errinfo={'error': [cls._get_error_message(err=tb)]})
         else:
-            query_term = 'dataset_key={}&count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
             if api.error:
                 errinfo['error'] =  [api.error]
                 
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, api.status_code, query_urls=[api.url], 
-                count_only=count_only, err=errinfo)
+                api.output, api.status_code, query_urls=[api.url], count_only=count_only, errinfo=errinfo)
             
         return std_out
 
@@ -430,9 +427,8 @@ class GbifAPI(APIQuery):
             if api.error:
                 errinfo['error'] =  [api.error]
             # Standardize output from provider response
-            query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
             std_output = cls._standardize_match_output(
-                api.output, status, query_term, api.status_code, query_urls=[api.url], errinfo=errinfo)
+                api.output, status, api.status_code, query_urls=[api.url], errinfo=errinfo)
             
         return std_output
 
@@ -476,7 +472,7 @@ class GbifAPI(APIQuery):
                     simple_output[S2nKey.OCCURRENCE_URL] = api.url
         prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
         std_output = S2nOutput(
-            total, 'count', APIService.Occurrence['endpoint'], provider=prov_meta, errors=errinfo)
+            total, APIService.Occurrence['endpoint'], provider=prov_meta, errors=errinfo)
         return std_output
 
     # ......................................
