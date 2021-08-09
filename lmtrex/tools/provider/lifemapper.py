@@ -105,7 +105,7 @@ class LifemapperAPI(APIQuery):
                     except:
                         pass
 
-                elif fldname in ('speciesName', 'status_mod_time'):
+                elif fldname in ('speciesName', 'modtime'):
                     newfldname = cls.MAP_MAP[fldname]
                     newrec[newfldname] =  val                    
 

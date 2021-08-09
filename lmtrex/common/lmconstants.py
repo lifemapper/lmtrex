@@ -798,6 +798,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_gbif_occurrence_map(cls):
+        "Map GBIF  response fields to broker response fields"
         gname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -806,6 +807,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_idb_occurrence_map(cls):
+        "Map iDigBio response fields to broker response fields"
         iname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             stdname = '{}:{}'.format(comschem['code'], fn)
@@ -817,6 +819,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_specify_occurrence_map(cls):
+        "Map Specify response fields to broker response fields"
         sname_stdname = {}
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             spfldname = '{}/{}'.format(comschem['url'], fn)
@@ -826,6 +829,7 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_specifycache_occurrence_map(cls):
+        "Map Specify Cache response fields to broker response fields"
         # sp_cache_names_outside_of_stdnames = [
         #     'collection_id','continent','country','county','eventDate','id','institutionID',
         #     'modified','preparations','rights']
@@ -867,6 +871,7 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_gbif_name_map(cls):
+        "Map GBIF name response fields to broker response fields"
         s2n = COMMUNITY_SCHEMA.S2N['code']
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
@@ -891,6 +896,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_itis_name_map(cls):
+        "Map ITIS response fields to broker response fields"
         s2n = COMMUNITY_SCHEMA.S2N['code']
         mapping = {
             'view_url': '{}:view_url'.format(s2n),
@@ -912,6 +918,7 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_lifemapper_map_map(cls):
+        "Map Lifemapper response fields to broker response fields"
         # s2n = COMMUNITY_SCHEMA.S2N['code']
         # mapping = {
         # 'endpoint': '{}:endpoint'.format(s2n),
@@ -934,13 +941,14 @@ class S2N_SCHEMA:
             elif fn == 'lm_status_code':
                 lm_stdname['status'] = std_name
             elif fn == 'modtime':
-                lm_stdname['statusModTime'] = std_name
+                lm_stdname['status_mod_time'] = std_name
             else:
                 lm_stdname[fn] = std_name
         return lm_stdname
 
     @classmethod
     def get_specify_resolver_map(cls):
+        "Map Specify Resolver response fields to broker response fields"
         spres_stdname = {}
         for fn, comschem in S2N_SCHEMA.RESOLVED.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
