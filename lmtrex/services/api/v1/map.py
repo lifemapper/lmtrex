@@ -58,12 +58,12 @@ class MapSvc(_S2nService):
                 errinfo = add_errinfo(errinfo, 'error', traceback)
                     
             else:
+                queries.extend(lout.provider_query)
+                errinfo = combine_errinfo(errinfo, lout.errors)
+                statii.append(lout.provider_status_code)
                 # assemble all records, errors, statuses, queries for provider metadata element
                 if len(lout.records) > 0:
                     stdrecs.extend(lout.records)
-                    errinfo = combine_errinfo(errinfo, lout.errors)
-                    statii.append(lout.provider_status_code)
-                    queries.extend(lout.provider_query)
         prov_meta = LifemapperAPI._get_provider_response_elt(
             query_status=statii, query_urls=queries)
         query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
@@ -166,10 +166,8 @@ class MapSvc(_S2nService):
 # .............................................................................
 if __name__ == '__main__':
     names = TST_VALUES.NAMES[5:9]
-    names = ['Tulipa sylvestris']
-#     names = ['Plagioecia patina']
-    names = ['Phlox longifolia Nutt']
-    names.insert(0, None)
+    names = ['Eucosma raracana', 'Tulipa sylvestris', 'Phlox longifolia Nutt']
+    # names.insert(0, None)
     svc = MapSvc()
     for namestr in names:
         for scodes in (None, 'worldclim-curr'):

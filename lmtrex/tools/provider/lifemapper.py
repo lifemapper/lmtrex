@@ -105,12 +105,12 @@ class LifemapperAPI(APIQuery):
                     except:
                         pass
 
-                elif fldname in ('speciesName', 'statusModTime'):
+                elif fldname in ('speciesName', 'status_mod_time'):
                     newfldname = cls.MAP_MAP[fldname]
                     newrec[newfldname] =  val                    
 
         if color is not None:
-            newrec['vendor-specific-parameters'] = {'color': color}
+            newrec['vendor_specific_parameters'] = {'color': color}
         return newrec
 
     # ...............................................
@@ -127,7 +127,7 @@ class LifemapperAPI(APIQuery):
             errinfo = add_errinfo(errinfo, 'info', msg)
         else:
             try:
-                occ_url = output[0]['occurrenceSet']['metadataUrl']
+                occ_url = output[0]['occurrence_set']['metadata_url']
             except Exception as e:
                 msg = cls._get_error_message('Failed to return occurrence URL')
                 errinfo = add_errinfo(errinfo, 'error', msg)
