@@ -177,5 +177,5 @@ if __name__ == '__main__':
 
 """
 http://broker-dev.spcoco.org/api/v1/map/?provider=lm&namestr=test
-
+https://data.lifemapper.org/api/v2/ogc/data_24209?layers=occ_24209&service=wms&request=getmap&styles=&format=image%2Fpng&transparent=true&version=1.0&height=800&srs=EPSG%3A3857&width=800&layerLabel=Occurrence%20Points&bbox=0,0,20037508.342789244,20037508.34278071
 """
