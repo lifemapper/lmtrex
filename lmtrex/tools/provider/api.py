@@ -296,7 +296,7 @@ class APIQuery:
         """
         prov_meta = cls._get_provider_response_elt(query_status=provider_response_status)
         return S2nOutput(
-            0, '', service, provider=prov_meta, errors=errinfo)
+            0, service, provider=prov_meta, errors=errinfo)
 
     # ...............................................
     def query_by_get(self, output_type='json', verify=True):

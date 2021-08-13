@@ -59,7 +59,7 @@ class SpecifyResolverAPI(APIQuery):
                 
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, APIService.Resolve['endpoint'], provider=prov_meta, 
+            total, APIService.Resolve['endpoint'], provider=prov_meta, 
             records=stdrecs, errors=errinfo)
 
         return std_output
@@ -105,7 +105,7 @@ class SpecifyResolverAPI(APIQuery):
             # Standardize output from provider response
             prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
             std_output = S2nOutput(
-                count, 'count', APIService.Resolve['endpoint'], provider=prov_meta, errors=errinfo)
+                count, APIService.Resolve['endpoint'], provider=prov_meta, errors=errinfo)
         return std_output
 
     # ...............................................

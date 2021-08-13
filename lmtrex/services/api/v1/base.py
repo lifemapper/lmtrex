@@ -110,7 +110,7 @@ class _S2nService:
         
         prov_meta = self._get_s2n_provider_response_elt()
         
-        output = S2nOutput(0, '', svc, provider=prov_meta, errors=info)
+        output = S2nOutput(0, svc, provider=prov_meta, errors=info)
         return output
 
     # ...............................................

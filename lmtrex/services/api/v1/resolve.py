@@ -67,7 +67,7 @@ class ResolveSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), None, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return full_out
 
