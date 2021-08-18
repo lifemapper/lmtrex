@@ -1,30 +1,30 @@
 openapi: 3.0.0
 info:
-  title: S^N services
+  title: Specify Network services
   description: API services for returning biological metadata from available data providers
   version: 0.0.1 pre-release buggy alpha beta
   termsOfService: 'https://lifemapper.ku.edu/?page_id=1096'
   contact:
-    name: S^N
+    name: Aimee Stewart
     email: aimee.stewart@ku.edu
     url: 'http://www.lifemapper.org/'
   license:
     name: GPL-3.0 License
     url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
 servers:
-  - url: 'http://notyeti-192.lifemapper.org/api/v1'
-    description: Internal testing server
+  - url: 'http://data.lifemapper.org/api/v1'
+    description: Lifemapper server
 tags:
   - name: name
-    description: Get taxonomy information for a scientific name
+    description: Get taxonomic information for a scientific name
   - name: occ
     description: Get specimen occurrences
   - name: dataset
-    description: Get specimen occurrences in a dataset
+    description: Get specimen occurrences from a dataset
   - name: resolve
-    description: Get resolution metadata for a digital specimen object
+    description: Get unique identifier metadata for a digital specimen object in Specify
   - name: map
-    description: Get URL for map of species points and predicted distributions
+    description: Get URL for map of species points and predicted distributions from Lifemapper
 externalDocs:
   description: Lifemapper
   url: 'http://www.lifemapper.org/'
@@ -33,14 +33,15 @@ paths:
     get:
       tags:
         - name
-      summary: 'Tentacles : Get taxonomy information Get specimen occurrence tific name'
-      description: Get taxonomy information for a scientific name from available providers
+      summary: 'Get taxonomic information for a scientific name'
+      description: Get taxonomic information for a scientific name from available providers
       operationId: nameTentacles
       parameters:
         - $ref: '#/components/parameters/namestr'
+        - $ref: '#/components/parameters/provider'
         - $ref: '#/components/parameters/gbif_parse'
         - $ref: '#/components/parameters/gbif_count'
-        - $ref: '#/components/parameters/gbif_accepted'
+        - $ref: '#/components/parameters/is_accepted'
       responses:
         '200':
           description: successful operation
@@ -48,58 +49,66 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/names_tentacles'
-  '/name/gbif/{namestr}':
-    get:
-      tags:
-        - name
-      summary: 'GBIF : Get taxonomy information for a scientific name'
-      description: >-
-        Get taxonomy information for a scientific name from the Global
-        Biodiversity Information Facility (GBIF) Backbone Taxonomy
-      operationId: nameGBIF
-      parameters:
-        - $ref: '#/components/parameters/namestr'
-        - $ref: '#/components/parameters/gbif_parse'
-        - $ref: '#/components/parameters/gbif_count'
-        - $ref: '#/components/parameters/gbif_accepted'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/names_gbif'
               examples:
                 Denitrobacterium etoxificans:
                   $ref: >-
-                    #/components/examples/names_gbif_Denitrobacterium_detoxificans
+                    '#/components/examples/names_Denitrobacterium_detoxificans'
                 Plagioecia patina:
-                  $ref: '#/components/examples/names_gbif_Plagioecia_patina'
+                  $ref: '#/components/examples/names_Plagioecia_patina'
                 Tulipa ylvestris:
-                  $ref: '#/components/examples/names_gbif_Tulipa_sylvestris'
-  '/name/itis/{namestr}':
-    get:
-      tags:
-        - name
-      summary: 'ITIS : Get species determination information'
-      description: >-
-        Get taxonomy information for a scientific name from the Integrated
-        Taxonomic Information System (ITIS)
-      operationId: nameITIS
-      parameters:
-        - $ref: '#/components/parameters/namestr'
-        - $ref: '#/components/parameters/gbif_parse'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/names_itis'
-              examples:
-                Denitrobacterium etoxificans:
-                  $ref: >-
-                    #/components/examples/names_itis_Denitrobacterium_detoxificans
+                  $ref: '#/components/examples/names_Tulipa_sylvestris'
+#  '/name/gbif/{namestr}':
+#    get:
+#      tags:
+#        - name
+#      summary: 'GBIF : Get taxonomy information for a scientific name'
+#      description: >-
+#        Get taxonomy information for a scientific name from the Global
+#        Biodiversity Information Facility (GBIF) Backbone Taxonomy
+#      operationId: nameGBIF
+#      parameters:
+#        - $ref: '#/components/parameters/namestr'
+#        - $ref: '#/components/parameters/gbif_parse'
+#        - $ref: '#/components/parameters/gbif_count'
+#        - $ref: '#/components/parameters/is_accepted'
+#      responses:
+#        '200':
+#          description: successful operation
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/names_gbif'
+#              examples:
+#                Denitrobacterium etoxificans:
+#                  $ref: >-
+#                    #/components/examples/names_gbif_Denitrobacterium_detoxificans
+#                Plagioecia patina:
+#                  $ref: '#/components/examples/names_gbif_Plagioecia_patina'
+#                Tulipa ylvestris:
+#                  $ref: '#/components/examples/names_gbif_Tulipa_sylvestris'
+#  '/name/itis/{namestr}':
+#    get:
+#      tags:
+#        - name
+#      summary: 'ITIS : Get species determination information'
+#      description: >-
+#        Get taxonomy information for a scientific name from the Integrated
+#        Taxonomic Information System (ITIS)
+#      operationId: nameITIS
+#      parameters:
+#        - $ref: '#/components/parameters/namestr'
+#        - $ref: '#/components/parameters/gbif_parse'
+#      responses:
+#        '200':
+#          description: successful operation
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/names_itis'
+#              examples:
+#                Denitrobacterium etoxificans:
+#                  $ref: >-
+#                    #/components/examples/names_itis_Denitrobacterium_detoxificans
   '/occ/{occurrenceid}':
     get:
       tags:
@@ -109,6 +118,7 @@ paths:
       operationId: occTentacles
       parameters:
         - $ref: '#/components/parameters/occurrenceid'
+        - $ref: '#/components/parameters/provider'
         - $ref: '#/components/parameters/count_only'
       responses:
         '200':
@@ -124,111 +134,112 @@ paths:
                   $ref: '#/components/examples/occ_tentacles'
                 KU Bird Occurence (count only):
                   $ref: '#/components/examples/occ_tentacles_count_only'
-  '/occ/gbif/{occurrenceid}':
-    get:
-      tags:
-        - occ
-      summary: 'ITIS : Get specimen occurrence information'
-      description: >-
-        Get specimen occurrence information from the Global Biodiversity
-        Information Facility (GBIF)
-      operationId: occGBIF
-      parameters:
-        - $ref: '#/components/parameters/occurrenceid'
-        - $ref: '#/components/parameters/count_only'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/occ_gbif'
-                  - $ref: '#/components/schemas/occ_gbif_with_records'
-              examples:
-                KU Birds dataset:
-                  $ref: '#/components/examples/occ_gbif'
-                KU Birds dataset (count only):
-                  $ref: '#/components/examples/occ_gbif_count_only'
-  '/occ/idb/{occurrenceid}':
-    get:
-      tags:
-        - occ
-      summary: 'iDigBio : Get specimen occurrence information'
-      description: >-
-        Get specimen occurrence information from the Integrated Digitized
-        Biocollections (iDigBio)
-      operationId: occIdb
-      parameters:
-        - $ref: '#/components/parameters/occurrenceid'
-        - $ref: '#/components/parameters/count_only'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/occ_idb'
-                  - $ref: '#/components/schemas/occ_idb_with_records'
-              examples:
-                KU Birds occurrence:
-                  $ref: '#/components/examples/occ_idb'
-                KU Birds occurrence (count only):
-                  $ref: '#/components/examples/occ_idb_count_only'
-  '/occ/mopho/{occurrenceid}':
-    get:
-      tags:
-        - occ
-      summary: 'MorphoSource : Get specimen occurrence information'
-      description: Get information related to specimen occurrences from MorphoSource
-      operationId: occMopho
-      parameters:
-        - $ref: '#/components/parameters/occurrenceid'
-        - $ref: '#/components/parameters/count_only'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/occ_mopho'
-                  - $ref: '#/components/schemas/occ_mopho_with_records'
-              examples:
-                KU Bird occurrence:
-                  $ref: '#/components/examples/occ_mopho'
-                KU Bird Occurence (count only):
-                  $ref: '#/components/examples/occ_mopho_count_only'
-  '/occ/specify/{occurrenceid}':
-    get:
-      tags:
-        - occ
-      summary: 'Specify : Get specimen occurrence information'
-      description: Get specimen occurrence information from Specify
-      operationId: occSpecify
-      parameters:
-        - $ref: '#/components/parameters/occurrenceid'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/occ_specify_with_records'
-              examples:
-                KU Fish Occurence:
-                  $ref: '#/components/examples/occ_specify'
-  '/dataset/gbif/{datasetguid}':
+#  '/occ/gbif/{occurrenceid}':
+#    get:
+#      tags:
+#        - occ
+#      summary: 'ITIS : Get specimen occurrence information'
+#      description: >-
+#        Get specimen occurrence information from the Global Biodiversity
+#        Information Facility (GBIF)
+#      operationId: occGBIF
+#      parameters:
+#        - $ref: '#/components/parameters/occurrenceid'
+#        - $ref: '#/components/parameters/count_only'
+#      responses:
+#        '200':
+#          description: successful operation
+#          content:
+#            application/json:
+#              schema:
+#                oneOf:
+#                  - $ref: '#/components/schemas/occ_gbif'
+#                  - $ref: '#/components/schemas/occ_gbif_with_records'
+#              examples:
+#                KU Birds dataset:
+#                  $ref: '#/components/examples/occ_gbif'
+#                KU Birds dataset (count only):
+#                  $ref: '#/components/examples/occ_gbif_count_only'
+#  '/occ/idb/{occurrenceid}':
+#    get:
+#      tags:
+#        - occ
+#      summary: 'iDigBio : Get specimen occurrence information'
+#      description: >-
+#        Get specimen occurrence information from the Integrated Digitized
+#        Biocollections (iDigBio)
+#      operationId: occIdb
+#      parameters:
+#        - $ref: '#/components/parameters/occurrenceid'
+#        - $ref: '#/components/parameters/count_only'
+#      responses:
+#        '200':
+#          description: successful operation
+#          content:
+#            application/json:
+#              schema:
+#                oneOf:
+#                  - $ref: '#/components/schemas/occ_idb'
+#                  - $ref: '#/components/schemas/occ_idb_with_records'
+#              examples:
+#                KU Birds occurrence:
+#                  $ref: '#/components/examples/occ_idb'
+#                KU Birds occurrence (count only):
+#                  $ref: '#/components/examples/occ_idb_count_only'
+#  '/occ/mopho/{occurrenceid}':
+#    get:
+#      tags:
+#        - occ
+#      summary: 'MorphoSource : Get specimen occurrence information'
+#      description: Get information related to specimen occurrences from MorphoSource
+#      operationId: occMopho
+#      parameters:
+#        - $ref: '#/components/parameters/occurrenceid'
+#        - $ref: '#/components/parameters/count_only'
+#      responses:
+#        '200':
+#          description: successful operation
+#          content:
+#            application/json:
+#              schema:
+#                oneOf:
+#                  - $ref: '#/components/schemas/occ_mopho'
+#                  - $ref: '#/components/schemas/occ_mopho_with_records'
+#              examples:
+#                KU Bird occurrence:
+#                  $ref: '#/components/examples/occ_mopho'
+#                KU Bird Occurence (count only):
+#                  $ref: '#/components/examples/occ_mopho_count_only'
+#  '/occ/specify/{occurrenceid}':
+#    get:
+#      tags:
+#        - occ
+#      summary: 'Specify : Get specimen occurrence information'
+#      description: Get specimen occurrence information from Specify
+#      operationId: occSpecify
+#      parameters:
+#        - $ref: '#/components/parameters/occurrenceid'
+#      responses:
+#        '200':
+#          description: successful operation
+#          content:
+#            application/json:
+#              schema:
+#                oneOf:
+#                  - $ref: '#/components/schemas/occ_specify_with_records'
+#              examples:
+#                KU Fish Occurence:
+#                  $ref: '#/components/examples/occ_specify'
+  '/dataset/{datasetguid}':
     get:
       tags:
         - dataset
-      summary: 'GBIF : Get a list of occurrences for a dataset'
+      summary: 'Get a list of occurrences for a dataset'
       description: Get a list of occurrences in GBIF for a dataset
-      operationId: datasetGBIF
+      operationId: dataset
       parameters:
         - $ref: '#/components/parameters/datasetguid'
+        - $ref: '#/components/parameters/provider'
         - $ref: '#/components/parameters/count_only'
       responses:
         '200':
@@ -237,32 +248,33 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/dataset_gbif'
-                  - $ref: '#/components/schemas/dataset_gbif_with_records'
+                  - $ref: '#/components/schemas/dataset'
+                  - $ref: '#/components/schemas/dataset_with_records'
               examples:
                 KU Birds dataset:
-                  $ref: '#/components/examples/dataset_gbif'
+                  $ref: '#/components/examples/dataset'
                 KU Birds dataset (count only):
-                  $ref: '#/components/examples/dataset_gbif_count_only'
-  '/map/lm/':
+                  $ref: '#/components/examples/dataset_count_only'
+  '/map/':
     get:
       tags:
         - map
       summary: 'MAP : Get a projection map for a species'
       description: Get URL for map of species points and predicted distributions
-      operationId: mapLm
+      operationId: map
       parameters:
-        - $ref: '#/components/parameters/namestr_query'
+        - $ref: '#/components/parameters/namestr'
+        - $ref: '#/components/parameters/provider'
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/map_lm'
+                $ref: '#/components/schemas/map'
               examples:
                 Phlox longifolia Nutt.:
-                  $ref: '#/components/examples/map_lm'
+                  $ref: '#/components/examples/map'
 components:
   parameters:
     namestr:
@@ -2281,7 +2293,7 @@ components:
           type: string
           format: email
           example: slbaumgart@uchicago.edu
-    dataset_gbif_base:
+    dataset_base:
       allOf:
         - $ref: '#/components/schemas/wrapper'
         - type: object
@@ -2294,27 +2306,27 @@ components:
               type: string
               enum:
                 - 'GBIF'
-    dataset_gbif:
+    dataset:
       allOf:
-        - $ref: '#/components/schemas/dataset_gbif_base'
+        - $ref: '#/components/schemas/dataset_base'
         - type: object
           properties:
             records:
               type: array
               items:
-                $ref: '#/components/schemas/occ_gbif_record'
+                $ref: '#/components/schemas/occ_record'
               minItems: 0
               maxItems: 0
-    dataset_gbif_with_records:
+    dataset_with_records:
       allOf:
-        - $ref: '#/components/schemas/dataset_gbif_base'
+        - $ref: '#/components/schemas/dataset_base'
         - type: object
           properties:
             records:
               type: array
               items:
-                $ref: '#/components/schemas/occ_gbif_record'
-    map_lm:
+                $ref: '#/components/schemas/occ_record'
+    map:
       allOf:
         - $ref: '#/components/schemas/wrapper'
         - type: object
@@ -2330,7 +2342,7 @@ components:
             records:
               type: array
               items:
-                $ref: '#/components/schemas/map_lm_record'
+                $ref: '#/components/schemas/map_record'
               minItems: 0
               maxItems: 1
     map_lm_record:
@@ -2502,7 +2514,7 @@ components:
         - scientificname_added
         - taxon_match_failed
   examples:
-    names_gbif_Denitrobacterium_detoxificans:
+    names_Denitrobacterium_detoxificans:
       description: 'namestr: Denitrobacterium detoxificans'
       value:
         count: 1

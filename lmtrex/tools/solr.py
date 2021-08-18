@@ -147,7 +147,7 @@ def query(collection, solr_location, filters={'*': '*'}, query_term='*'):
     service = provider = ''
     record_format = _get_record_format(collection)    
     std_output = S2nOutput(
-        count, query_term, service, provider, provider_query=[api.url], 
+        count, service, provider, provider_query=[api.url], 
             record_format=record_format, records=recs, errors=errmsgs)
     
     return std_output
