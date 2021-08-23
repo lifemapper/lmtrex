@@ -1,0 +1,56 @@
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+caption {
+  text-align: left;
+  font-size: calc(var(--size) + var(--half-size));
+}
+
+thead td {
+  background: var(--t2);
+  width: calc(var(--double-size) * 5);
+}
+
+thead td, th {
+  border: var(--border-size) solid var(--t3);
+}
+
+th {
+  background: var(--b3);
+}
+
+thead div {
+  display: flex;
+  column-gap: var(--half-size);
+  justify-content: center;
+  align-items: center;
+  padding: var(--half-size);
+}
+
+thead img {
+  height: var(--icon-size);
+}
+
+tbody th {
+  text-align: left;
+}
+
+tbody th, tbody td {
+  padding: var(--quarter-size);
+  border: var(--border-size) solid var(--border-color);
+}
+
+tbody td {
+  word-break: break-word;
+}
+
+tr.identical td {
+  color: var(--t2);
+}
+
+a:visited {
+  color: #00f;
+}

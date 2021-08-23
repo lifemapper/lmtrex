@@ -7,10 +7,14 @@
   --t3: #000;
   --red: #f00;
   --green: #0f0;
+  --border-color: #888;
 
+  --quarter-size: 0.25rem;
+  --half-size: 0.5rem;
   --size: 1rem;
   --double-size: 2rem;
   --icon-size: 24px;
+  --border-size: 1px;
 }
 
 body {

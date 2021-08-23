@@ -11,7 +11,12 @@ def template(name, arguments):
     if name not in templates:
         with open(os.path.join(templates_dir, f'{name}.html')) as file:
             templates[name] = Template(file.read()).substitute
-    return templates[name](arguments)
+    return templates[name](
+        {
+            key:''.join(value) if type(value) == list else value
+            for key, value in arguments.items()
+        }
+    )
 
 
 def inline_static(file_path):
@@ -31,6 +36,7 @@ def index_template(body):
                 ['main_styles', 'static/css/styles.css'],
                 ['response_styles', 'static/css/response.css'],
                 ['leaflet_styles', 'static/css/leaflet.css'],
+                ['table_styles', 'static/css/table.css'],
                 ['main_script', 'static/js/main.js'],
                 ['leaflet_script', 'static/js/leaflet.js']
             ]

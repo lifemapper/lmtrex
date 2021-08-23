@@ -2,7 +2,11 @@
 
 import re
 
+from lmtrex.frontend.format_value import format_list, format_value
+
 # Replace a word with a mapped variant
+from lmtrex.frontend.templates import template
+
 field_part_mapper = {
     'gbif': 'GBIF',
     'idigbio': 'iDigBio',
@@ -18,20 +22,18 @@ label_mapper = {
 }
 
 # Replace field name and field value with label and a transformed value
-field_mapper = {
-    # 's2n:idigbio_flags': lambda value:
-    #     ('iDigBio Flags', value)
+value_mapper = {
+    's2n:issues': lambda issues:
+        format_list([
+            f'{value} ({key})'
+            for key, value in issues.items()
+        ])
+        if issues and type(issues) == dict
+        else 'No issues reported'
 }
 
-# Exclude these fields from the output
-fields_to_exclude = [
-    's2n:service',
-    's2n:provider',
-    's2n:view_url',
-    's2n:api_url',
-]
 
-def default_field_mapper(field_name, value):
+def label_from_field_name(field_name: str) -> str:
 
     striped_field_name = re.sub(r'^\w+:','',field_name)
     formatted_field_name = re.sub(
@@ -57,27 +59,51 @@ def default_field_mapper(field_name, value):
     capitalized_field_name = \
         joined_field_name[0].upper() + joined_field_name[1:]
 
-    return capitalized_field_name, value
+    return capitalized_field_name
 
 
-def map_fields(response):
-    result = {}
-    for field_name, value in response.items():
-        if field_name in fields_to_exclude:
-            continue
+regex_link = r"^((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)$"
+def is_link(value):
+    return re.search(regex_link, value)
 
-        elif field_name in label_mapper:
-            final_field_name, final_field_value = \
-                label_mapper[field_name], value
 
-        elif field_name in field_mapper:
-            final_field_name, final_field_value = \
-                field_mapper[field_name](value)
+def default_value_formatter(value):
+    if type(value) == str and is_link(value):
+        return template(
+            'link',
+            dict(
+                href=value,
+                label=value
+            )
+        )
+    elif type(value) in [str, int, float]:
+        return value
+    else:
+        return format_value(value)
 
-        else:
-            final_field_name, final_field_value = \
-                default_field_mapper(field_name, value)
+def map_fields(table):
+    mapped_table = []
+    for row in table:
+        field_name, *values = row
 
-        result[final_field_name] = final_field_value
+        label = \
+            label_mapper[field_name] \
+            if field_name in label_mapper \
+            else label_from_field_name(field_name)
 
-    return result
+        resolved_value_mapper = \
+            value_mapper[field_name] \
+            if field_name in value_mapper \
+            else default_value_formatter
+
+        mapped_values = [
+            resolved_value_mapper(value) for value in values
+        ]
+
+        mapped_table.append([
+            field_name,
+            label,
+            *mapped_values
+        ])
+
+    return mapped_table

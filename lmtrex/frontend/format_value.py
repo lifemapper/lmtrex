@@ -129,16 +129,3 @@ def format_dict(
             ''.join(fields)
         }</div>"""
 
-
-def format_response(response: Dict[str, any]) -> str:
-    """
-    Format the response object.
-
-    Args:
-        response (Dict[str,any]): response object
-
-    Returns:
-        str:
-            formatted response
-    """
-    return format_value(response)

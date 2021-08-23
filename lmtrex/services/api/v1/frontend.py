@@ -1,16 +1,15 @@
 import cherrypy
 
-from lmtrex.frontend.field_mapper import map_fields
-from lmtrex.frontend.helpers import provider_label_to_icon_url
 from lmtrex.tools.utils import get_traceback
 from lmtrex.common.lmconstants import (APIService)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.occ import OccurrenceSvc
 from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.map import MapSvc
-from lmtrex.frontend.json_to_html import json_to_html
 from lmtrex.frontend.templates import template, index_template
 from lmtrex.frontend.leaflet import leaflet
+from lmtrex.frontend.response_to_table import response_to_table
+from lmtrex.frontend.format_table import table_data_to_html
 
 # .............................................................................
 @cherrypy.expose
@@ -60,8 +59,8 @@ class FrontendSvc(_S2nService):
 
         occurrence_info = [
             {
-                's2n:service': response['service'],
-                's2n:provider': response['provider'],
+                'internal:service': response['service'],
+                'internal:provider': response['provider'],
                 **response['records'][0]
             }
             for response in \
@@ -79,8 +78,8 @@ class FrontendSvc(_S2nService):
 
         name_info = [
             {
-                's2n:service': response['service'],
-                's2n:provider': response['provider'],
+                'internal:service': response['service'],
+                'internal:provider': response['provider'],
                 **response['records'][0]
             }
             for response in \
@@ -88,32 +87,37 @@ class FrontendSvc(_S2nService):
             if len(response['records']) > 0
         ] if scientific_name else []
 
-        sections = []
+        header_row, rows = response_to_table(occurrence_info)
+        occurrence_table = table_data_to_html(
+            header_row,
+            rows,
+            'Occurrence data'
+        )
 
-        for response in [*occurrence_info, *name_info]:
-            label = f"{response['s2n:provider']['label']} (Species information)" \
-                if response['s2n:service'] == 'name' \
-                else response['s2n:provider']['label']
-            content = json_to_html(map_fields(response))
-            if 's2n:view_url' in response:
-                content = template('view_url', {
-                    'view_url': response['s2n:view_url'],
-                    'label': response["s2n:provider"]['label'],
-                    'content': content
-                })
-            sections.append({
-                'icon_url':
-                    provider_label_to_icon_url(response["s2n:provider"]['code']),
-                'label': label,
-                'anchor':
-                    f"{response['s2n:service']}_"
-                    f"{response['s2n:provider']['code'].lower()}",
-                'content': content
-            })
+        header_row, rows = response_to_table(name_info)
+        name_table = table_data_to_html(
+            header_row,
+            rows,
+            'Species data'
+        )
 
-        sections = [*leaflet(MapSvc().GET(namestr=scientific_name)), *sections]
+        leaflet_map_data = leaflet(MapSvc().GET(namestr=scientific_name))
+        leaflet_map_section = \
+            template('section', leaflet_map_data) \
+            if leaflet_map_data \
+            else ''
 
-        if len(sections)==0:
+        sections = [
+            section
+            for section in [
+                occurrence_table,
+                name_table,
+                leaflet_map_section
+            ]
+            if section
+        ]
+
+        if len(sections) == 0:
             cherrypy.response.status = 404
             return index_template(
                 'Unable to find any information for this record'
@@ -126,10 +130,7 @@ class FrontendSvc(_S2nService):
                     title=scientific_name if \
                         scientific_name \
                         else 'Scientific Name Unknown',
-                    sections=''.join([
-                        template('section', section)
-                        for section in sections
-                    ])
+                    sections=sections
                 )
             )
         )
