@@ -507,7 +507,14 @@ class MorphoSource:
 
     @classmethod
     def get_occurrence_view(cls, local_id):
-        return '{}/0000S{}'.format(MorphoSource.VIEW_URL, local_id)
+        """
+        Example:
+            https://www.morphosource.org/concern/biological_specimens/000S27385
+        """
+        idtail = 'S{}'.format(local_id)
+        leading_zero_count = (9 - len(idtail))
+        prefix = '0' * leading_zero_count
+        return '{}/{}{}'.format(MorphoSource.VIEW_URL, prefix, idtail)
 
     @classmethod
     def get_occurrence_data(cls, occurrence_id):
