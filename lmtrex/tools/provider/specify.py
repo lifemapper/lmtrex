@@ -101,7 +101,7 @@ class SpecifyPortalAPI(APIQuery):
         if url is None:
             errinfo = add_errinfo(errinfo, 'info', 'No URL to Specify record')
             std_output = cls._standardize_output(
-                {}, occid, APIService.Occurrence['endpoint'], count_only=count_only, 
+                {}, APIService.Occurrence['endpoint'], count_only=count_only, 
                 errinfo=errinfo)
         elif url.startswith('http'):
             api = APIQuery(url, headers=JSON_HEADERS, logger=logger)
