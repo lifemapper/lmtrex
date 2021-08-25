@@ -5,7 +5,6 @@ from lmtrex.common.lmconstants import (APIService)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.occ import OccurrenceSvc
 from lmtrex.services.api.v1.name import NameSvc
-from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.frontend.templates import template, index_template
 from lmtrex.frontend.leaflet import leaflet
 from lmtrex.frontend.response_to_table import response_to_table
@@ -138,7 +137,7 @@ class FrontendSvc(_S2nService):
             'Species data'
         )
 
-        leaflet_map_data = leaflet(MapSvc().GET(namestr=scientific_name))
+        leaflet_map_data = leaflet(occurrence_info, name_info, scientific_name)
         leaflet_map_section = \
             template('section', leaflet_map_data) \
             if leaflet_map_data \

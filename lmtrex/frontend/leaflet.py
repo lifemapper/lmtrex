@@ -1,20 +1,27 @@
+import json
+
 from lmtrex.frontend.helpers import provider_label_to_icon_url
 from lmtrex.frontend.templates import template
+from lmtrex.services.api.v1.map import MapSvc
 
 
-def leaflet(map_info):
-
-    if len(map_info['records']) == 0 \
-        or len(map_info['errors']) > 0 \
-        or len(map_info['records'][0]['errors']) > 0 \
-        or map_info['records'][0]['provider']['code'] != 'lm' \
-        or len(map_info['records'][0]['records']) == 0:
-        return None
-
+def leaflet(occurrence_info, name_info, scientific_name):
+    map_info = MapSvc().GET(namestr=scientific_name)
     return {
         'icon_url':
             provider_label_to_icon_url(map_info["provider"]['code']),
         'label': f'{map_info["provider"]["label"]} Projection Map',
         'anchor': map_info["provider"]['code'],
-        'content': template('leaflet', {'map_info':json.dumps(map_info)})
+        'content': template(
+            'leaflet',
+            {
+                'map_info': json.dumps(
+                    {
+                        'occurrence_info': occurrence_info,
+                        'name_info': name_info,
+                        **map_info,
+                    }
+                )
+            }
+        )
     }
