@@ -87,12 +87,49 @@ class FrontendSvc(_S2nService):
             if len(response['records']) > 0
         ] if scientific_name else []
 
+        issues = {}
+        for response in occurrence_info:
+            if 's2n:issues' not in response:
+                continue
+
+            provider_issues = response['s2n:issues']
+            if not provider_issues:
+                continue
+
+            label = response['internal:provider']['label']
+            formatted_issues = [
+                f'{message} ({key})'
+                for key, message in provider_issues.items()
+            ]
+            issues[label] = formatted_issues
+
         header_row, rows = response_to_table(occurrence_info)
         occurrence_table = table_data_to_html(
             header_row,
             rows,
             'Occurrence data'
         )
+
+        if issues:
+            occurrence_table = template(
+                'issues',
+                dict(
+                    issues=[
+                        template(
+                            'issue_block',
+                            dict(
+                                label=label,
+                                provider_issues=[
+                                    template('li',dict(content=issue))
+                                    for issue in provider_issues
+                                ]
+                            )
+                        )
+                        for label, provider_issues in issues.items()
+                    ],
+                    occurrence_table=occurrence_table
+                )
+            )
 
         header_row, rows = response_to_table(name_info)
         name_table = table_data_to_html(

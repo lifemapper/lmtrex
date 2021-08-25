@@ -18,18 +18,13 @@ field_part_mapper = {
 
 # Replace field name with a label
 label_mapper = {
-    'idigbio:uuid': 'iDigBio UUID'
+    'idigbio:uuid': 'iDigBio UUID',
+    'mopho:specimen.specimen_id': 'MorphoSource Specimen ID',
 }
 
 # Replace field name and field value with label and a transformed value
 value_mapper = {
-    's2n:issues': lambda issues:
-        format_list([
-            f'{value} ({key})'
-            for key, value in issues.items()
-        ])
-        if issues and type(issues) == dict
-        else 'No issues reported'
+
 }
 
 

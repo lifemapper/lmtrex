@@ -12,6 +12,7 @@ fields_to_exclude = [
     'internal:provider',
     's2n:view_url',
     's2n:api_url',
+    's2n:issues',
 ]
 
 def get_response_keys(responses):

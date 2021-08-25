@@ -73,3 +73,25 @@ main.sections {
 .section-body {
   padding: var(--size);
 }
+
+article.issue {
+  background: #f8d7da;
+  padding: var(--double-size);
+  border-radius: var(--half-size);
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--size);
+  border: var(--border-size) solid #f5c6cb;
+}
+
+article.issue h2, article.issue ul {
+  margin: 0;
+}
+
+article.issue h2 {
+  color: var(--b1);
+}
+
+article.issue ul {
+  color: #721c24;
+}
