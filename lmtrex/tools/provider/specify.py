@@ -47,8 +47,6 @@ class SpecifyPortalAPI(APIQuery):
                 val = None
 
             newrec[stdfld] = val
-                except:
-                    pass
         return newrec
                 
     # ...............................................
