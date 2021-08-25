@@ -35,79 +35,94 @@ class LifemapperAPI(APIQuery):
         elif command in Lifemapper.COMMANDS:
             url = '{}/{}'.format(url, command)
         APIQuery.__init__(self, url, other_filters=other_filters, logger=logger)
-
+        
     # ...............................................
     @classmethod
     def _standardize_layer_record(cls, rec, prjscenariocodes=[], color=None):
         newrec = {}
-        # Discard incomplete records
-        try:
-            stat = rec['status']
-        except:
-            return newrec
-        else:
-            if stat != Lifemapper.COMPLETE_STAT_VAL:
-                return newrec
-        # Discard records without map info
-        try:
-            melt = rec['map']
-        except Exception:
-            return newrec        
-        try:
-            mapname = melt['mapName']
-            map_url = melt['endpoint']
-            layer_name = melt['layerName']
-        except Exception as e:
-            return newrec
-
-        # Success
-        newrec[cls.MAP_MAP['endpoint']] = '{}/{}'.format(map_url, mapname)
-        newrec[cls.MAP_MAP['layer_name']] = layer_name
-        newrec[cls.MAP_MAP['status']] = stat
+        mapfld = 'map'
         
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val:
-                if fldname == 'projectionScenario':
-                    try:
-                        scen_code = val['code']
-                    except Exception:
-                        pass
-                    else:
-                        # Discard records that do not pass filter
-                        if prjscenariocodes and scen_code not in prjscenariocodes:
-                            return {}
-                        # Success
-                        newrec[cls.MAP_MAP['sdm_projection_scenario_code']] = scen_code          
-                        try:
-                            newrec[cls.MAP_MAP['sdm_projection_scenario_link']] = val['metadataUrl']
-                        except:
-                            pass
-                    
-                elif fldname == 'spatialRaster':
-                    newrec[cls.MAP_MAP['layer_type']] = 'raster'
-                    try:
-                        data_url = val['dataUrl']
-                    except:
-                        pass
-                    else:
-                        newrec[cls.MAP_MAP['data_link']] = data_url.rstrip('/gtiff')  
-                                              
-                elif fldname == 'spatialVector':
-                    newrec[cls.MAP_MAP['layer_type']] = 'vector'
-                    try:
-                        newrec[cls.MAP_MAP['point_bbox']] = val['bbox']
-                    except:
-                        pass
-                    
-                    try:
-                        newrec[cls.MAP_MAP['point_count']] = val['numFeatures']
-                    except:
-                        pass
+        mapnamefld = 'mapName'
+        endptfld = 'endpoint'
+        layerfld = 'layerName'
+        statusfld = 'status'
+        
+        scencode_fld = 'sdm_projection_scenario_code'
+        scenlink_fld = 'sdm_projection_scenario_link'
+        
+        # Required top level elements
+        try:
+            status = rec[statusfld]
+            melt = rec[mapfld]
+        except Exception:
+            return {}
+        else:
+            # Required value
+            if status != Lifemapper.COMPLETE_STAT_VAL:
+                return {}
+            # Required map level elements
+            try:
+                mapname = melt[mapnamefld]
+                map_url = melt[endptfld]
+                layer_name = melt[layerfld]
+                endpoint = '{}/{}'.format(map_url, mapname)
+            except Exception as e:
+                return {}
+            # Required value if present
+            try:
+                scen_code = rec['projectionScenario']['code']
+                scen_link = rec['projectionScenario']['metadataUrl']
+            except Exception:
+                scen_code = scen_link = None
+            else:
+                # Discard records that do not pass filter
+                if prjscenariocodes and scen_code not in prjscenariocodes:
+                    return {}
+                
+        for stdfld, provfld in cls.MAP_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
 
-                elif fldname in ('speciesName', 'modtime'):
-                    newfldname = cls.MAP_MAP[fldname]
-                    newrec[newfldname] =  val                    
+            if provfld == endptfld:
+                newrec[stdfld] = endpoint
+                
+            elif provfld == layerfld:
+                newrec[stdfld] = layer_name
+                
+            elif provfld == statusfld:
+                newrec[stdfld] = status
+            
+            elif provfld == scencode_fld and scen_code:
+                newrec[stdfld] = scen_code          
+
+            elif provfld == scenlink_fld and scen_code:
+                newrec[stdfld] = scen_link
+                
+            elif provfld == 'spatialRaster':
+                newrec[cls.MAP_MAP['layer_type']] = 'raster'
+                try:
+                    data_url = val['dataUrl']
+                except:
+                    pass
+                else:
+                    newrec[cls.MAP_MAP['data_link']] = data_url.rstrip('/gtiff')  
+                                          
+            elif provfld == 'spatialVector':
+                newrec[cls.MAP_MAP['layer_type']] = 'vector'
+                try:
+                    newrec[cls.MAP_MAP['point_bbox']] = val['bbox']
+                except:
+                    pass
+                
+                try:
+                    newrec[cls.MAP_MAP['point_count']] = val['numFeatures']
+                except:
+                    pass
+
+            elif provfld in ('speciesName', 'modtime'):
+                newrec[stdfld] =  val                    
 
         if color is not None:
             newrec['vendor_specific_parameters'] = {'color': color}

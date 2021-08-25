@@ -65,65 +65,54 @@ class IdigbioAPI(APIQuery):
 
     # ...............................................
     @classmethod
-    def _standardize_ref_list(cls, value):
-        if value:
-            lst = '|'.split(value)
-            elts = [l.strip() for l in lst]
-
-    # ...............................................
-    @classmethod
-    def _standardize_record(cls, rec):
+    def _standardize_record(cls, big_rec):
         newrec = {}
-        issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]]
-        # Should contain 'uuid' field
-        try:
-            uuid = rec[Idigbio.ID_FIELD]
-        except Exception as e:
-            print('Record missing uuid field')
-        else:
-            newrec['{}:view_url'.format(
-                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_view(uuid)
-            newrec['{}:api_url'.format(
-                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_data(uuid)
-            stdname = cls.OCCURRENCE_MAP[Idigbio.ID_FIELD]
-            newrec[stdname] = uuid
+        to_list_fields = ('dwc:associatedSequences', 'dwc:associatedReferences')
+        issue_fld = 's2n:issues'
+        view_std_fld = cls.OCCURRENCE_MAP['view_url']
+        data_std_fld = cls.OCCURRENCE_MAP['api_url']
+
         # Must contain 'data' field
         try:
-            stripped_rec = rec['data']
+            rec = big_rec['data']
         except Exception as e:
             pass
-        else:
-            for fldname, val in stripped_rec.items():
-                # Leave out fields without value, except 'issues', handled below
-                if val and fldname in cls.OCCURRENCE_MAP.keys():
-                    if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
+        else:            
+            # Iterate over desired output fields
+            for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+                # Include ID fields and issues even if empty
+                if provfld == Idigbio.ID_FIELD:
+                    try:
+                        uuid = big_rec[Idigbio.ID_FIELD]
+                    except:
+                        print('Record missing uuid field')
+                        uuid = None
+                    newrec[stdfld] = uuid                    
+                    newrec[view_std_fld] = Idigbio.get_occurrence_view(uuid)
+                    newrec[data_std_fld] = Idigbio.get_occurrence_data(uuid)
+                    
+                elif provfld == issue_fld:
+                    # Pull optional 'flags' element from 'indexTerms' field
+                    try:
+                        issue_codes = rec['indexTerms']['flags']
+                    except Exception:
+                        issue_codes = None                    
+                    newrec[stdfld] = cls._get_code2description_dict(
+                        issue_codes, ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]])
+
+                else:
+                    try:
+                        val = rec[provfld]
+                    except:
+                        val = None
+                    
+                    # Leave out other fields without value
+                    if val and provfld in to_list_fields:
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
-                        newrec[fldname] = elts
-                    # elif fldname in ('dwc:year', 'dwc:month', 'dwc:day'):
-                    #     # Modify string date elements to int like GBIF and Specify?
+                        newrec[stdfld] = elts                            
                     else:
-                        newrec[fldname] =  val
-            # Include 'issues' for providers/aggregators that report them, even if not in provider response
-            issue_dict = {}
-            try:
-                # Pull optional 'flags' element from 'indexTerms' field
-                issue_codes = rec['indexTerms']['flags']
-            except Exception:
-                pass
-            else:
-                if issue_codes:
-                    # Fieldname modification
-                    stdname = cls.OCCURRENCE_MAP['s2n:issues']
-                    issue_dict = {}
-                    for tmp in issue_codes:
-                        code = tmp.strip()
-                        # return a dictionary with code: description
-                        try:
-                            issue_dict[code] = issue_map[code]
-                        except:
-                            issue_dict[code] = 'TBD'
-            newrec[stdname] = issue_dict
+                        newrec[stdfld] =  val
         return newrec
 
     # ...............................................

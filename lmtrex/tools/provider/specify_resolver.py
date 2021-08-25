@@ -37,11 +37,13 @@ class SpecifyResolverAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val and fldname in cls.RES_MAP.keys():
-                stdfld = cls.RES_MAP[fldname]
-                newrec[stdfld] =  val
+        for stdfld, provfld in cls.RES_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+            newrec[stdfld] =  val
+            
         return newrec
     
     # ...............................................

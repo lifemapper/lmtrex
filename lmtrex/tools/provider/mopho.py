@@ -28,20 +28,25 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        # Add provider stuff
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if fldname in cls.OCCURRENCE_MAP.keys():
-                # Use DWC field to also construct api URL
-                if fldname == MorphoSource.DWC_ID_FIELD:
-                    url_stdfld = cls.OCCURRENCE_MAP['api_url']
-                    newrec[url_stdfld] = MorphoSource.get_occurrence_data(val)
-                # Use local ID field to also construct webpage url
-                elif fldname == MorphoSource.LOCAL_ID_FIELD:
-                    url_stdfld = cls.OCCURRENCE_MAP['view_url']
-                    newrec[url_stdfld] = MorphoSource.get_occurrence_view(val)
-                    
-                stdfld = cls.OCCURRENCE_MAP[fldname]
+        view_std_fld = cls.OCCURRENCE_MAP['view_url']
+        data_std_fld = cls.OCCURRENCE_MAP['api_url']
+        for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+
+            # Save ID field, plus use to construct URLs
+            if provfld == MorphoSource.DWC_ID_FIELD:
+                newrec[stdfld] =  val
+                newrec[data_std_fld] = MorphoSource.get_occurrence_data(val)
+                
+            # Use local ID field to also construct webpage url
+            elif provfld == MorphoSource.LOCAL_ID_FIELD:
+                newrec[view_std_fld] = MorphoSource.get_occurrence_view(val)
+                
+            # all others
+            else:
                 newrec[stdfld] =  val
         return newrec
     

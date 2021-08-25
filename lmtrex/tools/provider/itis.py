@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from http import HTTPStatus
 import urllib
 
@@ -172,70 +173,80 @@ class ItisAPI(APIQuery):
             
     # ...............................................
     @classmethod
-    def _parse_value_to_dict(cls, val):
-        items = {}
-        lst = val.split('$')
-        for elt in lst:
-            parts = elt.split(':')
-            key = parts[0]
-            try:
-                val = parts[1]
-            except:
-                pass
-            else:
-                try:
-                    tsn = int(key)
-                    items['tsn'] = tsn
-                except:
-                    rnk = key.lower()
-                    items[rnk] = val
-        return items
+    def _parse_hierarchy_to_dicts(cls, val):
+        hierarchy_lst = []
+        if val:
+            for elt in val:
+                temp_hierarchy = {}
+                lst = val.split('$')
+                for elt in lst:
+                    parts = elt.split(':')
+                    key = parts[0]
+                    try:
+                        val = parts[1]
+                    except:
+                        pass
+                    else:
+                        try:
+                            rnk = key.lower()
+                        except:
+                            pass
+                        else:
+                            temp_hierarchy[rnk] = val
+                # Reorder and filter to desired ranks
+                hierarchy = OrderedDict()
+                for rnk in S2N_SCHEMA.RANKS:
+                    hierarchy[rnk] = temp_hierarchy[rnk]
+                hierarchy_lst.append(hierarchy)
+        return hierarchy_lst
 
     # ...............................................
     @classmethod
-    def _parse_value_to_list(cls, val):
-        items = []
-        lst = val.split('$')
-        for elt in lst:
-            parts = elt.split(':')
-            if len(parts) == 1:
-                items.append(parts[0])
-            if len(parts) == 2:
-                try:
-                    tsn = int(parts[0])
-                except:
-                    print('Unexpected 2-part element in $-delimited list {}'.format(elt))
-                else:
-                    items.insert(0, tsn)
-        return items
+    def _parse_synonyms_to_lists(cls, val):
+        synonym_lst = []
+        if val:
+            for elt in val:
+                syn_group = []
+                lst = val.split('$')
+                for elt in lst:
+                    if elt.find(':') < 0:
+                        syn_group.append(elt)
+                synonym_lst.append(syn_group)
+        return synonym_lst
 
     # ...............................................
     @classmethod
     def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
-        usage = rec['usage'].lower()
-        if (not is_accepted 
-            or (is_accepted and usage in ('accepted', 'valid')) ):
-            for fldname, val in rec.items():
-                # Leave out fields without value
-                if val and fldname in cls.NAME_MAP.keys():
-                    stdfld = cls.NAME_MAP[fldname]
-                    if fldname in ('hierarchySoFarWRanks', 'synonyms'):
-                        val_lst = []
-                        if fldname == 'hierarchySoFarWRanks':
-                            for elt in val:
-                                val_lst.append(cls._parse_value_to_dict(elt))
-                        else:
-                            for elt in val:
-                                val_lst.extend(cls._parse_value_to_list(elt))
-                        newrec[stdfld] =  val_lst
-                    else:
-                        if fldname == ITIS.TSN_KEY:
-                            newrec['{}:view_url'.format(
-                                    COMMUNITY_SCHEMA.S2N['code'])] = ITIS.get_taxon_view(val)
-                            newrec['{}:api_url'.format(
-                                    COMMUNITY_SCHEMA.S2N['code'])] = ITIS.get_taxon_data(val)
-                        newrec[stdfld] =  val
+        view_std_fld = cls.NAME_MAP['view_url']
+        data_std_fld = cls.NAME_MAP['api_url']
+        hierarchy_prov_fld = 'hierarchySoFarWRanks'
+        synonym_prov_fld = 'synonyms'
+        good_statii = ('accepted', 'valid')
+        
+        status = rec['usage'].lower()
+        if (not is_accepted or (is_accepted and status in good_statii)):
+            for stdfld, provfld in cls.NAME_MAP.items():
+                try:
+                    val = rec[provfld]
+                except:
+                    val = None
+
+                if provfld == ITIS.TSN_KEY:
+                    newrec[stdfld] =  val
+                    newrec[view_std_fld] = ITIS.get_taxon_view(val)
+                    newrec[data_std_fld] = ITIS.get_taxon_data(val)
+
+                elif provfld == hierarchy_prov_fld:
+                    hierarchy_lst = cls._parse_hierarchy_to_dicts(val)                   
+                    newrec[stdfld] =  hierarchy_lst
+                
+                elif provfld == synonym_prov_fld:
+                    synonym_lst = cls._parse_synonyms_to_lists(val)
+                    newrec[stdfld] =  synonym_lst                    
+                
+                else:
+                    newrec[stdfld] =  val
         return newrec
     
     # ...............................................

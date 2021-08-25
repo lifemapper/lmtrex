@@ -101,6 +101,19 @@ class APIQuery:
 
     # ...............................................
     @classmethod
+    def _get_code2description_dict(cls, code_lst, code_map):
+        # May contain 'issues'
+        code_dict = {}
+        for tmp in code_lst:
+            code = tmp.strip()
+            try:
+                code_dict[code] = code_map[code]
+            except:
+                code_dict[code] = code
+        return code_dict
+
+    # ...............................................
+    @classmethod
     def _get_provider_response_elt(cls, query_status=None, query_urls=[]):
         provider_element = {}
         provcode = cls.PROVIDER[S2nKey.PARAM]

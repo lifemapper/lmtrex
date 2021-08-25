@@ -512,15 +512,21 @@ class MorphoSource:
         Example:
             https://www.morphosource.org/concern/biological_specimens/000S27385
         """
-        idtail = 'S{}'.format(local_id)
-        leading_zero_count = (9 - len(idtail))
-        prefix = '0' * leading_zero_count
-        return '{}/{}{}'.format(MorphoSource.VIEW_URL, prefix, idtail)
+        url = None
+        if local_id:
+            idtail = 'S{}'.format(local_id)
+            leading_zero_count = (9 - len(idtail))
+            prefix = '0' * leading_zero_count
+            url ='{}/{}{}'.format(MorphoSource.VIEW_URL, prefix, idtail)
+        return url
 
     @classmethod
     def get_occurrence_data(cls, occurrence_id):
-        return '{}/find/specimens?start=0&limit=1000&q=occurrence_id%3A{}'.format(
-            MorphoSource.REST_URL, occurrence_id)
+        url = None
+        if occurrence_id:
+            url = '{}/find/specimens?start=0&limit=1000&q=occurrence_id%3A{}'.format(
+                MorphoSource.REST_URL, occurrence_id)
+        return url
     
 # ......................................................
 class SPECIFY:
@@ -608,19 +614,31 @@ class GBIF:
     
     @classmethod
     def get_occurrence_view(cls, key):
-        return '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.OCCURRENCE_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.OCCURRENCE_SERVICE, key)
+        return url
 
     @classmethod
     def get_occurrence_data(cls, key):
-        return '{}/{}/{}'.format(GBIF.REST_URL, GBIF.OCCURRENCE_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.REST_URL, GBIF.OCCURRENCE_SERVICE, key)
+        return url
 
     @classmethod
     def get_species_view(cls, key):
-        return '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.SPECIES_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.SPECIES_SERVICE, key)
+        return url
 
     @classmethod
     def get_species_data(cls, key):
-        return '{}/{}/{}'.format(GBIF.REST_URL, GBIF.SPECIES_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.REST_URL, GBIF.SPECIES_SERVICE, key)
+        return url
 
 
 # .............................................................................
@@ -739,6 +757,7 @@ class S2N_SCHEMA:
 
         # GBIF-specific field
         'gbifID': COMMUNITY_SCHEMA.GBIF,
+        'publishingOrgKey': COMMUNITY_SCHEMA.GBIF,
         'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
 
         # iDigBio-specific field
@@ -760,6 +779,8 @@ class S2N_SCHEMA:
         'ark': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N
     })
+    
+    RANKS = ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species')
     
     @classmethod
     def get_s2n_fields(cls, svc):
@@ -804,49 +825,39 @@ class S2N_SCHEMA:
     @classmethod
     def get_gbif_occurrence_map(cls):
         "Map GBIF  response fields to broker response fields"
-        # gname_stdname = {}
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
-            stdname_fldname[std_name] = fn
-            # gname_stdname[fn] = std_name
-        return stdname_fldname # gname_stdname
+            stdfld_provfld[std_name] = fn
+        return stdfld_provfld
 
     @classmethod
     def get_idb_occurrence_map(cls):
         "Map iDigBio response fields to broker response fields"
-        # iname_stdname = {}
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             stdname = '{}:{}'.format(comschem['code'], fn)
             if fn == 'uuid':
-                stdname_fldname[stdname] = fn
+                stdfld_provfld[stdname] = fn
             else:
-                stdname_fldname[stdname] = stdname
-            #     iname_stdname[fn] = stdname
-            # else:
-            #     iname_stdname[stdname] = stdname
-        return stdname_fldname #iname_stdname
+                stdfld_provfld[stdname] = stdname
+        return stdfld_provfld
 
     @classmethod
     def get_specify_occurrence_map(cls):
         "Map Specify response fields to broker response fields"
         # sname_stdname = {}
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             spfldname = '{}/{}'.format(comschem['url'], fn)
             stdname = '{}:{}'.format(comschem['code'], fn)
-            stdname_fldname[stdname] = spfldname
-            # sname_stdname[spfldname] = newfldname
-        return stdname_fldname #sname_stdname
+            stdfld_provfld[stdname] = spfldname
+        return stdfld_provfld
     
     @classmethod
     def get_specifycache_occurrence_map(cls):
         "Map Specify Cache response fields to broker response fields"
-        # sp_cache_names_outside_of_stdnames = [
-        #     'collection_id','continent','country','county','eventDate','id','institutionID',
-        #     'modified','preparations','rights']
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         names_in_spcache = [
             'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
             'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
@@ -860,74 +871,34 @@ class S2N_SCHEMA:
             if fn in names_in_spcache:
                 stdname = '{}:{}'.format(comschem['code'], fn)
                 if fn == new_id:
-                    stdname_fldname[stdname] = old_id
+                    stdfld_provfld[stdname] = old_id
                 else:
-                    stdname_fldname[stdname] = fn
+                    stdfld_provfld[stdname] = fn
                 
-        # occschem = S2N_SCHEMA.OCCURRENCE
-        # # sname_stdname = {}
-        # for fn in names_in_spcache:
-        #     if fn == 'identifier':
-        #         newfn = 'specify_identifier'
-        #         ns = occschem[newfn]['code']
-        #         stdname = '{}:{}'.format(ns, newfn)
-        #     else:
-        #         ns = occschem[fn]['code']
-        #         stdname = '{}:{}'.format(ns, fn)
-        #     sname_stdname[fn] = stdname
-        return stdname_fldname # sname_stdname
+        return stdfld_provfld
 
     @classmethod
     def get_mopho_occurrence_map(cls):
         # mopho_stdname = {}
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'catalogNumber':
-                stdname_fldname[std_name] = 'specimen.catalog_number'
-                # mopho_stdname['specimen.catalog_number'] = std_name
+                stdfld_provfld[std_name] = 'specimen.catalog_number'
             elif fn == 'institutionCode':
-                stdname_fldname[std_name] = 'specimen.institution_code'
-                # mopho_stdname['specimen.institution_code'] = std_name
+                stdfld_provfld[std_name] = 'specimen.institution_code'
             elif fn == 'occurrenceID':
-                stdname_fldname[std_name] = 'specimen.occurrence_id' 
-                # mopho_stdname['specimen.occurrence_id'] = std_name
+                stdfld_provfld[std_name] = 'specimen.occurrence_id' 
             elif fn == 'uuid':
-                stdname_fldname[std_name] = 'specimen.uuid'
-                # mopho_stdname['specimen.uuid'] = std_name
+                stdfld_provfld[std_name] = 'specimen.uuid'
             elif fn in ['specimen.specimen_id', 'view_url', 'api_url']:
-                stdname_fldname[std_name] = fn
-                # mopho_stdname[fn] = std_name
-        return stdname_fldname #mopho_stdname
+                stdfld_provfld[std_name] = fn
+        return stdfld_provfld
     
-        'view_url': COMMUNITY_SCHEMA.S2N,
-        'api_url': COMMUNITY_SCHEMA.S2N,
-        # S2n standardization of common elements
-        'status': COMMUNITY_SCHEMA.S2N,
-        'scientific_name': COMMUNITY_SCHEMA.S2N,
-        'canonical_name': COMMUNITY_SCHEMA.S2N,
-        'common_names': COMMUNITY_SCHEMA.S2N,
-        'kingdom': COMMUNITY_SCHEMA.S2N,
-        'rank': COMMUNITY_SCHEMA.S2N,
-        'synonyms': COMMUNITY_SCHEMA.S2N,           # list of strings
-        'hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
-
-        # Occurrence data for this name
-        S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
-        S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
-        
-        # GBIF-specific fields
-        'gbif_confidence': COMMUNITY_SCHEMA.S2N,
-        'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
-        
-        # ITIS-specific fields
-        'itis_tsn': COMMUNITY_SCHEMA.S2N,
-        'itis_credibility': COMMUNITY_SCHEMA.S2N,
-
     @classmethod
     def get_gbif_name_map(cls):
         "Map GBIF name response fields to broker response fields"
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'scientific_name':
@@ -943,33 +914,13 @@ class S2N_SCHEMA:
             else:
                 oldname = fn
             if oldname:
-                stdname_fldname[std_name] = oldname
-        # s2n = COMMUNITY_SCHEMA.S2N['code']
-        # mapping = {
-        #     'view_url': '{}:view_url'.format(s2n),
-        #     'api_url': '{}:api_url'.format(s2n),
-        #     'status': '{}:status'.format(s2n),
-        #     'scientificName': '{}:scientific_name'.format(s2n),
-        #     'canonicalName': '{}:canonical_name'.format(s2n), 
-        #     'kingdom': '{}:kingdom'.format(s2n),
-        #     'rank': '{}:rank'.format(s2n),
-        #     # parsed into lists
-        #     'synonyms': '{}:synonyms'.format(s2n),
-        #     'hierarchy': '{}:hierarchy'.format(s2n),
-        #     # GBIF-specific
-        #     'confidence': '{}:gbif_confidence'.format(s2n),
-        #     'usageKey': '{}:gbif_taxon_key'.format(s2n),
-        #     S2nKey.OCCURRENCE_COUNT: '{}:{}'.format(
-        #         COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_COUNT),
-        #     S2nKey.OCCURRENCE_URL: '{}:{}'.format(
-        #         COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
-        #     }
-        return         stdname_fldname #mapping
+                stdfld_provfld[std_name] = oldname
+        return stdfld_provfld
 
     @classmethod
     def get_itis_name_map(cls):
         "Map ITIS response fields to broker response fields"
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'scientific_name':
@@ -989,77 +940,46 @@ class S2N_SCHEMA:
             else:
                 oldname = fn
             if oldname:
-                stdname_fldname[std_name] = oldname
-
-        # s2n = COMMUNITY_SCHEMA.S2N['code']
-        # mapping = {
-        #     'view_url': '{}:view_url'.format(s2n),
-        #     'api_url': '{}:api_url'.format(s2n),
-        #     'usage': '{}:status'.format(s2n),
-        #     'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
-        #     'nameWOInd': '{}:canonical_name'.format(s2n), 
-        #     'kingdom': '{}:kingdom'.format(s2n),
-        #     'rank': '{}:rank'.format(s2n),
-        #     # parsed into list
-        #     'synonyms': '{}:synonyms'.format(s2n),
-        #     # parsed into dict
-        #     'hierarchySoFarWRanks': '{}:hierarchy'.format(s2n),
-        #     # ITIS-specific
-        #     'tsn': '{}:itis_tsn'.format(s2n),
-        #     'credibilityRating': '{}:itis_credibility'.format(s2n),            
-        #     }
-        return stdname_fldname #mapping
+                stdfld_provfld[std_name] = oldname
+        return stdfld_provfld
     
     @classmethod
     def get_lifemapper_map_map(cls):
         "Map Lifemapper response fields to broker response fields"
-        stdname_fldname = OrderedDict()
-        # lm_stdname = {}
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.MAP.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'species_name':
-                stdname_fldname[std_name] = 'speciesName'
-                # lm_stdname['speciesName'] = std_name
+                stdfld_provfld[std_name] = 'speciesName'
             elif fn == 'lm_status_code':
-                stdname_fldname[std_name] = 'status'
-                # lm_stdname['status'] = std_name
+                stdfld_provfld[std_name] = 'status'
             elif fn == 'modtime':
-                stdname_fldname[std_name] = 'modtime'
-                # lm_stdname['status_mod_time'] = std_name
+                stdfld_provfld[std_name] = 'modtime'
             else:
-                stdname_fldname[std_name] = fn
-                # lm_stdname[fn] = std_name
-        return stdname_fldname #lm_stdname
+                stdfld_provfld[std_name] = fn
+        return stdfld_provfld
 
     @classmethod
     def get_specify_resolver_map(cls):
         "Map Specify Resolver response fields to broker response fields"
-        # spres_stdname = {}
-        stdname_fldname = OrderedDict()
+        stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.RESOLVED.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'ident':
-                stdname_fldname[std_name] = 'id'
-                # spres_stdname['id'] = std_name
+                stdfld_provfld[std_name] = 'id'
             elif fn == 'institutionCode':
-                stdname_fldname[std_name] = 'who'
-                # spres_stdname['who'] = std_name
+                stdfld_provfld[std_name] = 'who'
             elif fn == 'basisOfRecord':
-                stdname_fldname[std_name] = 'what'
-                # spres_stdname['what'] = std_name
+                stdfld_provfld[std_name] = 'what'
             elif fn == 'date':
-                stdname_fldname[std_name] = 'when'
-                # spres_stdname['when'] = std_name
+                stdfld_provfld[std_name] = 'when'
             elif fn == 'ark':
-                stdname_fldname[std_name] = 'where'
-                # spres_stdname['where'] = std_name
+                stdfld_provfld[std_name] = 'where'
             elif fn == 'api_url':
-                stdname_fldname[std_name] = 'url'
-                # spres_stdname['url'] = std_name
+                stdfld_provfld[std_name] = 'url'
             else:
-                stdname_fldname[std_name] = fn
-                # spres_stdname[fn] = std_name
-        return stdname_fldname #spres_stdname
+                stdfld_provfld[std_name] = fn
+        return stdfld_provfld
         
 # .............................................................................
 class ITIS:
@@ -1146,10 +1066,16 @@ class Idigbio:
     
     @classmethod
     def get_occurrence_view(cls, uuid):
-        return '{}/{}'.format(Idigbio.VIEW_URL, uuid)
+        url = None
+        if uuid:
+            url = '{}/{}'.format(Idigbio.VIEW_URL, uuid)
+        return url
 
     @classmethod
     def get_occurrence_data(cls, uuid):
-        return '{}/{}'.format(Idigbio.REST_URL, uuid)
+        url = None
+        if uuid:
+            url = '{}/{}'.format(Idigbio.REST_URL, uuid)
+        return url
     
 

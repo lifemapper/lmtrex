@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from http import HTTPStatus
 import os
 import requests
@@ -156,76 +157,78 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_occurrence_record(cls, rec):
         newrec = {}
-        to_list_fields = ['associatedSequences', 'associatedReferences']
-        to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
-        # Handle issue field 
-        issue_field = 'issues'
-        issue_newfldname = cls.OCCURRENCE_MAP[issue_field]
-        issue_dict = {}
+        to_list_prov_fields = ['associatedSequences', 'associatedReferences']
+        to_str_prov_fields = ['year', 'month', 'day']
+        view_std_fld = cls.OCCURRENCE_MAP['view_url']
+        data_std_fld = cls.OCCURRENCE_MAP['api_url']
+        issue_prov_fld = 'issues'        
+        
+        for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
 
-        # Add provider stuff
-        for fldname, val in rec.items():
-            # Leave out fields without value, except 'issues', handled below
-            if val and fldname in cls.OCCURRENCE_MAP.keys():
-                # simple name mapping
-                newfldname = cls.OCCURRENCE_MAP[fldname]
-                # Modify/parse into list
-                if fldname in to_list_fields:
-                    if val:
-                        lst = val.split('|')
-                        elts = [l.strip() for l in lst]
-                        newrec[newfldname] = elts
-                # Modify int date elements to string (to match iDigBio)
-                elif fldname in to_str_fields:
-                    newrec[fldname] = str(val)
-                # Save ID field, plus use to construct URLs
-                elif fldname == GBIF.OCC_ID_FIELD:
-                    newrec[newfldname] =  val
-                    newrec['{}:view_url'.format(
-                            COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_view(val)
-                    newrec['{}:api_url'.format(
-                            COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_data(val)
-                # expand fields to include code and definition
-                elif fldname == issue_field:
-                    # Expand list into dictionary with descriptions if present, fill at the end
-                    issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
-                    for tmp in val:
-                        code = tmp.strip()
-                        try:
-                            issue_dict[code] = issue_map[code]
-                        except:
-                            issue_dict[code] = 'No description for {} provided'.format(code)
-                else:
-                    newrec[newfldname] =  val
-        # Include 'issues' for providers/aggregators that report them, even if not in provider response
-        newrec[issue_newfldname] =  issue_dict
+            # Save ID field, plus use to construct URLs
+            if provfld == GBIF.OCC_ID_FIELD:
+                newrec[stdfld] =  val
+                newrec[view_std_fld] = GBIF.get_occurrence_view(val)
+                newrec[data_std_fld] = GBIF.get_occurrence_data(val)
+                
+            # expand fields to include code and definition, include even if empty
+            elif provfld == issue_prov_fld:
+                newrec[stdfld] = cls._get_code2description_dict(
+                    val, ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]])
+                
+            # Modify/parse into list
+            elif val and provfld in to_list_prov_fields:
+                lst = val.split('|')
+                elts = [l.strip() for l in lst]
+                newrec[stdfld] = elts
+                
+            # Modify int date elements to string (to match iDigBio)
+            elif val and provfld in to_str_prov_fields:
+                newrec[stdfld] = str(val)
+                
+            # all others
+            else:
+                newrec[stdfld] =  val
         return newrec
     
     # ...............................................
     @classmethod
     def _standardize_name_record(cls, rec):
         newrec = {}
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val:
-                if fldname in cls.NAME_MAP.keys():
-                    # Also use ID field to construct URLs
-                    if fldname == GBIF.SPECIES_ID_FIELD:
-                        newrec[cls.NAME_MAP['view_url']] = GBIF.get_species_view(val)
-                        newrec[cls.NAME_MAP['api_url']] = GBIF.get_species_data(val)
-                    newfldname = cls.NAME_MAP[fldname]
-                    newrec[newfldname] =  val
-        hierarchy = {}
-        for rnk in ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species'):
+        view_std_fld = cls.NAME_MAP['view_url']
+        data_std_fld = cls.NAME_MAP['api_url']
+        hierarchy_fld = 'hierarchy'
+        
+        for stdfld, provfld in cls.NAME_MAP.items():
             try:
-                val = rec[rnk]
+                val = rec[provfld]
             except:
-                pass
+                val = None
+            # Also use ID field to construct URLs
+            if provfld == GBIF.SPECIES_ID_FIELD:
+                newrec[stdfld] =  val
+                newrec[view_std_fld] = GBIF.get_species_view(val)
+                newrec[data_std_fld] = GBIF.get_species_data(val)
+                
+            # Assemble from other fields
+            elif provfld == hierarchy_fld:
+                hierarchy = OrderedDict()
+                for rnk in S2N_SCHEMA.RANKS:
+                    try:
+                        val = rec[rnk]
+                    except:
+                        pass
+                    else:
+                        hierarchy[rnk] = val
+                newrec[stdfld] = [hierarchy]
+                
+            # all others
             else:
-                hierarchy[rnk] = val
-        if hierarchy:
-            newfldname = cls.NAME_MAP['hierarchy']
-            newrec[newfldname] = [hierarchy]
+                newrec[stdfld] = val
         return newrec
     
     # ...............................................

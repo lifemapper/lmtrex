@@ -23,16 +23,16 @@ class SpecifyPortalAPI(APIQuery):
     def _standardize_sp7_record(cls, rec):
         newrec = {}
         to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
-        # Add provider stuff
-        for fldname, val in rec:
-            # Leave out fields without value
-            if val and fldname in cls.OCCURRENCE_MAP.keys():
-                newfldname = cls.OCCURRENCE_MAP[fldname]
-                # Modify int date elements to string (to match iDigBio)
-                if newfldname in to_str_fields:
-                    newrec[newfldname] = str(val)
-                else:
-                    newrec[newfldname] = val
+        for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+
+            if val and provfld in to_str_fields:
+                newrec[stdfld] = str(val)
+            else:
+                newrec[stdfld] = val
         return newrec
                 
     # ...............................................
@@ -40,14 +40,13 @@ class SpecifyPortalAPI(APIQuery):
     def _standardize_sp6_record(cls, rec):
         newrec = {}
         mapping = S2N_SCHEMA.get_specifycache_occurrence_map()
-        # Add provider stuff
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val:
-                # Leave out non-mapped fields
-                try:
-                    newfldname = mapping[fldname]
-                    newrec[newfldname] = val
+        for stdfld, provfld in mapping.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+
+            newrec[stdfld] = val
                 except:
                     pass
         return newrec
