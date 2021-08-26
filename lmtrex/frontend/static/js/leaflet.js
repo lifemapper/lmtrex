@@ -171,16 +171,16 @@ async function drawMap(response, map, mapDetails) {
     'gbif',
     's2n:gbif_taxon_key'
   );
-  const publishingOrgKey = extractField(response['occurrence_info'], 'gbif', 'gbif:publishingOrgKey');
+  const gbifPublishingOrgKey = extractField(
+    response['occurrence_info'],
+    'gbif',
+    'gbif:publishingOrgKey'
+  );
 
   const [[leafletMap, layerGroup], idbLayers, gbifLayers] = await Promise.all([
     showCOMap(map, layers),
     getIdbLayers(idbScientificName, idbCollectionCode),
-    getGbifLayers(
-      gbifTaxonKey,
-      gbifCollectionCode,
-      publishingOrgKey
-    ),
+    getGbifLayers(gbifTaxonKey, gbifCollectionCode, gbifPublishingOrgKey),
   ]);
 
   [...idbLayers, ...gbifLayers].forEach(([options, layer]) => {
@@ -230,7 +230,7 @@ async function getIdbLayers(scientificName, collectionCode) {
     getIdbLayer(scientificName, collectionCode, {
       label: `iDigBio (${collectionCode} points only)`,
       default: true,
-      className: 'idb-local-points'
+      className: 'idb-local-points',
     }),
   ]);
 
@@ -270,9 +270,7 @@ function getGbifLayers(taxonKey, collectionCode, publishingOrgKey) {
           ...(options.publishingOrgKey
             ? { publishingOrg: options.publishingOrgKey }
             : {}),
-          ...(options.taxonKey
-            ? { taxonKey: options.taxonKey }
-            : {}),
+          ...(options.taxonKey ? { taxonKey: options.taxonKey } : {}),
         })
           .map(([key, value]) => `${key}=${value}`)
           .join('&'),
