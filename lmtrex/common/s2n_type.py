@@ -203,12 +203,13 @@ class S2nOutput(object):
         for rec in recs:
             ordrec = {}
             for fn in ordered_fieldnames:
-                if rec[fn]:
+                try:
                     ordrec[fn] = rec[fn]
+                except:
+                    ordrec[fn] = None
             if ordrec:
                 ordered_recs.append(ordrec)
         self._response[S2nKey.RECORDS] = ordered_recs
-        
 
 # .............................................................................
 class S2nError(str):

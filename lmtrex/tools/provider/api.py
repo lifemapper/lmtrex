@@ -104,12 +104,13 @@ class APIQuery:
     def _get_code2description_dict(cls, code_lst, code_map):
         # May contain 'issues'
         code_dict = {}
-        for tmp in code_lst:
-            code = tmp.strip()
-            try:
-                code_dict[code] = code_map[code]
-            except:
-                code_dict[code] = code
+        if code_lst:
+            for tmp in code_lst:
+                code = tmp.strip()
+                try:
+                    code_dict[code] = code_map[code]
+                except:
+                    code_dict[code] = code
         return code_dict
 
     # ...............................................
