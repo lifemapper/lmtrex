@@ -171,9 +171,7 @@ async function drawMap(response, map, mapDetails) {
     'gbif',
     's2n:gbif_taxon_key'
   );
-
-  // FIXME: remove this
-  const publishingOrgKey = extractField(response['occurrence_info'], 'gbif', 's2n:gbif_publishing_org') ?? 'b554c320-0560-11d8-b851-b8a03c50a862';
+  const publishingOrgKey = extractField(response['occurrence_info'], 'gbif', 'gbif:publishingOrgKey');
 
   const [[leafletMap, layerGroup], idbLayers, gbifLayers] = await Promise.all([
     showCOMap(map, layers),

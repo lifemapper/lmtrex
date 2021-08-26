@@ -2,6 +2,7 @@
 """Format different parts of the response object."""
 
 from typing import Dict, List
+import json
 
 
 def format_list(values: List[any]) -> str:
@@ -129,3 +130,6 @@ def format_dict(
             ''.join(fields)
         }</div>"""
 
+
+def serialize_response(response):
+    return json.loads(json.dumps(response))

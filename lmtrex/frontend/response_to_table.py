@@ -34,13 +34,6 @@ def get_response_keys(responses):
 
 def response_to_table(responses):
 
-    # FIXME: remove this
-    responses = [
-        *[response for response in responses if response['internal:provider']['code']=='specify'],
-        *[response for response in responses if
-          response['internal:provider']['code'] != 'specify'],
-    ]
-
     header_row = []
     for response in responses:
         label = response['internal:provider']['label']

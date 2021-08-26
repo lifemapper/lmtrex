@@ -9,6 +9,7 @@ from lmtrex.frontend.templates import template, index_template
 from lmtrex.frontend.leaflet import leaflet
 from lmtrex.frontend.response_to_table import response_to_table
 from lmtrex.frontend.format_table import table_data_to_html
+from lmtrex.frontend.format_value import serialize_response
 
 # .............................................................................
 @cherrypy.expose
@@ -62,8 +63,9 @@ class FrontendSvc(_S2nService):
                 'internal:provider': response['provider'],
                 **response['records'][0]
             }
-            for response in \
+            for response in serialize_response(
                 OccurrenceSvc().GET(occid=good_params['occid'])['records']
+            )
             if len(response['records'])>0
         ] if good_params['occid'] else []
 
@@ -81,8 +83,9 @@ class FrontendSvc(_S2nService):
                 'internal:provider': response['provider'],
                 **response['records'][0]
             }
-            for response in \
-            NameSvc().GET(namestr=scientific_name)['records']
+            for response in serialize_response(
+                NameSvc().GET(namestr=scientific_name)['records']
+            )
             if len(response['records']) > 0
         ] if scientific_name else []
 

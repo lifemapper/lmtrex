@@ -63,7 +63,9 @@ def is_link(value):
 
 
 def default_value_formatter(value):
-    if type(value) == str and is_link(value):
+    if value is None:
+        return ''
+    elif type(value) == str and is_link(value):
         return template(
             'link',
             dict(
