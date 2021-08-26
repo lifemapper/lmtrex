@@ -1,8 +1,7 @@
 import cherrypy
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (
-    APIService, ServiceProvider, TST_VALUES)
+from lmtrex.common.lmconstants import (APIService, S2N_SCHEMA, ServiceProvider, TST_VALUES)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -14,6 +13,7 @@ from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo
 @cherrypy.popargs('namestr')
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
+    ORDERED_FIELDNAMES = S2N_SCHEMA.get_s2n_fields(APIService.Map['endpoint'])
     
     # ...............................................
     def _match_gbif_names(self, namestr, is_accepted):
@@ -71,6 +71,7 @@ class MapSvc(_S2nService):
         full_out = S2nOutput(
             len(stdrecs), self.SERVICE_TYPE['endpoint'], prov_meta, 
             records=stdrecs, record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errinfo)
+        full_out.format_records(self.ORDERED_FIELDNAMES)
         return full_out.response
 
     # ...............................................
@@ -91,6 +92,7 @@ class MapSvc(_S2nService):
             if pr == ServiceProvider.Lifemapper[S2nKey.PARAM]:
                 lmoutput = self._get_lifemapper_records(
                     namestr, is_accepted, scenariocodes, color)
+                lmoutput.format_records(self.ORDERED_FIELDNAMES)
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble

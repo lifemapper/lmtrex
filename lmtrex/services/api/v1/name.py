@@ -14,6 +14,7 @@ from lmtrex.tools.provider.idigbio import IdigbioAPI
 @cherrypy.popargs('namestr')
 class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
+    ORDERED_FIELDNAMES = S2N_SCHEMA.get_s2n_fields(APIService.Name['endpoint'])
     
     # ...............................................
     def _get_gbif_records(self, namestr, is_accepted, gbif_count):
@@ -57,6 +58,7 @@ class NameSvc(_S2nService):
                                 prov_query_list.append(count_query)
                 # add count queries to list
                 output.set_value(S2nKey.PROVIDER_QUERY_URL, prov_query_list)
+                output.format_records(self.ORDERED_FIELDNAMES)
         return output.response
 
     # ...............................................
@@ -71,6 +73,7 @@ class NameSvc(_S2nService):
                 errinfo={'error': [traceback]})
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            output.format_records(self.ORDERED_FIELDNAMES)
         return output.response
 
     # ...............................................
@@ -89,10 +92,12 @@ class NameSvc(_S2nService):
                 # GBIF
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
+                    goutput.format_records(self.ORDERED_FIELDNAMES)
                     allrecs.append(goutput)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
+                    isoutput.format_records(self.ORDERED_FIELDNAMES)
                     allrecs.append(isoutput)
             # TODO: enable filter parameters
             

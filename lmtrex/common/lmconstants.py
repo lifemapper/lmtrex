@@ -773,7 +773,6 @@ class S2N_SCHEMA:
         # Specify7-specific field
         'specify_identifier': COMMUNITY_SCHEMA.S2N,
     })
-    
     RESOLVED = OrderedDict({
         'ident': COMMUNITY_SCHEMA.S2N,
         'dataset_guid': COMMUNITY_SCHEMA.S2N,
@@ -797,15 +796,11 @@ class S2N_SCHEMA:
         elif svc == APIService.Resolve['endpoint']:
             schema = S2N_SCHEMA.RESOLVED
         else:
-            schema = None
-            
-        flds = []
-        try:
-            for fname, ns in schema.items():
-                flds.append('{}:{}'.format(ns, fname))
-        except:
-            pass
-        return flds
+            raise Exception('Service {} does not exist'.format(svc))            
+        ordered_flds = []
+        for fname, ns in schema.items():
+            ordered_flds.append('{}:{}'.format(ns, fname))
+        return ordered_flds
 
     @classmethod
     def get_gbif_taxonkey_fld(cls):
@@ -818,13 +813,6 @@ class S2N_SCHEMA:
     @classmethod
     def get_gbif_occurl_fld(cls):
         return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
-    
-    @classmethod
-    def get_s2n_occurrence_fields(cls):
-        stdnames = []
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            stdnames.append('{}:{}'.format(comschem['code'], fn))
-        return stdnames
 
     @classmethod
     def get_gbif_occurrence_map(cls):

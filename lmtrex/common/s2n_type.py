@@ -1,4 +1,5 @@
 import typing
+from lmtrex.common.lmconstants import COMMUNITY_SCHEMA
 
 RecordsList = typing.List[typing.Dict]
 
@@ -190,6 +191,25 @@ class S2nOutput(object):
     @property
     def errors(self):
         return self._response[S2nKey.ERRORS]
+
+    def format_records(self, ordered_fieldnames):
+        """
+        Order output fields of all records according to the provided schema
+        
+        Args:
+            ordered_fieldnames: list of fieldnames defined in lmtrex.common.s2n_type.S2N_SCHEMA 
+        """
+        ordered_recs = []
+        recs = self._response[S2nKey.RECORDS]
+        for rec in recs:
+            ordrec = {}
+            for fn in ordered_fieldnames:
+                if rec[fn]:
+                    ordrec[fn] = rec[fn]
+            if ordrec:
+                ordered_recs.append(ordrec)
+        self._response[S2nKey.RECORDS] = ordered_recs
+        
 
 # .............................................................................
 class S2nError(str):
