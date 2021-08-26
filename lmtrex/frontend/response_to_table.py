@@ -13,7 +13,7 @@ fields_to_exclude = [
     's2n:view_url',
     's2n:api_url',
     's2n:issues',
-    's2n:hierarchy'
+    's2n:hierarchy',
     's2n:gbif_occurrence_url'
 ]
 
