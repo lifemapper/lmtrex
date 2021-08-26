@@ -11,7 +11,7 @@ def leaflet(occurrence_info, name_info, scientific_name):
     return {
         'icon_url':
             provider_label_to_icon_url(map_info["provider"]['code']),
-        'label': f'{map_info["provider"]["label"]} Projection Map',
+        'label': f'{map_info["provider"]["label"]}',
         'anchor': map_info["provider"]['code'],
         'content': template(
             'leaflet',
