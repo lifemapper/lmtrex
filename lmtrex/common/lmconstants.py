@@ -1,8 +1,9 @@
 from collections import OrderedDict
 import os
 
+from lmtrex.common.s2n_type import S2nKey
+
 from lmtrex.config.local_constants import APP_PATH, FQDN
-from lmtrex.services.api.v1.s2n_type import S2nKey
 
 # .............................................................................
 # hierarchySoFarWRanks <class 'list'>: ['41107:$Kingdom:Plantae$Subkingdom:Viridiplantae$Infrakingdom:Streptophyta$Superdivision:Embryophyta$Division:Tracheophyta$Subdivision:Spermatophytina$Class:Magnoliopsida$Superorder:Lilianae$Order:Poales$Family:Poaceae$Genus:Poa$Species:Poa annua$']
@@ -657,9 +658,9 @@ class S2N_SCHEMA:
         All field values are strings unless otherwise indicated
     """
     NAME = OrderedDict({
-        # Provider's URLs to this record in dictionary
-        # 'provider_links': COMMUNITY_SCHEMA.S2N,
+        # Link to provider record webpage
         'view_url': COMMUNITY_SCHEMA.S2N,
+        # API link to provider record data 
         'api_url': COMMUNITY_SCHEMA.S2N,
         # S2n standardization of common elements
         'status': COMMUNITY_SCHEMA.S2N,
@@ -668,7 +669,7 @@ class S2N_SCHEMA:
         'common_names': COMMUNITY_SCHEMA.S2N,
         'kingdom': COMMUNITY_SCHEMA.S2N,
         'rank': COMMUNITY_SCHEMA.S2N,
-        'synonyms': COMMUNITY_SCHEMA.S2N,           # list of strings
+        'synonyms': COMMUNITY_SCHEMA.S2N,      # list of strings
         'hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
 
         # Occurrence data for this name
@@ -691,13 +692,16 @@ class S2N_SCHEMA:
 
         'endpoint': COMMUNITY_SCHEMA.S2N,
         'data_link': COMMUNITY_SCHEMA.S2N,
-        'sdm_projection_scenario_code': COMMUNITY_SCHEMA.S2N,
-        'sdm_projection_scenario_link': COMMUNITY_SCHEMA.S2N,
         'layer_type': COMMUNITY_SCHEMA.S2N,
         'layer_name': COMMUNITY_SCHEMA.S2N,
         'point_count': COMMUNITY_SCHEMA.S2N,        # integer
         'point_bbox': COMMUNITY_SCHEMA.S2N,         # list of 4 float values: minX, minY, maxX, maxY
         'species_name': COMMUNITY_SCHEMA.S2N,
+        
+        # Lifemapper SDM predicted distribution input
+        'sdm_projection_scenario_code': COMMUNITY_SCHEMA.S2N,
+        'sdm_projection_scenario_link': COMMUNITY_SCHEMA.S2N,
+        # Lifemapper data status, 300 is complete
         'status': COMMUNITY_SCHEMA.S2N,             # integer
         'modtime': COMMUNITY_SCHEMA.S2N,
         # Lifemapper allows query_parameter 'color' with options:
@@ -824,7 +828,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_gbif_occurrence_map(cls):
-        "Map GBIF  response fields to broker response fields"
+        "Map broker response fields to GBIF response fields"
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -833,7 +837,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_idb_occurrence_map(cls):
-        "Map iDigBio response fields to broker response fields"
+        "Map broker response fields to iDigBio response fields"
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             stdname = '{}:{}'.format(comschem['code'], fn)
@@ -845,7 +849,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_specify_occurrence_map(cls):
-        "Map Specify response fields to broker response fields"
+        "Map broker response fields to Specify response fields"
         # sname_stdname = {}
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
@@ -856,29 +860,30 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_specifycache_occurrence_map(cls):
-        "Map Specify Cache response fields to broker response fields"
+        "Map broker response fields to Specify Cache response fields"
         stdfld_provfld = OrderedDict()
-        names_in_spcache = [
-            'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
-            'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
-            'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
+        # names_in_spcache = [
+        #     'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
+        #     'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
+        #     'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
         # Add urls
-        names_in_spcache.extend(['api_url', 'view_url'])
+        # names_in_spcache.extend(['api_url', 'view_url'])
         old_id = 'identifier' 
         new_id = 'specify_identifier'
         
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            if fn in names_in_spcache:
-                stdname = '{}:{}'.format(comschem['code'], fn)
-                if fn == new_id:
-                    stdfld_provfld[stdname] = old_id
-                else:
-                    stdfld_provfld[stdname] = fn
+            # if fn in names_in_spcache:
+            stdname = '{}:{}'.format(comschem['code'], fn)
+            if fn == new_id:
+                stdfld_provfld[stdname] = old_id
+            else:
+                stdfld_provfld[stdname] = fn
                 
         return stdfld_provfld
 
     @classmethod
     def get_mopho_occurrence_map(cls):
+        "Map broker response fields to MorphoSource response fields"
         # mopho_stdname = {}
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
@@ -897,20 +902,18 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_gbif_name_map(cls):
-        "Map GBIF name response fields to broker response fields"
+        "Map broker response fields to GBIF name response fields"
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'scientific_name':
-                oldname == 'scientificName':
+                oldname = 'scientificName'
             elif fn == 'canonical_name':
                 oldname = 'canonicalName'
             elif fn == 'gbif_confidence':
                 oldname = 'confidence'
             elif fn == 'gbif_taxon_key':
                 oldname = 'usageKey'
-            elif fn.startswith('itis'):
-                oldname = None
             else:
                 oldname = fn
             if oldname:
@@ -919,12 +922,12 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_itis_name_map(cls):
-        "Map ITIS response fields to broker response fields"
+        "Map broker response fields to ITIS response fields"
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'scientific_name':
-                oldname == 'nameWTaxonAuthor':
+                oldname = 'nameWTaxonAuthor'
             elif fn == 'canonical_name':
                 oldname = 'nameWOInd'
             elif fn == 'hierarchy':
@@ -935,8 +938,6 @@ class S2N_SCHEMA:
                 oldname = 'tsn'
             elif fn == 'itis_credibility':
                 oldname = 'credibilityRating'
-            elif fn.startswith('gbif'):
-                oldname = None
             else:
                 oldname = fn
             if oldname:
@@ -945,7 +946,7 @@ class S2N_SCHEMA:
     
     @classmethod
     def get_lifemapper_map_map(cls):
-        "Map Lifemapper response fields to broker response fields"
+        "Map broker response fields to Lifemapper response"
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.MAP.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -961,7 +962,7 @@ class S2N_SCHEMA:
 
     @classmethod
     def get_specify_resolver_map(cls):
-        "Map Specify Resolver response fields to broker response fields"
+        "Map broker response fields to Specify Resolver response fields"
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2N_SCHEMA.RESOLVED.items():
             std_name = '{}:{}'.format(comschem['code'], fn)

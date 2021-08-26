@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
     APIService, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
+from lmtrex.common.s2n_type import S2nKey
 from lmtrex.fileop.logtools import (log_info)
-from lmtrex.services.api.v1.s2n_type import S2nKey
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import add_errinfo, get_traceback
 

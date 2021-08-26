@@ -4,11 +4,12 @@ import os
 
 from lmtrex.common.lmconstants import (
     IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
+from lmtrex.common.s2n_type import S2nKey
 
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import S2nKey
+
 
 # .............................................................................
 @cherrypy.expose

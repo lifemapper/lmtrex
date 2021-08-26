@@ -2,9 +2,9 @@ from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
     APIService, JSON_HEADERS, ServiceProvider, S2N_SCHEMA)
-from lmtrex.services.api.v1.s2n_type import S2nOutput
+from lmtrex.common.s2n_type import S2nOutput
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import add_errinfo, get_traceback
+from lmtrex.tools.utils import add_errinfo
 
 # .............................................................................
 class SpecifyPortalAPI(APIQuery):

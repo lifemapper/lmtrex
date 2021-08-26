@@ -1,8 +1,8 @@
 import typing
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, BrokerParameters)
+from lmtrex.common.s2n_type import S2nOutput, S2nKey
 from lmtrex.config.local_constants import FQDN
-from lmtrex.services.api.v1.s2n_type import S2nOutput, S2nKey
 
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI

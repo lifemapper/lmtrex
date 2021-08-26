@@ -2,9 +2,9 @@ import cherrypy
 from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
-    APIService, ServiceProvider, Lifemapper, TST_VALUES)
+    APIService, ServiceProvider, TST_VALUES)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.lifemapper import LifemapperAPI
 from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo

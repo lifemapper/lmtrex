@@ -6,10 +6,10 @@ import urllib
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING)
+    APIService, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING)
+from lmtrex.common.s2n_type import S2nKey, S2nOutput
 from lmtrex.fileop.logtools import (log_info, log_error)
 
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils  import get_traceback, combine_errinfo, add_errinfo

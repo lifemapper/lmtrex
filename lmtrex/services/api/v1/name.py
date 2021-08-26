@@ -2,8 +2,8 @@ import cherrypy
 from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (APIService, S2N_SCHEMA, ServiceProvider)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.tools.utils import get_traceback

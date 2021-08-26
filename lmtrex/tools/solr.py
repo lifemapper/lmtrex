@@ -2,8 +2,8 @@ import requests
 import subprocess
 
 from lmtrex.common.lmconstants import SPECIFY, TST_VALUES
+from lmtrex.common.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 
 SOLR_POST_COMMAND = '/opt/solr/bin/post'
 SOLR_COMMAND = '/opt/solr/bin/solr'

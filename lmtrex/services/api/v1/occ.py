@@ -2,6 +2,7 @@ import cherrypy
 from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
 
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
@@ -12,7 +13,6 @@ from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, print_s2n_output)
 
 # .............................................................................
 @cherrypy.expose

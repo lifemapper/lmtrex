@@ -3,11 +3,11 @@ from http import HTTPStatus
 import urllib
 
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, ITIS, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
-from lmtrex.fileop.logtools import (log_info, log_error)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+    APIService, ITIS, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
+from lmtrex.common.s2n_type import S2nOutput
+from lmtrex.fileop.logtools import log_info
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo
+from lmtrex.tools.utils import get_traceback, add_errinfo
 
 
 # .............................................................................
