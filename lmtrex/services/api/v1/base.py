@@ -34,30 +34,56 @@ class _S2nService:
         provider_element[S2nKey.PROVIDER_QUERY_URL] = [standardized_url]
         return provider_element
 
-
+    # ...............................................
+    @classmethod
+    def _order_providers(cls, provnames):
+        provnames = list(provnames)
+        provnames.sort()
+        if ServiceProvider.Specify[S2nKey.PARAM] in provnames:
+            provnames.remove(ServiceProvider.Specify[S2nKey.PARAM])
+            provnames.insert(0, ServiceProvider.Specify[S2nKey.PARAM])
+        return provnames
+    
     # ...............................................
     @classmethod
     def get_providers(cls, filter_params=None):
-        """ Return a set of strings indicating all providers valid for this service. """
+        """ Return a list of strings indicating all providers valid for this service. 
+        
+        Note:
+            This returns a list of provider values.  If Specify Resolver is present, it will 
+            be first, all following providers are in alphabetical order.  The values are used 
+            as URL query parameters.  
+        Note: 
+            The order of these providers determines the order of records returned for 
+            multi-provider responses. 
+        """
         provnames = set()
         # Ignore as-yet undefined filter_params
         for p in ServiceProvider.all():
             if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
-                provnames.add(p[S2nKey.PARAM])
-        provnames = list(provnames)
+                provnames.add(p[S2nKey.PARAM])        
+        provnames = cls._order_providers(provnames)
         return provnames
 
     # ...............................................
     @classmethod
     def get_valid_providers(cls, filter_params=None):
-        """ Return a set of strings indicating all providers valid for this service. """
+        """ Return a list of strings indicating all providers valid for this service. 
+
+        Note:
+            This returns a list of provider values.  If Specify Resolver is present, it will 
+            be first, all following providers are in alphabetical order.  The values are used 
+            as URL query parameters.  
+        Note: 
+            The order of these providers determines the order of records returned for 
+            multi-provider responses. 
+        """
         provnames = set()
         # Ignore as-yet undefined filter_params
         for p in ServiceProvider.all():
             if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                 provnames.add(p[S2nKey.PARAM])
-                
-        provnames = list(provnames)
+        provnames = cls._order_providers(provnames)
         return provnames
 
     # .............................................................................

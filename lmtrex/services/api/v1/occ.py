@@ -228,6 +228,7 @@ if __name__ == '__main__':
               '0170cead-c9cd-48ba-9819-6c5d2e59947e', '01792c67-910f-4ad6-8912-9b1341cbd983', 
               '017ea8f2-fc5a-4660-92ec-c203daaaa631', '018728bb-c376-4562-9ccb-8e3c3fd70df6', 
               '018a34a9-55da-4503-8aee-e728ba4be146', '019b547a-79c7-47b3-a5ae-f11d30c2b0de']
+    occids = ['84fe1494-c378-4657-be15-8c812b228bf4']
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
@@ -235,7 +236,7 @@ if __name__ == '__main__':
     # out = svc.GET(occid='test', provider='mopho', count_only=False)
     # out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
     
-    prov = 'gbif'
+    prov = None
     for occid in occids:
         out = svc.GET(occid=occid, provider=prov, count_only=False)
         outputs = out['records']
