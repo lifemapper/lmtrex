@@ -92,7 +92,6 @@ class MapSvc(_S2nService):
             if pr == ServiceProvider.Lifemapper[S2nKey.PARAM]:
                 lmoutput = self._get_lifemapper_records(
                     namestr, is_accepted, scenariocodes, color)
-                lmoutput.format_records(self.ORDERED_FIELDNAMES)
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble

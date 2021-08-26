@@ -92,12 +92,10 @@ class NameSvc(_S2nService):
                 # GBIF
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
-                    goutput.format_records(self.ORDERED_FIELDNAMES)
                     allrecs.append(goutput)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
-                    isoutput.format_records(self.ORDERED_FIELDNAMES)
                     allrecs.append(isoutput)
             # TODO: enable filter parameters
             

@@ -68,8 +68,8 @@ class IdigbioAPI(APIQuery):
         newrec = {}
         to_list_fields = ('dwc:associatedSequences', 'dwc:associatedReferences')
         issue_fld = 's2n:issues'
-        view_std_fld = cls.OCCURRENCE_MAP['view_url']
-        data_std_fld = cls.OCCURRENCE_MAP['api_url']
+        view_std_fld = S2N_SCHEMA.get_view_url()
+        data_std_fld = S2N_SCHEMA.get_data_url()
 
         # Must contain 'data' field
         try:

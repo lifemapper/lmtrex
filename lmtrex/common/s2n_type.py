@@ -1,5 +1,4 @@
 import typing
-from lmtrex.common.lmconstants import COMMUNITY_SCHEMA
 
 RecordsList = typing.List[typing.Dict]
 

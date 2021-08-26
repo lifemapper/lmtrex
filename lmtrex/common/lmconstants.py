@@ -144,32 +144,32 @@ class APIService:
         S2nKey.RECORD_FORMAT: 'image/png'}
     # Health for service providers
     Heartbeat = {'endpoint': 'heartbeat', 'params': None,
-        S2nKey.RECORD_FORMAT: 'Broker heartbeat service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # Metadata for map services
     Map = {
         'endpoint': 'map', 
         'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color'],
-        S2nKey.RECORD_FORMAT: 'Broker map service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # Taxonomic Resolution
     Name = {
         'endpoint': 'name', 
         'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom'],
-        S2nKey.RECORD_FORMAT: 'Broker name service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # Specimen occurrence records
     Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only'],
-        S2nKey.RECORD_FORMAT: 'Broker occurrence service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # Specify guid resolver
     Resolve = {
         'endpoint': 'resolve', 
         'params': ['provider', 'occid'],
-        S2nKey.RECORD_FORMAT: 'Broker GUID resolver service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # TODO: Consider an Extension service for Digital Object Architecture
     SpecimenExtension = {'endpoint': 'occext', 'params': None,
-        S2nKey.RECORD_FORMAT: 'Broker specimen extension service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     Frontend = {
         'endpoint': 'frontend',
         'params': ['occid', 'namestr'],
-        S2nKey.RECORD_FORMAT: 'Broker frontend service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     
     @classmethod
     def get_other_endpoints(cls, api_svc):
@@ -786,6 +786,14 @@ class S2N_SCHEMA:
     RANKS = ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species')
     
     @classmethod
+    def get_view_url(cls):
+        return 's2n:view_url'
+
+    @classmethod
+    def get_data_url(cls):
+        return 's2n:api_url'
+
+    @classmethod
     def get_s2n_fields(cls, svc):
         if svc == APIService.Map['endpoint']:
             schema = S2N_SCHEMA.MAP
@@ -799,7 +807,7 @@ class S2N_SCHEMA:
             raise Exception('Service {} does not exist'.format(svc))            
         ordered_flds = []
         for fname, ns in schema.items():
-            ordered_flds.append('{}:{}'.format(ns, fname))
+            ordered_flds.append('{}:{}'.format(ns['code'], fname))
         return ordered_flds
 
     @classmethod
@@ -850,12 +858,6 @@ class S2N_SCHEMA:
     def get_specifycache_occurrence_map(cls):
         "Map broker response fields to Specify Cache response fields"
         stdfld_provfld = OrderedDict()
-        # names_in_spcache = [
-        #     'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
-        #     'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
-        #     'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
-        # Add urls
-        # names_in_spcache.extend(['api_url', 'view_url'])
         old_id = 'identifier' 
         new_id = 'specify_identifier'
         
@@ -892,7 +894,7 @@ class S2N_SCHEMA:
     def get_gbif_name_map(cls):
         "Map broker response fields to GBIF name response fields"
         stdfld_provfld = OrderedDict()
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+        for fn, comschem in S2N_SCHEMA.NAME.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'scientific_name':
                 oldname = 'scientificName'
@@ -912,7 +914,7 @@ class S2N_SCHEMA:
     def get_itis_name_map(cls):
         "Map broker response fields to ITIS response fields"
         stdfld_provfld = OrderedDict()
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
+        for fn, comschem in S2N_SCHEMA.NAME.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'scientific_name':
                 oldname = 'nameWTaxonAuthor'

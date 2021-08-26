@@ -176,14 +176,14 @@ class ItisAPI(APIQuery):
     def _parse_hierarchy_to_dicts(cls, val):
         hierarchy_lst = []
         if val:
-            for elt in val:
+            for hier_str in val:
                 temp_hierarchy = {}
-                lst = val.split('$')
-                for elt in lst:
+                hier_lst = hier_str.split('$')
+                for elt in hier_lst:
                     parts = elt.split(':')
                     key = parts[0]
                     try:
-                        val = parts[1]
+                        name = parts[1]
                     except:
                         pass
                     else:
@@ -192,11 +192,14 @@ class ItisAPI(APIQuery):
                         except:
                             pass
                         else:
-                            temp_hierarchy[rnk] = val
+                            temp_hierarchy[rnk] = name
                 # Reorder and filter to desired ranks
                 hierarchy = OrderedDict()
                 for rnk in S2N_SCHEMA.RANKS:
-                    hierarchy[rnk] = temp_hierarchy[rnk]
+                    try:
+                        hierarchy[rnk] = temp_hierarchy[rnk]
+                    except:
+                        hierarchy[rnk] = None
                 hierarchy_lst.append(hierarchy)
         return hierarchy_lst
 
@@ -205,12 +208,12 @@ class ItisAPI(APIQuery):
     def _parse_synonyms_to_lists(cls, val):
         synonym_lst = []
         if val:
-            for elt in val:
+            for syn in val:
                 syn_group = []
-                lst = val.split('$')
-                for elt in lst:
-                    if elt.find(':') < 0:
-                        syn_group.append(elt)
+                lst = syn.split('$')
+                for name in lst:
+                    if name.find(':') < 0:
+                        syn_group.append(name)
                 synonym_lst.append(syn_group)
         return synonym_lst
 
@@ -218,8 +221,8 @@ class ItisAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
-        view_std_fld = cls.NAME_MAP['view_url']
-        data_std_fld = cls.NAME_MAP['api_url']
+        view_std_fld = S2N_SCHEMA.get_view_url()
+        data_std_fld = S2N_SCHEMA.get_data_url()
         hierarchy_prov_fld = 'hierarchySoFarWRanks'
         synonym_prov_fld = 'synonyms'
         good_statii = ('accepted', 'valid')
