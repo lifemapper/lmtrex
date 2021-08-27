@@ -5,8 +5,11 @@ window.addEventListener('load', () => {
       const response = JSON.parse(pre.innerText);
       pre.remove();
       const map = mapContainer.getElementsByClassName('leaflet-map')[0];
+      const collectionMap = mapContainer.getElementsByClassName(
+        'leaflet-collection-map'
+      )[0];
       const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
-      drawMap(response, map, mapDetails);
+      drawMap(response, map, collectionMap, mapDetails);
     }
   );
 });
@@ -35,22 +38,24 @@ const coMapTileServers = [
 
 const leafletTileServers = {
   baseMaps: {
-    'Satellite Map (ESRI)': L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-      }
-    ),
+    'Satellite Map (ESRI)': () =>
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution:
+            'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        }
+      ),
   },
   overlays: {
-    'Labels and boundaries': L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',
-      }
-    ),
+    'Labels and boundaries': () =>
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution:
+            'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',
+        }
+      ),
   },
 };
 
@@ -70,7 +75,7 @@ const extractField = (responses, aggregator, field) =>
     (response) => response['internal:provider']['code'] === aggregator
   )?.[field];
 
-async function drawMap(response, map, mapDetails) {
+async function drawMap(response, map, collectionMap, mapDetails) {
   const messages = {
     errorDetails: [],
     infoSection: [],
@@ -161,11 +166,6 @@ async function drawMap(response, map, mapDetails) {
     'idb',
     'dwc:collectionCode'
   );
-  const gbifCollectionCode = extractField(
-    response['occurrence_info'],
-    'gbif',
-    'dwc:collectionCode'
-  );
   const gbifTaxonKey = extractField(
     response['name_info'],
     'gbif',
@@ -177,16 +177,21 @@ async function drawMap(response, map, mapDetails) {
     'gbif:publishingOrgKey'
   );
 
-  const [[leafletMap, layerGroup], idbLayers, gbifLayers] = await Promise.all([
-    showCOMap(map, layers),
-    getIdbLayers(idbScientificName, idbCollectionCode),
-    getGbifLayers(gbifTaxonKey, gbifCollectionCode, gbifPublishingOrgKey),
-  ]);
+  const mapPromise = showCOMap(map, layers);
+  const idbLayersPromise = getIdbLayers(idbScientificName, idbCollectionCode);
+  const [leafletMap, layerGroup] = await mapPromise;
 
-  [...idbLayers, ...gbifLayers].forEach(([options, layer]) => {
-    layerGroup.addOverlay(layer, options.label);
-    if (options.default) layer.addTo(leafletMap);
-  });
+  const addAggregatorOverlays = (layers) =>
+    layers.forEach(([options, layer]) => {
+      layerGroup.addOverlay(layer, options.label);
+      if (options.default) layer.addTo(leafletMap);
+    });
+
+  addAggregatorOverlays(getGbifLayers(gbifTaxonKey));
+
+  showCollectionStats(gbifPublishingOrgKey, collectionMap);
+
+  addAggregatorOverlays(await idbLayersPromise);
 }
 
 async function getIdbLayer(scientificName, collectionCode, options) {
@@ -237,27 +242,84 @@ async function getIdbLayers(scientificName, collectionCode) {
   return layers.filter((data) => data);
 }
 
-function getGbifLayers(taxonKey, collectionCode, publishingOrgKey) {
+function getGbifLayers(taxonKey) {
   return [
-    {
-      label: 'GBIF',
-      default: false,
-      style: 'green.poly',
-      taxonKey,
-    },
-    ...(publishingOrgKey
-      ? [
-          {
-            label: `GBIF (All ${collectionCode} points)`,
-            default: false,
-            style: 'purpleYellow.poly',
-            publishingOrgKey,
-          },
-        ]
-      : []),
-  ].map((options) => [
-    options,
-    L.tileLayer(
+    [
+      { default: false, label: 'GBIF' },
+      L.tileLayer(
+        'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
+        {
+          attribution: '',
+          source: 'density',
+          format: '@1x.png',
+          params: Object.entries({
+            srs: 'EPSG:3857',
+            style: 'green.poly',
+            bin: 'hex',
+            taxonKey,
+          })
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&'),
+        }
+      ),
+    ],
+  ];
+}
+
+async function getGbifMeta(publishingOrgKey) {
+  const request = await fetch(
+    `https://api.gbif.org/v2/map/occurrence/density/capabilities.json?publishingOrgKey=${publishingOrgKey}`
+  );
+  return await request.json();
+}
+
+async function showCollectionStats(publishingOrgKey, collectionMap) {
+  const { minYear, maxYear } = await getGbifMeta(publishingOrgKey);
+
+  const slider = document.getElementsByClassName('slider')[0];
+  const inputs = Array.from(slider.getElementsByTagName('input'));
+  function changeHandler(event) {
+    let boundaries = inputs
+      .filter((input) => input.type === event.target.type)
+      .map((input) => input.value);
+
+    if (event.target.type === 'range') boundaries.reverse();
+
+    const filteredInputs = inputs.filter(
+      (input) => input.type !== event.target.type
+    );
+
+    if (event.target.type === 'number') filteredInputs.reverse();
+
+    filteredInputs.forEach((input, index) => {
+      input.value = boundaries[index];
+    });
+    const [minYear, maxYear] = boundaries;
+    redrawMap(minYear, maxYear);
+  }
+
+  const defaultMinValue = Math.round(minYear + (maxYear - minYear) * 0.4);
+  const defaultMaxValue = maxYear;
+  inputs.forEach((input) => {
+    input.min = minYear;
+    input.max = maxYear;
+    input.value = input.classList.contains('min')
+      ? defaultMinValue
+      : defaultMaxValue;
+    input.addEventListener('change', changeHandler);
+  });
+
+  const baseLayer = Object.values(leafletTileServers['baseMaps'])[0]();
+
+  const map = L.map(collectionMap, {
+    maxZoom: 23,
+    layers: [baseLayer],
+  }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+
+  let overlay;
+  function redrawMap(minYear, maxYear) {
+    if (overlay) map.removeLayer(overlay);
+    overlay = L.tileLayer(
       'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
       {
         attribution: '',
@@ -265,18 +327,18 @@ function getGbifLayers(taxonKey, collectionCode, publishingOrgKey) {
         format: '@1x.png',
         params: Object.entries({
           srs: 'EPSG:3857',
-          style: options.style,
+          style: 'purpleYellow.poly',
           bin: 'hex',
-          ...(options.publishingOrgKey
-            ? { publishingOrg: options.publishingOrgKey }
-            : {}),
-          ...(options.taxonKey ? { taxonKey: options.taxonKey } : {}),
+          publishingOrgKey,
+          year: `${minYear},${maxYear}`,
         })
           .map(([key, value]) => `${key}=${value}`)
           .join('&'),
       }
-    ),
-  ]);
+    );
+    overlay.addTo(map);
+  }
+  redrawMap(defaultMinValue, defaultMaxValue);
 }
 
 const DEFAULT_CENTER = [0, 0];
@@ -289,7 +351,7 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
       layerLabel,
       isDefault: true,
       tileLayer:
-        leafletTileServers[transparent ? 'overlays' : 'baseMaps'][layerLabel],
+        leafletTileServers[transparent ? 'overlays' : 'baseMaps'][layerLabel](),
     })),
     ...listOfLayersRaw.map(
       ({
