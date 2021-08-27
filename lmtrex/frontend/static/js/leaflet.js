@@ -268,7 +268,7 @@ function getGbifLayers(taxonKey) {
 
 async function getGbifMeta(publishingOrgKey) {
   const request = await fetch(
-    `https://api.gbif.org/v2/map/occurrence/density/capabilities.json?publishingOrgKey=${publishingOrgKey}`
+    `https://api.gbif.org/v2/map/occurrence/density/capabilities.json?publishingOrg=${publishingOrgKey}`
   );
   return await request.json();
 }
@@ -329,7 +329,7 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
           srs: 'EPSG:3857',
           style: 'purpleYellow.poly',
           bin: 'hex',
-          publishingOrgKey,
+          publishingOrg: publishingOrgKey,
           year: `${minYear},${maxYear}`,
         })
           .map(([key, value]) => `${key}=${value}`)
