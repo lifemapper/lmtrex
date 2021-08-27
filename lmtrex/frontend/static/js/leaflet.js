@@ -181,8 +181,10 @@ async function drawMap(response, map, collectionMap, mapDetails) {
   const idbLayersPromise = getIdbLayers(idbScientificName, idbCollectionCode);
   const [leafletMap, layerGroup] = await mapPromise;
 
-  const addAggregatorOverlays = (layers) =>
+  let hasLayers = false;
+  const addAggregatorOverlays = (layers)=>
     layers.forEach(([options, layer]) => {
+      hasLayers = true;
       layerGroup.addOverlay(layer, options.label);
       if (options.default) layer.addTo(leafletMap);
     });
@@ -192,6 +194,12 @@ async function drawMap(response, map, collectionMap, mapDetails) {
   showCollectionStats(gbifPublishingOrgKey, collectionMap);
 
   addAggregatorOverlays(await idbLayersPromise);
+
+  if(!hasLayers){
+    leafletMap.off();
+    leafletMap.remove();
+    map.parentElement.innerText='Unable to find any information for this record'
+  }
 }
 
 async function getIdbLayer(scientificName, collectionCode, options) {
@@ -243,6 +251,8 @@ async function getIdbLayers(scientificName, collectionCode) {
 }
 
 function getGbifLayers(taxonKey) {
+  if(!taxonKey)
+    return [];
   return [
     [
       { default: false, label: 'GBIF' },
@@ -274,6 +284,12 @@ async function getGbifMeta(publishingOrgKey) {
 }
 
 async function showCollectionStats(publishingOrgKey, collectionMap) {
+  if(!publishingOrgKey)
+    return;
+  document.getElementsByClassName(
+    'gbif-collection-map'
+  )[0].style.display = '';
+
   const { minYear, maxYear } = await getGbifMeta(publishingOrgKey);
 
   const slider = document.getElementsByClassName('slider')[0];

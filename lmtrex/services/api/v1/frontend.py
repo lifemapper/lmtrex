@@ -105,6 +105,26 @@ class FrontendSvc(_S2nService):
             ]
             issues[label] = formatted_issues
 
+        morpho_source_responses = [
+            response
+            for response in occurrence_info
+            if response['internal:provider']['code'] == 'mopho'
+        ]
+        if morpho_source_responses:
+            morpho_source_response = response_to_table(morpho_source_responses)
+            morpho_source_response = template(
+                'inline_section',
+                morpho_source_response[0][0]
+            )
+        else:
+            morpho_source_response = ''
+
+        occurrence_info = [
+            response
+            for response in occurrence_info
+            if response['internal:provider']['code'] != 'mopho'
+        ]
+
         header_row, rows = response_to_table(occurrence_info)
         occurrence_table = table_data_to_html(
             header_row,
@@ -149,6 +169,7 @@ class FrontendSvc(_S2nService):
         sections = [
             section
             for section in [
+                morpho_source_response,
                 occurrence_table,
                 name_table,
                 leaflet_map_section

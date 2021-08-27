@@ -37,6 +37,7 @@ def index_template(body):
                 ['response_styles', 'static/css/response.css'],
                 ['leaflet_styles', 'static/css/leaflet.css'],
                 ['table_styles', 'static/css/table.css'],
+                ['slider_styles', 'static/css/slider.css'],
                 ['main_script', 'static/js/main.js'],
                 ['leaflet_script', 'static/js/leaflet.js']
             ]
