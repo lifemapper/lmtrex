@@ -279,23 +279,38 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
   const slider = document.getElementsByClassName('slider')[0];
   const inputs = Array.from(slider.getElementsByTagName('input'));
   function changeHandler(event) {
-    let boundaries = inputs
-      .filter((input) => input.type === event.target.type)
-      .map((input) => input.value);
-
-    if (event.target.type === 'range') boundaries.reverse();
-
-    const filteredInputs = inputs.filter(
-      (input) => input.type !== event.target.type
+    let boundaries = Object.fromEntries(
+      inputs
+        .filter((input) => input.type === event.target.type)
+        .map((input) => [
+          input.classList.contains('min') ? 'min' : 'max',
+          input.value,
+        ])
     );
 
-    if (event.target.type === 'number') filteredInputs.reverse();
+    if (
+      event.target.type === 'range' &&
+      boundaries['min'] > boundaries['max']
+    ) {
+      if (event.target.classList.contains('min')) {
+        boundaries['max'] = boundaries['min'];
+        inputs.find(
+          (input) => input.type === event.target.type && input !== event.target
+        ).value = boundaries['max'];
+      } else {
+        boundaries['min'] = boundaries['max'];
+        event.target.value = boundaries['max'];
+      }
+    }
 
-    filteredInputs.forEach((input, index) => {
-      input.value = boundaries[index];
-    });
-    const [minYear, maxYear] = boundaries;
-    redrawMap(minYear, maxYear);
+    inputs
+      .filter((input) => input.type !== event.target.type)
+      .forEach((input) => {
+        input.value =
+          boundaries[input.classList.contains('min') ? 'min' : 'max'];
+      });
+
+    redrawMap(boundaries['min'], boundaries['max']);
   }
 
   const defaultMinValue = Math.round(minYear + (maxYear - minYear) * 0.4);
