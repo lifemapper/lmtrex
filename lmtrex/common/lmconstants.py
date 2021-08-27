@@ -748,6 +748,9 @@ class S2N_SCHEMA:
         'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
         'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
         
+        'stateProvince': COMMUNITY_SCHEMA.DWC,
+        'country': COMMUNITY_SCHEMA.DWC,
+        'countryCode': COMMUNITY_SCHEMA.DWC,
         'locality': COMMUNITY_SCHEMA.DWC,
         'decimalLongitude': COMMUNITY_SCHEMA.DWC,
         'decimalLatitude': COMMUNITY_SCHEMA.DWC,
