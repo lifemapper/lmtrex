@@ -71,16 +71,17 @@ class IdigbioAPI(APIQuery):
         view_std_fld = S2N_SCHEMA.get_view_url()
         data_std_fld = S2N_SCHEMA.get_data_url()
 
-        # Must contain 'data' field
+        # Outer record must contain 'data' element
         try:
-            rec = big_rec['data']
+            data_elt = big_rec['data']
         except Exception as e:
             pass
-        else:            
+        else:
             # Iterate over desired output fields
             for stdfld, provfld in cls.OCCURRENCE_MAP.items():
                 # Include ID fields and issues even if empty
                 if provfld == Idigbio.ID_FIELD:
+                    # Pull uuid from outer record
                     try:
                         uuid = big_rec[Idigbio.ID_FIELD]
                     except:
@@ -91,21 +92,21 @@ class IdigbioAPI(APIQuery):
                     newrec[data_std_fld] = Idigbio.get_occurrence_data(uuid)
                     
                 elif provfld == issue_fld:
-                    # Pull optional 'flags' element from 'indexTerms' field
+                    # Pull optional 'flags' element from outer record 'indexTerms'
                     try:
-                        issue_codes = rec['indexTerms']['flags']
+                        issue_codes = big_rec['indexTerms']['flags']
                     except Exception:
                         issue_codes = None                    
                     newrec[stdfld] = cls._get_code2description_dict(
                         issue_codes, ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]])
-
+                
                 else:
+                    # all other fields are pulled from data element
                     try:
-                        val = rec[provfld]
+                        val = data_elt[provfld]
                     except:
                         val = None
                     
-                    # Leave out other fields without value
                     if val and provfld in to_list_fields:
                         lst = val.split('|')
                         elts = [l.strip() for l in lst]
