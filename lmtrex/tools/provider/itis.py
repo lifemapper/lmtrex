@@ -212,7 +212,7 @@ class ItisAPI(APIQuery):
                 syn_group = []
                 lst = syn.split('$')
                 for name in lst:
-                    if name.find(':') < 0:
+                    if name and name.find(':') < 0:
                         syn_group.append(name)
                 synonym_lst.append(syn_group)
         return synonym_lst
