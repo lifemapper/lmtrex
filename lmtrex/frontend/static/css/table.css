@@ -23,7 +23,7 @@ th {
   background: var(--b3);
 }
 
-thead div {
+thead div, .inline-section {
   display: flex;
   column-gap: var(--half-size);
   justify-content: center;
@@ -54,4 +54,12 @@ tr.identical td {
 
 a:visited {
   color: #00f;
+}
+
+.inline-section {
+  display: inline-flex;
+}
+
+.inline-section span {
+  display: contents;
 }
