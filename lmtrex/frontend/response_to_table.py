@@ -17,11 +17,21 @@ fields_to_exclude = [
     's2n:gbif_occurrence_url'
 ]
 
+def unique_keys(array):
+    seen = set()
+    return [x for x in array if not (x in seen or seen.add(x))]
+
 def get_response_keys(responses):
     keys = [set(response.keys()) for response in responses]
     common_keys = set(flatten_array([a & b for a, b in combinations(keys, 2)]))
     all_keys = [
-        *common_keys,
+        *flatten_array([
+            [
+                key
+                for key in response.keys()
+                if key in common_keys
+            ] for response in responses
+        ]),
         *flatten_array([
             [
                 key
@@ -30,10 +40,11 @@ def get_response_keys(responses):
             ] for response in responses
         ])
     ]
-    return [key for key in all_keys if key not in fields_to_exclude]
+    return [
+        key for key in unique_keys(all_keys) if key not in fields_to_exclude
+    ]
 
 def response_to_table(responses):
-
     header_row = []
     for response in responses:
         label = response['internal:provider']['label']
