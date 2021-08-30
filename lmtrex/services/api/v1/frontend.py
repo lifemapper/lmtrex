@@ -129,36 +129,51 @@ class FrontendSvc(_S2nService):
         occurrence_table = table_data_to_html(
             header_row,
             rows,
-            'Occurrence data'
         )
 
-        if issues:
-            occurrence_table = template(
-                'issues',
-                dict(
-                    issues=[
-                        template(
-                            'issue_block',
-                            dict(
-                                label=label,
-                                provider_issues=[
-                                    template('li',dict(content=issue))
-                                    for issue in provider_issues
-                                ]
-                            )
+        occurrence_sections = [
+            section
+            for section in [
+                morpho_source_response,
+                *[
+                    template(
+                        'issue_block',
+                        dict(
+                            label=label,
+                            provider_issues=[
+                                template('li', dict(content=issue))
+                                for issue in provider_issues
+                            ]
                         )
-                        for label, provider_issues in issues.items()
-                    ],
-                    occurrence_table=occurrence_table
-                )
+                    )
+                    for label, provider_issues in issues.items()
+                ],
+                occurrence_table
+            ]
+            if section
+        ]
+        occurrence_section = template(
+            'section',
+            dict(
+                anchor='occ',
+                label='Occurrence data',
+                content=occurrence_sections
             )
+        ) if occurrence_sections else ''
 
         header_row, rows = response_to_table(name_info)
         name_table = table_data_to_html(
-            header_row,
-            rows,
-            'Species data'
-        )
+                    header_row,
+                    rows
+                )
+        name_section = template(
+            'section',
+            dict(
+                anchor='name',
+                label='Species data',
+                content=name_table
+            )
+        ) if name_table else ''
 
         leaflet_map_data = leaflet(occurrence_info, name_info, scientific_name)
         leaflet_map_section = \
@@ -169,9 +184,8 @@ class FrontendSvc(_S2nService):
         sections = [
             section
             for section in [
-                morpho_source_response,
-                occurrence_table,
-                name_table,
+                occurrence_section,
+                name_section,
                 leaflet_map_section
             ]
             if section

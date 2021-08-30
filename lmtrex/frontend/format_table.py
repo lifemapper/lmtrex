@@ -6,12 +6,10 @@ from lmtrex.frontend.templates import template
 def table_data_to_html(
     header_row: List[Dict[str, str]],
     rows: List[List[str]],
-    caption: str
 ) -> str:
     return template(
         'table',
         dict(
-            caption=caption,
             header=[
                 template('td', dict(cell='')),
                 *[
