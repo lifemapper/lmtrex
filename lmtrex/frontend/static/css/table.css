@@ -4,12 +4,6 @@ table {
   width: 100%;
 }
 
-caption {
-  text-align: left;
-  font-size: calc(var(--size) + var(--half-size));
-  padding-bottom: var(--half-size);
-}
-
 thead td {
   background: var(--t2);
   width: calc(var(--double-size) * 5);
@@ -50,10 +44,6 @@ tbody td {
 
 tr.identical td {
   color: var(--t2);
-}
-
-a:visited {
-  color: #00f;
 }
 
 .inline-section {

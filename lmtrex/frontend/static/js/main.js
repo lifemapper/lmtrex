@@ -6,14 +6,7 @@ document.body.addEventListener('click', (event) => {
     return;
   }
   const collapsed = event.target.closest('.collapsed');
-  if (collapsed !== null){
+  if (collapsed !== null)
     collapsed.classList.toggle('collapsed');
-    return;
-  }
-
-  const sectionHeader = event.target.closest('.section-header');
-  if(sectionHeader !== null){
-    sectionHeader.parentElement.classList.toggle('section-collapsed');
-  }
 
 });

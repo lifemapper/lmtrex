@@ -1,74 +1,15 @@
 window.addEventListener('load', () => {
-  Array.from(document.getElementsByClassName('leaflet-map-container')).forEach(
-    (mapContainer) => {
-      const pre = mapContainer.getElementsByTagName('pre')[0];
-      const response = JSON.parse(pre.innerText);
-      pre.remove();
-      const map = mapContainer.getElementsByClassName('leaflet-map')[0];
-      const collectionMap = mapContainer.getElementsByClassName(
-        'leaflet-collection-map'
-      )[0];
-      const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
-      drawMap(response, map, collectionMap, mapDetails);
-    }
-  );
+  const mapContainer = document.getElementById('map');
+  const pre = mapContainer.getElementsByTagName('pre')[0];
+  const response = JSON.parse(pre.innerText);
+  pre.remove();
+  const map = mapContainer.getElementsByClassName('leaflet-map')[0];
+  const collectionMap = mapContainer.getElementsByClassName(
+    'leaflet-collection-map'
+  )[0];
+  const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
+  drawMap(response, map, collectionMap, mapDetails);
 });
-
-const lifemapperLayerVariations = {
-  raster: {
-    layerLabel: 'Projection',
-    transparent: true,
-  },
-  vector: {
-    layerLabel: 'Occurrence Points',
-    transparent: true,
-  },
-};
-
-const coMapTileServers = [
-  {
-    transparent: false,
-    layerLabel: 'Satellite Map (ESRI)',
-  },
-  {
-    transparent: true,
-    layerLabel: 'Labels and boundaries',
-  },
-];
-
-const leafletTileServers = {
-  baseMaps: {
-    'Satellite Map (ESRI)': () =>
-      L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        {
-          attribution:
-            'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        }
-      ),
-  },
-  overlays: {
-    'Labels and boundaries': () =>
-      L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-        {
-          attribution:
-            'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',
-        }
-      ),
-  },
-};
-
-const lifemapperMessagesMeta = {
-  errorDetails: {
-    className: 'error-details',
-    title: 'The following errors were reported by Lifemapper:',
-  },
-  infoSection: {
-    className: 'info-section',
-    title: 'Projection Details:',
-  },
-};
 
 const extractField = (responses, aggregator, field) =>
   responses.find(
@@ -264,8 +205,9 @@ function getGbifLayers(taxonKey) {
           format: '@1x.png',
           params: Object.entries({
             srs: 'EPSG:3857',
-            style: 'green.poly',
-            bin: 'hex',
+            style: 'purpleYellow.poly',
+            bin: 'square',
+            squareSize: '256',
             taxonKey,
           })
             .map(([key, value]) => `${key}=${value}`)
@@ -274,102 +216,6 @@ function getGbifLayers(taxonKey) {
       ),
     ],
   ];
-}
-
-async function getGbifMeta(publishingOrgKey) {
-  const request = await fetch(
-    `https://api.gbif.org/v2/map/occurrence/density/capabilities.json?publishingOrg=${publishingOrgKey}`
-  );
-  return await request.json();
-}
-
-async function showCollectionStats(publishingOrgKey, collectionMap) {
-  if(!publishingOrgKey)
-    return;
-  document.getElementsByClassName(
-    'gbif-collection-map'
-  )[0].style.display = '';
-
-  const { minYear, maxYear } = await getGbifMeta(publishingOrgKey);
-
-  const slider = document.getElementsByClassName('slider')[0];
-  const inputs = Array.from(slider.getElementsByTagName('input'));
-  function changeHandler(event) {
-    let boundaries = Object.fromEntries(
-      inputs
-        .filter((input) => input.type === event.target.type)
-        .map((input) => [
-          input.classList.contains('min') ? 'min' : 'max',
-          input.value,
-        ])
-    );
-
-    if (
-      event.target.type === 'range' &&
-      boundaries['min'] > boundaries['max']
-    ) {
-      if (event.target.classList.contains('min')) {
-        boundaries['max'] = boundaries['min'];
-        inputs.find(
-          (input) => input.type === event.target.type && input !== event.target
-        ).value = boundaries['max'];
-      } else {
-        boundaries['min'] = boundaries['max'];
-        event.target.value = boundaries['max'];
-      }
-    }
-
-    inputs
-      .filter((input) => input.type !== event.target.type)
-      .forEach((input) => {
-        input.value =
-          boundaries[input.classList.contains('min') ? 'min' : 'max'];
-      });
-
-    redrawMap(boundaries['min'], boundaries['max']);
-  }
-
-  const defaultMinValue = Math.round(minYear + (maxYear - minYear) * 0.4);
-  const defaultMaxValue = maxYear;
-  inputs.forEach((input) => {
-    input.min = minYear;
-    input.max = maxYear;
-    input.value = input.classList.contains('min')
-      ? defaultMinValue
-      : defaultMaxValue;
-    input.addEventListener('change', changeHandler);
-  });
-
-  const baseLayer = Object.values(leafletTileServers['baseMaps'])[0]();
-
-  const map = L.map(collectionMap, {
-    maxZoom: 23,
-    layers: [baseLayer],
-  }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-
-  let overlay;
-  function redrawMap(minYear, maxYear) {
-    if (overlay) map.removeLayer(overlay);
-    overlay = L.tileLayer(
-      'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
-      {
-        attribution: '',
-        source: 'density',
-        format: '@1x.png',
-        params: Object.entries({
-          srs: 'EPSG:3857',
-          style: 'purpleYellow.poly',
-          bin: 'hex',
-          publishingOrg: publishingOrgKey,
-          year: `${minYear},${maxYear}`,
-        })
-          .map(([key, value]) => `${key}=${value}`)
-          .join('&'),
-      }
-    );
-    overlay.addTo(map);
-  }
-  redrawMap(defaultMinValue, defaultMaxValue);
 }
 
 const DEFAULT_CENTER = [0, 0];
@@ -418,6 +264,9 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
 
   const layerGroup = L.control.layers({}, overlayLayers);
   layerGroup.addTo(map);
+
+  addFullScreenButton(map);
+  addPrintMapButton(map);
 
   return [map, layerGroup];
 }

@@ -8,6 +8,7 @@
   --red: #f00;
   --green: #0f0;
   --border-color: #888;
+  --darken: #000c;
 
   --quarter-size: 0.25rem;
   --half-size: 0.5rem;
@@ -33,45 +34,10 @@ main.sections {
   row-gap: var(--double-size);
 }
 
-.section {
-  background: var(--b1);
-}
-
-.section-header {
-  background: var(--t3);
-  color: var(--b3);
+.section-body, section#map {
   display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.section-header-icon {
-  background: var(--b3);
-  padding: var(--size);
-  width: calc(var(--double-size) + var(--icon-size));
-  height: calc(var(--double-size) + var(--icon-size));
-}
-
-.section-header::after {
-  content: "\25BC";
-  padding: var(--size);
-}
-
-.section-header-name {
-  flex: 1;
-  padding: var(--size);
-}
-
-.section.section-collapsed .section-header::after {
-  content: "\25B2"
-}
-
-.section.section-collapsed .section-body {
-  display: none;
-}
-
-.section-body {
-  padding: var(--size);
+  flex-direction: column;
+  row-gap: var(--half-size);
 }
 
 article.issue {

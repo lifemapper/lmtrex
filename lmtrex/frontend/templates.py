@@ -39,7 +39,10 @@ def index_template(body):
                 ['table_styles', 'static/css/table.css'],
                 ['slider_styles', 'static/css/slider.css'],
                 ['main_script', 'static/js/main.js'],
-                ['leaflet_script', 'static/js/leaflet.js']
+                ['leaflet_extend_script', 'static/js/leafletExtend.js'],
+                ['config_script', 'static/js/config.js'],
+                ['collection_stats_script', 'static/js/collectionStats.js'],
+                ['leaflet_script', 'static/js/leaflet.js'],
             ]
         }
     return template('index', {
