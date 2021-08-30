@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (
-    APIService, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
-from lmtrex.common.s2n_type import S2nKey
+    APIService, MorphoSource, ServiceProvider, TST_VALUES)
+from lmtrex.common.s2n_type import S2nKey, S2nSchema
 from lmtrex.fileop.logtools import (log_info)
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import add_errinfo, get_traceback
@@ -11,7 +11,7 @@ from lmtrex.tools.utils import add_errinfo, get_traceback
 class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
     PROVIDER = ServiceProvider.MorphoSource
-    OCCURRENCE_MAP = S2N_SCHEMA.get_mopho_occurrence_map()
+    OCCURRENCE_MAP = S2nSchema.get_mopho_occurrence_map()
     
     # ...............................................
     def __init__(
@@ -28,8 +28,8 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        view_std_fld = S2N_SCHEMA.get_view_url()
-        data_std_fld = S2N_SCHEMA.get_data_url()
+        view_std_fld = S2nSchema.get_view_url()
+        data_std_fld = S2nSchema.get_data_url()
         for stdfld, provfld in cls.OCCURRENCE_MAP.items():
             try:
                 val = rec[provfld]
@@ -69,7 +69,7 @@ class MorphoSourceAPI(APIQuery):
             tb = get_traceback()
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_out = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             # Standardize output from provider response
             if api.error:
@@ -77,7 +77,7 @@ class MorphoSourceAPI(APIQuery):
 
             std_out = cls._standardize_output(
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
-                MorphoSource.RECORD_FORMAT, APIService.Occurrence['endpoint'], 
+                MorphoSource.RECORD_FORMAT, S2nEndpoint.Occurrence, 
                 query_status=api.status_code, query_urls=[api.url], count_only=count_only, 
                 errinfo=errinfo)
         

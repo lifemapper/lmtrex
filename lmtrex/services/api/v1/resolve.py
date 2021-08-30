@@ -1,8 +1,8 @@
 import cherrypy
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (APIService, S2N_SCHEMA, ServiceProvider)
-from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
@@ -16,7 +16,7 @@ solr_location = 'notyeti-192.lifemapper.org'
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
-    ORDERED_FIELDNAMES = S2N_SCHEMA.get_s2n_fields(APIService.Resolve['endpoint'])
+    ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Resolve['endpoint'])
 
     # ...............................................
     @staticmethod
@@ -42,6 +42,7 @@ class ResolveSvc(_S2nService):
     def resolve_specify_guid(self, occid):
         try:
             output = SpecifyResolverAPI.query_for_guid(occid)
+            output.format_records(self.ORDERED_FIELDNAMES)
         except Exception as e:
             traceback = get_traceback()
             output = SpecifyResolverAPI.get_api_failure(
@@ -82,7 +83,6 @@ class ResolveSvc(_S2nService):
             # Address single record
             if pr == ServiceProvider.Specify[S2nKey.PARAM]:
                 sp_output = self.resolve_specify_guid(occid)
-                sp_output.format_records(self.ORDERED_FIELDNAMES)
                 allrecs.append(sp_output)
         # Assemble
         prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
@@ -116,8 +116,6 @@ class ResolveSvc(_S2nService):
 
         valid_providers = self.get_valid_providers()
         if occid is None:
-            output = self._show_online(valid_providers)
-        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         elif occid.lower() == 'count':
             output = self.count_resolvable_specify_recs()
@@ -167,4 +165,4 @@ if __name__ == '__main__':
         # Specify ARK Record
         svc = ResolveSvc()
         std_output = svc.GET(occid)
-        print_s2n_output(std_output)
+        print_s2n_output(std_output, do_print_rec=True)

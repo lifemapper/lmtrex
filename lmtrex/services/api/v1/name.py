@@ -1,8 +1,8 @@
 import cherrypy
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (APIService, S2N_SCHEMA, ServiceProvider)
-from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
@@ -14,7 +14,7 @@ from lmtrex.tools.provider.idigbio import IdigbioAPI
 @cherrypy.popargs('namestr')
 class NameSvc(_S2nService):
     SERVICE_TYPE = APIService.Name
-    ORDERED_FIELDNAMES = S2N_SCHEMA.get_s2n_fields(APIService.Name['endpoint'])
+    ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Name['endpoint'])
     
     # ...............................................
     def _get_gbif_records(self, namestr, is_accepted, gbif_count):
@@ -31,9 +31,9 @@ class NameSvc(_S2nService):
             # Add occurrence count to name records
             if gbif_count is True:
                 prov_query_list = output.provider_query
-                keyfld = S2N_SCHEMA.get_gbif_taxonkey_fld()
-                cntfld = S2N_SCHEMA.get_gbif_occcount_fld()
-                urlfld = S2N_SCHEMA.get_gbif_occurl_fld()
+                keyfld = S2nSchema.get_gbif_taxonkey_fld()
+                cntfld = S2nSchema.get_gbif_occcount_fld()
+                urlfld = S2nSchema.get_gbif_occurl_fld()
                 for namerec in output.records:
                     try:
                         taxon_key = namerec[keyfld]
@@ -190,8 +190,7 @@ if __name__ == '__main__':
         out = svc.GET(
             namestr=namestr, provider=None, is_accepted=False, gbif_parse=True, 
             gbif_count=True, kingdom=None)
-        print_s2n_output(out)
-    print_s2n_output(out)
+        print_s2n_output(out, do_print_rec=True)
                 
 """
 """

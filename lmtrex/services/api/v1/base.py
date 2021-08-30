@@ -1,7 +1,7 @@
 import typing
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, BrokerParameters)
-from lmtrex.common.s2n_type import S2nOutput, S2nKey
+from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nKey
 from lmtrex.config.local_constants import FQDN
 
 from lmtrex.tools.provider.gbif import GbifAPI
@@ -28,7 +28,7 @@ class _S2nService:
         provider_element[S2nKey.PROVIDER_STATUS_CODE] = 200
         # Optional URL queries
         standardized_url = '{}{}/{}'.format(
-            FQDN, APIService.Root['endpoint'], cls.SERVICE_TYPE['endpoint'])
+            FQDN, S2nEndpoint.Root, cls.SERVICE_TYPE['endpoint'])
         if query_term:
             standardized_url = '{}?{}'.format(standardized_url, query_term)
         provider_element[S2nKey.PROVIDER_QUERY_URL] = [standardized_url]
@@ -110,7 +110,7 @@ class _S2nService:
     # .............................................................................
     @classmethod
     def endpoint(cls):
-        endpoint =  '{}/{}'.format(APIService.Root['endpoint'], cls.SERVICE_TYPE['endpoint'])
+        endpoint =  '{}/{}'.format(S2nEndpoint.Root, cls.SERVICE_TYPE['endpoint'])
         return endpoint
 
     # ...............................................

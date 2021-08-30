@@ -4,8 +4,8 @@ import os
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
-    APIService, GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, S2N_SCHEMA, DATA_DUMP_DELIMITER)
-from lmtrex.common.s2n_type import S2nKey
+    GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, DATA_DUMP_DELIMITER)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nSchema
 from lmtrex.fileop.logtools import (log_info)
 from lmtrex.fileop.ready_file import ready_filename
 
@@ -17,7 +17,7 @@ class IdigbioAPI(APIQuery):
     """Class to query iDigBio APIs and return results"""
     
     PROVIDER = ServiceProvider.iDigBio
-    OCCURRENCE_MAP = S2N_SCHEMA.get_idb_occurrence_map()
+    OCCURRENCE_MAP = S2nSchema.get_idb_occurrence_map()
 
     # ...............................................
     def __init__(self, q_filters=None, other_filters=None, filter_string=None,
@@ -68,8 +68,8 @@ class IdigbioAPI(APIQuery):
         newrec = {}
         to_list_fields = ('dwc:associatedSequences', 'dwc:associatedReferences')
         issue_fld = 's2n:issues'
-        view_std_fld = S2N_SCHEMA.get_view_url()
-        data_std_fld = S2N_SCHEMA.get_data_url()
+        view_std_fld = S2nSchema.get_view_url()
+        data_std_fld = S2nSchema.get_data_url()
 
         # Outer record must contain 'data' element
         try:
@@ -153,13 +153,13 @@ class IdigbioAPI(APIQuery):
         except Exception as e:
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e)) 
             std_out = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR,
                 errinfo=errinfo)
         else:
             errinfo = add_errinfo(errinfo, 'error', api.error)
             std_out = cls._standardize_output(
                 api.output, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, Idigbio.RECORD_FORMAT, 
-                APIService.Occurrence['endpoint'], query_status=api.status_code, 
+                S2nEndpoint.Occurrence, query_status=api.status_code, 
                 query_urls=[api.url], count_only=count_only, errinfo=errinfo)
         
         return std_out

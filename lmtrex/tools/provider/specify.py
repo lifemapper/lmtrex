@@ -1,8 +1,7 @@
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (
-    APIService, JSON_HEADERS, ServiceProvider, S2N_SCHEMA)
-from lmtrex.common.s2n_type import S2nOutput
+from lmtrex.common.lmconstants import (JSON_HEADERS, ServiceProvider)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import add_errinfo
 
@@ -10,7 +9,7 @@ from lmtrex.tools.utils import add_errinfo
 class SpecifyPortalAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
     PROVIDER = ServiceProvider.Specify
-    OCCURRENCE_MAP = S2N_SCHEMA.get_specify_occurrence_map()
+    OCCURRENCE_MAP = S2nSchema.get_specify_occurrence_map()
     # ...............................................
     def __init__(self, url=None, logger=None):
         """Constructor for SpecifyPortalAPI class"""
@@ -39,7 +38,7 @@ class SpecifyPortalAPI(APIQuery):
     @classmethod
     def _standardize_sp6_record(cls, rec):
         newrec = {}
-        mapping = S2N_SCHEMA.get_specifycache_occurrence_map()
+        mapping = S2nSchema.get_specifycache_occurrence_map()
         for stdfld, provfld in mapping.items():
             try:
                 val = rec[provfld]
@@ -98,7 +97,7 @@ class SpecifyPortalAPI(APIQuery):
         if url is None:
             errinfo = add_errinfo(errinfo, 'info', 'No URL to Specify record')
             std_output = cls._standardize_output(
-                {}, APIService.Occurrence['endpoint'], count_only=count_only, 
+                {}, S2nEndpoint.Occurrence, count_only=count_only, 
                 errinfo=errinfo)
         elif url.startswith('http'):
             api = APIQuery(url, headers=JSON_HEADERS, logger=logger)
@@ -108,12 +107,12 @@ class SpecifyPortalAPI(APIQuery):
             except Exception as e:
                 errinfo = add_errinfo(errinfo,'error', cls._get_error_message(err=e))
                 std_output = cls.get_api_failure(
-                    APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                    S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
                 errinfo = add_errinfo(errinfo,'error', api.error)
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    api.output, APIService.Occurrence['endpoint'], query_status=api.status_code, 
+                    api.output, S2nEndpoint.Occurrence, query_status=api.status_code, 
                     query_urls=[url], count_only=count_only, errinfo=errinfo)
         
         return std_output

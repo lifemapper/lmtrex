@@ -1,8 +1,8 @@
 import cherrypy
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (APIService, S2N_SCHEMA, ServiceProvider)
-from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
 
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
@@ -19,7 +19,7 @@ from lmtrex.services.api.v1.base import _S2nService
 @cherrypy.popargs('occid')
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
-    ORDERED_FIELDNAMES = S2N_SCHEMA.get_s2n_fields(APIService.Occurrence['endpoint'])
+    ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Occurrence['endpoint'])
 
     # ...............................................
     @classmethod

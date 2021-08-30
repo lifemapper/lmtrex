@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (APIService, Lifemapper, ServiceProvider, S2N_SCHEMA)
-from lmtrex.common.s2n_type import S2nOutput
+from lmtrex.common.lmconstants import (Lifemapper, ServiceProvider)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import get_traceback, add_errinfo
 
@@ -9,7 +9,7 @@ from lmtrex.tools.utils import get_traceback, add_errinfo
 class LifemapperAPI(APIQuery):
     """Class to query Lifemapper portal APIs and return results"""
     PROVIDER = ServiceProvider.Lifemapper
-    MAP_MAP = S2N_SCHEMA.get_lifemapper_map_map()
+    MAP_MAP = S2nSchema.get_lifemapper_map_map()
     
     # ...............................................
     def __init__(
@@ -226,12 +226,12 @@ class LifemapperAPI(APIQuery):
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             
             std_output = cls.get_api_failure(
-                APIService.Map['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                S2nEndpoint.Map, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             errinfo = add_errinfo(errinfo, 'error', api.error)
             
             std_output = cls._standardize_map_output(
-                api.output, APIService.Map['endpoint'], query_status=api.status_code, 
+                api.output, S2nEndpoint.Map, query_status=api.status_code, 
                 query_urls=[api.url], prjscenariocodes=prjscenariocodes, color=color, 
                 count_only=False, errinfo=errinfo)
 
@@ -257,7 +257,7 @@ class LifemapperAPI(APIQuery):
             tb = get_traceback()
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             out = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             try:
                 rec = api.output

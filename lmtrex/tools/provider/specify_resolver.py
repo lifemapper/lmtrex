@@ -1,8 +1,7 @@
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, SYFTER, ServiceProvider, S2N_SCHEMA)
-from lmtrex.common.s2n_type import S2nKey, S2nOutput
+from lmtrex.common.lmconstants import (APIService, SYFTER, ServiceProvider)
+from lmtrex.common.s2n_type import COMMUNITY_SCHEMA, S2nEndpoint, S2nKey, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import get_traceback, add_errinfo
 
@@ -10,7 +9,7 @@ from lmtrex.tools.utils import get_traceback, add_errinfo
 class SpecifyResolverAPI(APIQuery):
     """Class to query Lifemapper portal APIs and return results"""
     PROVIDER = ServiceProvider.Specify
-    RES_MAP = S2N_SCHEMA.get_specify_resolver_map()
+    RES_MAP = S2nSchema.get_specify_resolver_map()
     
     # ...............................................
     def __init__(self, ident=None, resource=SYFTER.RESOLVE_RESOURCE, logger=None, is_dev=True):
@@ -61,7 +60,7 @@ class SpecifyResolverAPI(APIQuery):
                 
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, APIService.Resolve['endpoint'], provider=prov_meta, 
+            total, S2nEndpoint.Resolve, provider=prov_meta, 
             records=stdrecs, errors=errinfo)
 
         return std_output
@@ -93,21 +92,21 @@ class SpecifyResolverAPI(APIQuery):
             tb = get_traceback()
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_output = cls.get_api_failure(
-                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                S2nEndpoint.Resolve, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             try:
                 count = api.output['count']
             except:
                 errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(msg='Missing `response` element'))
                 std_output = cls.get_api_failure(
-                    APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                    S2nEndpoint.Resolve, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
                 errinfo = add_errinfo(errinfo, 'error', api.error)
             
             # Standardize output from provider response
             prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
             std_output = S2nOutput(
-                count, APIService.Resolve['endpoint'], provider=prov_meta, errors=errinfo)
+                count, S2nEndpoint.Resolve, provider=prov_meta, errors=errinfo)
         return std_output
 
     # ...............................................
@@ -151,7 +150,7 @@ class SpecifyResolverAPI(APIQuery):
         except Exception as e:
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
             std_output = cls.get_api_failure(
-                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                S2nEndpoint.Resolve, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             if api.error:
                 errinfo['error'] =  [api.error]

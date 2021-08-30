@@ -3,8 +3,8 @@ from http import HTTPStatus
 import urllib
 
 from lmtrex.common.lmconstants import (
-    APIService, ITIS, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
-from lmtrex.common.s2n_type import S2nOutput
+    ITIS, ServiceProvider, URL_ESCAPES, TST_VALUES)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
 from lmtrex.fileop.logtools import log_info
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.utils import get_traceback, add_errinfo
@@ -17,7 +17,7 @@ class ItisAPI(APIQuery):
         https://www.itis.gov/web_service.html
     """
     PROVIDER = ServiceProvider.ITISSolr
-    NAME_MAP = S2N_SCHEMA.get_itis_name_map()
+    NAME_MAP = S2nSchema.get_itis_name_map()
     
     # ...............................................
     def __init__(
@@ -195,7 +195,7 @@ class ItisAPI(APIQuery):
                             temp_hierarchy[rnk] = name
                 # Reorder and filter to desired ranks
                 hierarchy = OrderedDict()
-                for rnk in S2N_SCHEMA.RANKS:
+                for rnk in S2nSchema.RANKS:
                     try:
                         hierarchy[rnk] = temp_hierarchy[rnk]
                     except:
@@ -221,8 +221,8 @@ class ItisAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
-        view_std_fld = S2N_SCHEMA.get_view_url()
-        data_std_fld = S2N_SCHEMA.get_data_url()
+        view_std_fld = S2nSchema.get_view_url()
+        data_std_fld = S2nSchema.get_data_url()
         hierarchy_prov_fld = 'hierarchySoFarWRanks'
         synonym_prov_fld = 'synonyms'
         good_statii = ('accepted', 'valid')
@@ -311,7 +311,7 @@ class ItisAPI(APIQuery):
         except Exception as e:
             tb = get_traceback()
             std_output = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR,
                 errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             try:
@@ -320,16 +320,16 @@ class ItisAPI(APIQuery):
                 if api.error is not None:
                     errinfo['error'] = [cls._get_error_message(err=api.error)]
                     std_output = cls.get_api_failure(
-                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                        S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
                 else:
                     errinfo['error'] = [cls._get_error_message(msg='Missing `response` element')]
                     std_output = cls.get_api_failure(
-                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
+                        S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
                 errinfo = add_errinfo(errinfo, 'error', api.error)
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, APIService.Name['endpoint'], 
+                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, S2nEndpoint.Name, 
                     query_status=api.status_code, query_urls=[api.url], is_accepted=is_accepted, 
                     errinfo=errinfo)
         return std_output
@@ -356,13 +356,13 @@ class ItisAPI(APIQuery):
             tb = get_traceback()
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_output = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR,
                 errinfo=errinfo)
         else:
             errinfo = add_errinfo(errinfo, 'error', apiq.error)
             # Standardize output from provider response
             std_output = cls._standardize_output(
-                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, APIService.Name['endpoint'], 
+                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, S2nEndpoint.Name, 
                 apiq.status_code, query_urls=[apiq.url], is_accepted=True, errinfo=errinfo)
 
         return std_output

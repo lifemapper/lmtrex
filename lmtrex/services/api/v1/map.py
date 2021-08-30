@@ -1,8 +1,8 @@
 import cherrypy
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (APIService, S2N_SCHEMA, ServiceProvider, TST_VALUES)
-from lmtrex.common.s2n_type import (S2nKey, S2nOutput, print_s2n_output)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider, TST_VALUES)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.lifemapper import LifemapperAPI
@@ -13,7 +13,7 @@ from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo
 @cherrypy.popargs('namestr')
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
-    ORDERED_FIELDNAMES = S2N_SCHEMA.get_s2n_fields(APIService.Map['endpoint'])
+    ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Map['endpoint'])
     
     # ...............................................
     def _match_gbif_names(self, namestr, is_accepted):
@@ -124,8 +124,6 @@ class MapSvc(_S2nService):
         
         valid_providers = self.get_valid_providers()
         if namestr is None:
-            output = self._show_online(valid_providers)
-        elif namestr.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
             output = self._show_online(valid_providers)
         else:   
             try:
