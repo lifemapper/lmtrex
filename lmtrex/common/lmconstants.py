@@ -190,7 +190,6 @@ class ServiceProvider:
                  'inactive': '{}/idigbio_colors_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/idigbio_colors_hover-01.png'.format(ICON_DIR)}
         }
-    # TODO: need an ITIS badge
     ITISSolr = {
         S2nKey.NAME: 'ITIS', 
         S2nKey.PARAM: 'itis', 
@@ -224,6 +223,13 @@ class ServiceProvider:
         'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
                  'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
                  'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
+    # TODO: need an WoRMS badge
+    WoRMS = {
+        S2nKey.NAME: 'World Register of Marine Species, WoRMS', 
+        S2nKey.PARAM: 'worms', 
+        S2nKey.SERVICES: [S2nEndpoint.Name],
+        # 'icon': {}
+        }
     # TODO: need a Broker badge
     Broker = {
         S2nKey.NAME: 'Specify Network', 
@@ -575,368 +581,25 @@ class GBIF:
         return url
 
 
-# # .............................................................................
-# class COMMUNITY_SCHEMA:
-#     DWC = {'code': 'dwc', 'url': 'http://rs.tdwg.org/dwc/terms'}
-#     GBIF = {'code': 'gbif', 'url': 'https://gbif.github.io/dwc-api/apidocs/org/gbif/dwc/terms/GbifTerm.html'}
-#     DCT = {'code': 'dcterms', 'url': 'http://purl.org/dc/terms'}
-#     IDB = {'code': 'idigbio', 'url': ''}
-#     MS = {'code': 'mopho', 'url': 'https://www.morphosource.org/About/API'}
-#     S2N = {'code': 's2n', 'url': ''}
-#
-#
-# # .............................................................................
-# class S2N_SCHEMA:
-#     """
-#     Note: 
-#         All field values are strings unless otherwise indicated
-#     """
-#     NAME = OrderedDict({
-#         # Link to provider record webpage
-#         'view_url': COMMUNITY_SCHEMA.S2N,
-#         # API link to provider record data 
-#         'api_url': COMMUNITY_SCHEMA.S2N,
-#         # S2n standardization of common elements
-#         'status': COMMUNITY_SCHEMA.S2N,
-#         'scientific_name': COMMUNITY_SCHEMA.S2N,
-#         'canonical_name': COMMUNITY_SCHEMA.S2N,
-#         'common_names': COMMUNITY_SCHEMA.S2N,
-#         'kingdom': COMMUNITY_SCHEMA.S2N,
-#         'rank': COMMUNITY_SCHEMA.S2N,
-#         'synonyms': COMMUNITY_SCHEMA.S2N,      # list of strings
-#         'hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
-#
-#         # Occurrence data for this name
-#         S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
-#         S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
-#
-#         # GBIF-specific fields
-#         'gbif_confidence': COMMUNITY_SCHEMA.S2N,
-#         'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
-#
-#         # ITIS-specific fields
-#         'itis_tsn': COMMUNITY_SCHEMA.S2N,
-#         'itis_credibility': COMMUNITY_SCHEMA.S2N,
-#         })
-#     MAP = OrderedDict({
-#         # Provider's URLs to this record in dictionary
-#         # 'provider_links': COMMUNITY_SCHEMA.S2N,
-#         'view_url': COMMUNITY_SCHEMA.S2N,
-#         'api_url': COMMUNITY_SCHEMA.S2N,
-#
-#         'endpoint': COMMUNITY_SCHEMA.S2N,
-#         'data_link': COMMUNITY_SCHEMA.S2N,
-#         'layer_type': COMMUNITY_SCHEMA.S2N,
-#         'layer_name': COMMUNITY_SCHEMA.S2N,
-#         'point_count': COMMUNITY_SCHEMA.S2N,        # integer
-#         'point_bbox': COMMUNITY_SCHEMA.S2N,         # list of 4 float values: minX, minY, maxX, maxY
-#         'species_name': COMMUNITY_SCHEMA.S2N,
-#
-#         # Lifemapper SDM predicted distribution input
-#         'sdm_projection_scenario_code': COMMUNITY_SCHEMA.S2N,
-#         'sdm_projection_scenario_link': COMMUNITY_SCHEMA.S2N,
-#         # Lifemapper data status, 300 is complete
-#         'status': COMMUNITY_SCHEMA.S2N,             # integer
-#         'modtime': COMMUNITY_SCHEMA.S2N,
-#         # Lifemapper allows query_parameter 'color' with options:
-#         #    for Vector: RGB values as hexidecimal string #RRGGBB
-#         #    for Raster: gray, red, green, blue, yellow, fuschia, aqua, bluered, bluegreen, greenred
-#         'vendor_specific_parameters': COMMUNITY_SCHEMA.S2N,     # dictionary with queryparameter/value
-#         })
-#     OCCURRENCE = OrderedDict({
-#         # Provider's URLs to this record in dictionary
-#         # 'provider_links': COMMUNITY_SCHEMA.S2N,
-#         'view_url': COMMUNITY_SCHEMA.S2N,
-#         'api_url': COMMUNITY_SCHEMA.S2N,
-#
-#         'accessRights': COMMUNITY_SCHEMA.DCT,
-#         'language': COMMUNITY_SCHEMA.DCT,
-#         'license': COMMUNITY_SCHEMA.DCT,
-#         'modified': COMMUNITY_SCHEMA.DCT,
-#         'type': COMMUNITY_SCHEMA.DCT,
-#
-#         # # Dictionary of contents
-#         # 'taxon': COMMUNITY_SCHEMA.S2N,     # dictionary of taxonomic elements 
-#         'taxonRank': COMMUNITY_SCHEMA.DWC,
-#         'kingdom': COMMUNITY_SCHEMA.DWC,
-#         'phylum': COMMUNITY_SCHEMA.DWC,
-#         'class': COMMUNITY_SCHEMA.DWC,
-#         'order': COMMUNITY_SCHEMA.DWC,
-#         'family': COMMUNITY_SCHEMA.DWC,
-#         'genus': COMMUNITY_SCHEMA.DWC,
-#         'scientificName': COMMUNITY_SCHEMA.DWC,
-#         'specificEpithet': COMMUNITY_SCHEMA.DWC, 
-#         'scientificNameAuthorship': COMMUNITY_SCHEMA.DWC,
-#
-#         'recordedBy': COMMUNITY_SCHEMA.DWC,
-#         'fieldNumber': COMMUNITY_SCHEMA.DWC,
-#         'occurrenceID': COMMUNITY_SCHEMA.DWC, 
-#         'institutionCode': COMMUNITY_SCHEMA.DWC,
-#         'collectionCode': COMMUNITY_SCHEMA.DWC,
-#         'catalogNumber': COMMUNITY_SCHEMA.DWC,
-#         'basisOfRecord': COMMUNITY_SCHEMA.DWC,
-#         'preparations': COMMUNITY_SCHEMA.DWC,
-#         'datasetName': COMMUNITY_SCHEMA.DWC,
-#
-#         'associatedReferences': COMMUNITY_SCHEMA.DWC,       # list of strings 
-#         'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
-#         'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
-#
-#         'stateProvince': COMMUNITY_SCHEMA.DWC,
-#         'country': COMMUNITY_SCHEMA.DWC,
-#         'countryCode': COMMUNITY_SCHEMA.DWC,
-#         'locality': COMMUNITY_SCHEMA.DWC,
-#         'decimalLongitude': COMMUNITY_SCHEMA.DWC,
-#         'decimalLatitude': COMMUNITY_SCHEMA.DWC,
-#         'geodeticDatum': COMMUNITY_SCHEMA.DWC,
-#         'year': COMMUNITY_SCHEMA.DWC,
-#         'month': COMMUNITY_SCHEMA.DWC,
-#         'day': COMMUNITY_SCHEMA.DWC,
-#
-#         # S2n resolution of non-standard contents
-#         'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
-#
-#         # GBIF-specific field
-#         'gbifID': COMMUNITY_SCHEMA.GBIF,
-#         'publishingOrgKey': COMMUNITY_SCHEMA.GBIF,
-#         'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
-#
-#         # iDigBio-specific field
-#         'uuid': COMMUNITY_SCHEMA.IDB,
-#
-#         # MorphoSource-specific field
-#         'specimen.specimen_id': COMMUNITY_SCHEMA.MS,
-#
-#         # Specify7-specific field
-#         'specify_identifier': COMMUNITY_SCHEMA.S2N,
-#     })
-#     RESOLVED = OrderedDict({
-#         'ident': COMMUNITY_SCHEMA.S2N,
-#         'dataset_guid': COMMUNITY_SCHEMA.S2N,
-#         'institutionCode': COMMUNITY_SCHEMA.DWC,
-#         'basisOfRecord': COMMUNITY_SCHEMA.DWC,
-#         'date': COMMUNITY_SCHEMA.S2N,
-#         'ark': COMMUNITY_SCHEMA.S2N,
-#         'api_url': COMMUNITY_SCHEMA.S2N
-#     })
-#
-#     RANKS = ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species')
-#
-#     @classmethod
-#     def get_view_url(cls):
-#         return 's2n:view_url'
-#
-#     @classmethod
-#     def get_data_url(cls):
-#         return 's2n:api_url'
-#
-#     @classmethod
-#     def get_s2n_fields(cls, svc):
-#         if svc == APIService.Map['endpoint']:
-#             schema = S2N_SCHEMA.MAP
-#         elif svc == APIService.Name['endpoint']:
-#             schema = S2N_SCHEMA.NAME
-#         elif svc == APIService.Occurrence['endpoint']:
-#             schema = S2N_SCHEMA.OCCURRENCE
-#         elif svc == APIService.Resolve['endpoint']:
-#             schema = S2N_SCHEMA.RESOLVED
-#         else:
-#             raise Exception('Service {} does not exist'.format(svc))            
-#         ordered_flds = []
-#         for fname, ns in schema.items():
-#             ordered_flds.append('{}:{}'.format(ns['code'], fname))
-#         return ordered_flds
-#
-#     @classmethod
-#     def get_s2n_collection_fields(cls, svc):
-#         list_fields = dict_fields = []
-#         # Find simple fieldnames
-#         if svc == APIService.Map['endpoint']:
-#             schema = cls.MAP
-#             list_fields = ['point_bbox']
-#             dict_fields = ['vendor_specific_parameters']
-#         elif svc == APIService.Name['endpoint']:
-#             schema = cls.NAME
-#             list_fields = ['hierarchy', 'synonyms']
-#         elif svc == APIService.Occurrence['endpoint']:
-#             schema = cls.OCCURRENCE
-#             list_fields = ['associatedSequences', 'associatedReferences']
-#             dict_fields = ['issues']
-#         elif svc == APIService.Resolve['endpoint']:
-#             schema = cls.RESOLVED
-#         else:
-#             raise Exception('Service {} does not exist'.format(svc))
-#
-#         # Standardize names
-#         list_fields = [
-#             '{}:{}'.format(schema[fname]['code'], fname) for fname in list_fields]
-#         dict_fields = [
-#             '{}:{}'.format(schema[fname]['code'], fname) for fname in dict_fields]
-#
-#         return list_fields, dict_fields
-#
-#     @classmethod
-#     def get_gbif_taxonkey_fld(cls):
-#         return '{}:gbif_taxon_key'.format(COMMUNITY_SCHEMA.S2N['code'])
-#
-#     @classmethod
-#     def get_gbif_occcount_fld(cls):
-#         return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_COUNT)
-#
-#     @classmethod
-#     def get_gbif_occurl_fld(cls):
-#         return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
-#
-#     @classmethod
-#     def get_gbif_occurrence_map(cls):
-#         "Map broker response fields to GBIF response fields"
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-#             std_name = '{}:{}'.format(comschem['code'], fn)
-#             stdfld_provfld[std_name] = fn
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_idb_occurrence_map(cls):
-#         "Map broker response fields to iDigBio response fields"
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-#             stdname = '{}:{}'.format(comschem['code'], fn)
-#             if fn == 'uuid':
-#                 stdfld_provfld[stdname] = fn
-#             else:
-#                 stdfld_provfld[stdname] = stdname
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_specify_occurrence_map(cls):
-#         "Map broker response fields to Specify response fields"
-#         # sname_stdname = {}
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-#             spfldname = '{}/{}'.format(comschem['url'], fn)
-#             stdname = '{}:{}'.format(comschem['code'], fn)
-#             stdfld_provfld[stdname] = spfldname
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_specifycache_occurrence_map(cls):
-#         "Map broker response fields to Specify Cache response fields"
-#         stdfld_provfld = OrderedDict()
-#         old_id = 'identifier' 
-#         new_id = 'specify_identifier'
-#
-#         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-#             # if fn in names_in_spcache:
-#             stdname = '{}:{}'.format(comschem['code'], fn)
-#             if fn == new_id:
-#                 stdfld_provfld[stdname] = old_id
-#             else:
-#                 stdfld_provfld[stdname] = fn
-#
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_mopho_occurrence_map(cls):
-#         "Map broker response fields to MorphoSource response fields"
-#         # mopho_stdname = {}
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-#             std_name = '{}:{}'.format(comschem['code'], fn)
-#             if fn == 'catalogNumber':
-#                 stdfld_provfld[std_name] = 'specimen.catalog_number'
-#             elif fn == 'institutionCode':
-#                 stdfld_provfld[std_name] = 'specimen.institution_code'
-#             elif fn == 'occurrenceID':
-#                 stdfld_provfld[std_name] = 'specimen.occurrence_id' 
-#             elif fn == 'uuid':
-#                 stdfld_provfld[std_name] = 'specimen.uuid'
-#             elif fn in ['specimen.specimen_id', 'view_url', 'api_url']:
-#                 stdfld_provfld[std_name] = fn
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_gbif_name_map(cls):
-#         "Map broker response fields to GBIF name response fields"
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.NAME.items():
-#             std_name = '{}:{}'.format(comschem['code'], fn)
-#             if fn == 'scientific_name':
-#                 oldname = 'scientificName'
-#             elif fn == 'canonical_name':
-#                 oldname = 'canonicalName'
-#             elif fn == 'gbif_confidence':
-#                 oldname = 'confidence'
-#             elif fn == 'gbif_taxon_key':
-#                 oldname = 'usageKey'
-#             else:
-#                 oldname = fn
-#             if oldname:
-#                 stdfld_provfld[std_name] = oldname
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_itis_name_map(cls):
-#         "Map broker response fields to ITIS response fields"
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.NAME.items():
-#             std_name = '{}:{}'.format(comschem['code'], fn)
-#             if fn == 'scientific_name':
-#                 oldname = 'nameWTaxonAuthor'
-#             elif fn == 'canonical_name':
-#                 oldname = 'nameWOInd'
-#             elif fn == 'hierarchy':
-#                 oldname = 'hierarchySoFarWRanks'
-#             elif fn == 'status':
-#                 oldname = 'usage'
-#             elif fn == 'itis_tsn':
-#                 oldname = 'tsn'
-#             elif fn == 'itis_credibility':
-#                 oldname = 'credibilityRating'
-#             else:
-#                 oldname = fn
-#             if oldname:
-#                 stdfld_provfld[std_name] = oldname
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_lifemapper_map_map(cls):
-#         "Map broker response fields to Lifemapper response"
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.MAP.items():
-#             std_name = '{}:{}'.format(comschem['code'], fn)
-#             if fn == 'species_name':
-#                 stdfld_provfld[std_name] = 'speciesName'
-#             elif fn == 'lm_status_code':
-#                 stdfld_provfld[std_name] = 'status'
-#             elif fn == 'modtime':
-#                 stdfld_provfld[std_name] = 'modtime'
-#             else:
-#                 stdfld_provfld[std_name] = fn
-#         return stdfld_provfld
-#
-#     @classmethod
-#     def get_specify_resolver_map(cls):
-#         "Map broker response fields to Specify Resolver response fields"
-#         stdfld_provfld = OrderedDict()
-#         for fn, comschem in S2N_SCHEMA.RESOLVED.items():
-#             std_name = '{}:{}'.format(comschem['code'], fn)
-#             if fn == 'ident':
-#                 stdfld_provfld[std_name] = 'id'
-#             elif fn == 'institutionCode':
-#                 stdfld_provfld[std_name] = 'who'
-#             elif fn == 'basisOfRecord':
-#                 stdfld_provfld[std_name] = 'what'
-#             elif fn == 'date':
-#                 stdfld_provfld[std_name] = 'when'
-#             elif fn == 'ark':
-#                 stdfld_provfld[std_name] = 'where'
-#             elif fn == 'api_url':
-#                 stdfld_provfld[std_name] = 'url'
-#             else:
-#                 stdfld_provfld[std_name] = fn
-#         return stdfld_provfld
-        
+
+# .............................................................................
+class WORMS:
+    """World Register of Marine Species, WoRMS, constants enumeration
+    http://www.marinespecies.org/rest/AphiaRecordsByMatchNames?scientificnames[]=Plagioecia%20patina&marine_only=false
+    """
+    REST_URL = 'http://www.marinespecies.org/rest'
+    NAME_MATCH_SERVICE = 'AphiaRecordsByMatchNames'
+    NAME_SERVICE = 'AphiaNameByAphiaID'
+    MATCH_PARAM = 'scientificnames[]='
+    FILTER_PARAM = 'marine_only'
+    
+    @classmethod
+    def get_species_data(cls, key):
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(WORMS.REST_URL, WORMS.NAME_SERVICE, key)
+        return url
+
 # .............................................................................
 class ITIS:
     """ITIS constants enumeration

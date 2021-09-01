@@ -93,6 +93,16 @@ class S2nSchema:
         # ITIS-specific fields
         'itis_tsn': COMMUNITY_SCHEMA.S2N,
         'itis_credibility': COMMUNITY_SCHEMA.S2N,
+        
+        # WoRMS-specific fields
+        'worms_valid_AphiaID':  COMMUNITY_SCHEMA.S2N,
+        'worms_lsid':  COMMUNITY_SCHEMA.S2N,
+        'worms_isMarine':  COMMUNITY_SCHEMA.S2N,
+        'worms_isBrackish':  COMMUNITY_SCHEMA.S2N,
+        'worms_isFreshwater':  COMMUNITY_SCHEMA.S2N,
+        'worms_isTerrestrial':  COMMUNITY_SCHEMA.S2N,
+        'worms_isExtinct':  COMMUNITY_SCHEMA.S2N,
+        'worms_match_type':  COMMUNITY_SCHEMA.S2N,
         })
     MAP = OrderedDict({
         # Provider's URLs to this record in dictionary
@@ -265,7 +275,7 @@ class S2nSchema:
 
     @classmethod
     def get_gbif_occurrence_map(cls):
-        "Map broker response fields to GBIF response fields"
+        """Map broker response fields to GBIF response fields"""
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.OCCURRENCE.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -274,7 +284,7 @@ class S2nSchema:
 
     @classmethod
     def get_idb_occurrence_map(cls):
-        "Map broker response fields to iDigBio response fields"
+        """Map broker response fields to iDigBio response fields"""
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.OCCURRENCE.items():
             stdname = '{}:{}'.format(comschem['code'], fn)
@@ -286,7 +296,7 @@ class S2nSchema:
 
     @classmethod
     def get_specify_occurrence_map(cls):
-        "Map broker response fields to Specify response fields"
+        """Map broker response fields to Specify response fields"""
         # sname_stdname = {}
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.OCCURRENCE.items():
@@ -297,7 +307,7 @@ class S2nSchema:
     
     @classmethod
     def get_specifycache_occurrence_map(cls):
-        "Map broker response fields to Specify Cache response fields"
+        """Map broker response fields to Specify Cache response fields"""
         stdfld_provfld = OrderedDict()
         old_id = 'identifier' 
         new_id = 'specify_identifier'
@@ -314,7 +324,7 @@ class S2nSchema:
 
     @classmethod
     def get_mopho_occurrence_map(cls):
-        "Map broker response fields to MorphoSource response fields"
+        """Map broker response fields to MorphoSource response fields"""
         # mopho_stdname = {}
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.OCCURRENCE.items():
@@ -333,7 +343,7 @@ class S2nSchema:
     
     @classmethod
     def get_gbif_name_map(cls):
-        "Map broker response fields to GBIF name response fields"
+        """Map broker response fields to GBIF name response fields"""
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.NAME.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -353,7 +363,7 @@ class S2nSchema:
 
     @classmethod
     def get_itis_name_map(cls):
-        "Map broker response fields to ITIS response fields"
+        """Map broker response fields to ITIS response fields"""
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.NAME.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -376,8 +386,43 @@ class S2nSchema:
         return stdfld_provfld
     
     @classmethod
+    def get_worms_name_map(cls):
+        """Map broker response fields to WoRMS response fields"""
+        stdfld_provfld = OrderedDict()
+        for fn, comschem in S2nSchema.NAME.items():
+            std_name = '{}:{}'.format(comschem['code'], fn)
+            if fn == 'view_url':
+                oldname = 'url'
+            # elif fn == 'scientific_name':
+            #     oldname = 'valid_name'
+            elif fn == 'canonical_name':
+                oldname = 'valid_name'
+            elif fn == 'worms_valid_AphiaID':
+                oldname = 'valid_AphiaID'
+            elif fn == 'worms_lsid':
+                oldname = 'lsid'
+            elif fn == 'worms_isMarine':
+                oldname = 'isMarine'
+            elif fn == 'worms_isBrackish':
+                oldname = 'isBrackish'
+            elif fn == 'worms_isFreshwater':
+                oldname = 'isFreshwater'
+            elif fn == 'worms_isTerrestrial':
+                oldname = 'isTerrestrial'
+            elif fn == 'worms_isExtinct':
+                oldname = 'isExtinct'
+            elif fn == 'worms_match_type':
+                oldname = 'match_type'
+            else:
+                oldname = fn
+            if oldname:
+                stdfld_provfld[std_name] = oldname
+        return stdfld_provfld
+        
+    
+    @classmethod
     def get_lifemapper_map_map(cls):
-        "Map broker response fields to Lifemapper response"
+        """Map broker response fields to Lifemapper response"""
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.MAP.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
@@ -393,7 +438,7 @@ class S2nSchema:
 
     @classmethod
     def get_specify_resolver_map(cls):
-        "Map broker response fields to Specify Resolver response fields"
+        """Map broker response fields to Specify Resolver response fields"""
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.RESOLVED.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
