@@ -20,7 +20,7 @@ def template(name, arguments):
 
 
 def inline_static(file_path):
-    with open(os.path.join(base_dir,file_path)) as file:
+    with open(os.path.join(base_dir,file_path), 'r', encoding='utf-8') as file:
         return file.read()
 
 

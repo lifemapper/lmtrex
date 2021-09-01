@@ -58,7 +58,6 @@
 }
 
 .slider-inputs input::-webkit-slider-runnable-track {
-  margin-top: -1px;
   color: var(--bg-active);
   -webkit-appearance: none;
 }
