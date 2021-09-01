@@ -83,7 +83,7 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
         format: '@1x.png',
         params: Object.entries({
           srs: 'EPSG:3857',
-          style: 'purpleYellow.poly',
+          style: 'classic.poly',
           bin: 'hex',
           publishingOrg: publishingOrgKey,
           year: `${minYear},${maxYear}`,

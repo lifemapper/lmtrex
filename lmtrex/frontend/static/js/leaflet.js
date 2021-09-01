@@ -171,6 +171,7 @@ async function getIdbLayer(scientificName, collectionCode, options) {
     options,
     L.tileLayer(serverUrl, {
       attribution: 'iDigBio and the user community',
+      classname: 'saturated',
       ...options,
     }),
   ];
@@ -196,18 +197,19 @@ function getGbifLayers(taxonKey) {
     return [];
   return [
     [
-      { default: false, label: 'GBIF' },
+      { default: true, label: 'GBIF' },
       L.tileLayer(
         'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
         {
           attribution: '',
           source: 'density',
           format: '@1x.png',
+          className: 'saturated',
           params: Object.entries({
             srs: 'EPSG:3857',
-            style: 'purpleYellow.poly',
-            bin: 'square',
-            squareSize: '256',
+            style: 'classic.poly',
+            bin: 'hex',
+            hexPerTile: 20,
             taxonKey,
           })
             .map(([key, value]) => `${key}=${value}`)

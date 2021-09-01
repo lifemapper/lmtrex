@@ -61,3 +61,11 @@
 .leaflet-container:not(.leaflet-map-full-screen) .leaflet-print-map {
   display: none;
 }
+
+.grayscale {
+  filter: grayscale(100%) brightness(150%);
+}
+
+.saturated {
+  filter: saturate(150%);
+}
