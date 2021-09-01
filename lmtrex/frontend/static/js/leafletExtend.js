@@ -14,6 +14,7 @@ L.Control.FullScreen = L.Control.extend({
     L.DomEvent.on(control, 'click', (event) => {
       L.DomEvent.stopPropagation(event);
       L.DomEvent.preventDefault(event);
+
       const isFullScreen = map._container.classList.contains('leaflet-map-full-screen');
       if(isFullScreen) {
         map._container.classList.remove('leaflet-map-full-screen');
@@ -23,6 +24,8 @@ L.Control.FullScreen = L.Control.extend({
         map._container.classList.add('leaflet-map-full-screen');
         document.body.classList.add('full-screen');
       }
+
+      map.invalidateSize();
     });
 
     this.control = control;

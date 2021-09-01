@@ -49,7 +49,7 @@
 
 .full-screen .leaflet-container:not(.leaflet-map-full-screen),
 .full-screen table,
-.full-screen article {
+.full-screen article.issue {
   display: none;
 }
 
