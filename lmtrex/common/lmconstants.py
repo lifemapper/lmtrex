@@ -258,6 +258,9 @@ class ServiceProvider:
             ServiceProvider.Specify[S2nKey.NAME], ServiceProvider.Specify[S2nKey.PARAM]):
             return ServiceProvider.Specify
         elif param_or_name in (
+            ServiceProvider.WoRMS[S2nKey.NAME], ServiceProvider.WoRMS[S2nKey.PARAM]):
+            return ServiceProvider.WoRMS
+        elif param_or_name in (
             ServiceProvider.Broker[S2nKey.NAME], ServiceProvider.Broker[S2nKey.PARAM]):
             return ServiceProvider.Broker
         else:
@@ -293,7 +296,7 @@ class ServiceProvider:
         return [
             ServiceProvider.GBIF, ServiceProvider.iDigBio, ServiceProvider.ITISSolr, 
             ServiceProvider.Lifemapper, ServiceProvider.MorphoSource, 
-            ServiceProvider.Specify, ServiceProvider.Broker]
+            ServiceProvider.Specify, ServiceProvider.WoRMS, ServiceProvider.Broker]
 
  # .............................................................................
 
@@ -591,7 +594,7 @@ class WORMS:
     NAME_MATCH_SERVICE = 'AphiaRecordsByMatchNames'
     NAME_SERVICE = 'AphiaNameByAphiaID'
     MATCH_PARAM = 'scientificnames[]='
-    FILTER_PARAM = 'marine_only'
+    ID_FLDNAME = 'valid_AphiaID'
     
     @classmethod
     def get_species_data(cls, key):
@@ -599,6 +602,7 @@ class WORMS:
         if key:
             url = '{}/{}/{}'.format(WORMS.REST_URL, WORMS.NAME_SERVICE, key)
         return url
+
 
 # .............................................................................
 class ITIS:

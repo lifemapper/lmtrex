@@ -221,8 +221,8 @@ class ItisAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
-        view_std_fld = S2nSchema.get_view_url()
-        data_std_fld = S2nSchema.get_data_url()
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
         hierarchy_prov_fld = 'hierarchySoFarWRanks'
         synonym_prov_fld = 'synonyms'
         good_statii = ('accepted', 'valid')

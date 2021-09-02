@@ -68,8 +68,8 @@ class IdigbioAPI(APIQuery):
         newrec = {}
         to_list_fields = ('dwc:associatedSequences', 'dwc:associatedReferences')
         issue_fld = 's2n:issues'
-        view_std_fld = S2nSchema.get_view_url()
-        data_std_fld = S2nSchema.get_data_url()
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
 
         # Outer record must contain 'data' element
         try:

@@ -3,11 +3,14 @@ from http import HTTPStatus
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
+
 from lmtrex.services.api.v1.base import _S2nService
+
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
-from lmtrex.tools.utils import get_traceback
 from lmtrex.tools.provider.idigbio import IdigbioAPI
+from lmtrex.tools.provider.worms import WormsAPI
+from lmtrex.tools.utils import get_traceback
 
 # .............................................................................
 @cherrypy.expose
@@ -64,11 +67,24 @@ class NameSvc(_S2nService):
     # ...............................................
     def _get_itis_records(self, namestr, is_accepted, kingdom):
         try:
-            output = ItisAPI.match_name(
-                namestr, is_accepted=is_accepted, kingdom=kingdom)
+            output = ItisAPI.match_name(namestr, is_accepted=is_accepted, kingdom=kingdom)
         except Exception as e:
             traceback = get_traceback()
             output = IdigbioAPI.get_api_failure(
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                errinfo={'error': [traceback]})
+        else:
+            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            output.format_records(self.ORDERED_FIELDNAMES)
+        return output.response
+
+    # ...............................................
+    def _get_worms_records(self, namestr, is_accepted, kingdom):
+        try:
+            output = WormsAPI.match_name(namestr, is_accepted=is_accepted)
+        except Exception as e:
+            traceback = get_traceback()
+            output = WormsAPI.get_api_failure(
                 self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errinfo={'error': [traceback]})
         else:
@@ -97,6 +113,10 @@ class NameSvc(_S2nService):
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
                     allrecs.append(isoutput)
+                #  WoRMS
+                elif pr == ServiceProvider.WoRMS[S2nKey.PARAM]:
+                    woutput = self._get_worms_records(namestr, is_accepted, kingdom)
+                    allrecs.append(woutput)
             # TODO: enable filter parameters
             
         # Assemble
@@ -183,7 +203,11 @@ class NameSvc(_S2nService):
 if __name__ == '__main__':
     pass
     # test_names = TST_VALUES.NAMES[0:4]
-    test_names = ['Gnatholepis cauerensis (Bleeker, 1853)', 'Tulipa sylvestris']
+    test_names = [
+        'Plagiloecia patina Lamarck, 1816', 
+        # 'Gnatholepis cauerensis (Bleeker, 1853)', 
+        # 'Tulipa sylvestris']
+    ]
     
     svc = NameSvc()
     for namestr in test_names:

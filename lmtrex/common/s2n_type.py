@@ -168,6 +168,7 @@ class S2nSchema:
         'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
         'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
         
+        'county': COMMUNITY_SCHEMA.DWC,
         'stateProvince': COMMUNITY_SCHEMA.DWC,
         'country': COMMUNITY_SCHEMA.DWC,
         'countryCode': COMMUNITY_SCHEMA.DWC,
@@ -209,11 +210,11 @@ class S2nSchema:
     RANKS = ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species')
     
     @classmethod
-    def get_view_url(cls):
+    def get_view_url_fld(cls):
         return 's2n:view_url'
 
     @classmethod
-    def get_data_url(cls):
+    def get_data_url_fld(cls):
         return 's2n:api_url'
 
     @classmethod
@@ -393,8 +394,8 @@ class S2nSchema:
             std_name = '{}:{}'.format(comschem['code'], fn)
             if fn == 'view_url':
                 oldname = 'url'
-            # elif fn == 'scientific_name':
-            #     oldname = 'valid_name'
+            elif fn == 'scientific_name':
+                oldname = 'valid_authority'
             elif fn == 'canonical_name':
                 oldname = 'valid_name'
             elif fn == 'worms_valid_AphiaID':

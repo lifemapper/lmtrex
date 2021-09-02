@@ -27,8 +27,8 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        view_std_fld = S2nSchema.get_view_url()
-        data_std_fld = S2nSchema.get_data_url()
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
         for stdfld, provfld in cls.OCCURRENCE_MAP.items():
             try:
                 val = rec[provfld]

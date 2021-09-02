@@ -159,8 +159,8 @@ class GbifAPI(APIQuery):
         newrec = {}
         parse_prov_fields = ['associatedSequences', 'associatedReferences']
         to_str_prov_fields = ['year', 'month', 'day']
-        view_std_fld = S2nSchema.get_view_url()
-        data_std_fld = S2nSchema.get_data_url()
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
         issue_prov_fld = 'issues'        
         
         for stdfld, provfld in cls.OCCURRENCE_MAP.items():
@@ -199,8 +199,8 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_name_record(cls, rec):
         newrec = {}
-        view_std_fld = S2nSchema.get_view_url()
-        data_std_fld = S2nSchema.get_data_url()
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
         hierarchy_fld = 'hierarchy'
         
         for stdfld, provfld in cls.NAME_MAP.items():

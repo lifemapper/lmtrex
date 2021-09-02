@@ -36,10 +36,6 @@ class WormsAPI(APIQuery):
         """
         url = '{}/{}'.format(WORMS.REST_URL, WORMS.NAME_MATCH_SERVICE)
         other_filters[WORMS.MATCH_PARAM] = name
-        try:
-            other_filters[WORMS.FILTER_PARAM]
-        except:
-            other_filters[WORMS.FILTER_PARAM] = False
         APIQuery.__init__(self, url, other_filters=other_filters, logger=logger)
 
     # ...............................................
@@ -74,30 +70,47 @@ class WormsAPI(APIQuery):
     
     # ...............................................
     @classmethod
-    def _standardize_name_record(cls, rec):
+    def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
-        data_std_fld = S2nSchema.get_data_url()
+        data_std_fld = S2nSchema.get_data_url_fld()
+        prov_sciname_fn = 'valid_authority'
+        prov_canname_fn = 'valid_name'
         hierarchy_fld = 'hierarchy'
         
+        # Assemble scientific name
+        try:
+            auth_str = rec['valid_authority']
+        except:
+            if is_accepted is False:
+                auth_str = rec['authority']
+            else:
+                auth_str = ''
+        try:
+            canonical_str = rec['valid_name']
+        except:
+            if is_accepted is False:
+                canonical_str = rec['name']
+            else:
+                canonical_str = ''
+        sciname_str = '{}{}'.format(canonical_str, auth_str)
+            
         for stdfld, provfld in cls.NAME_MAP.items():
             try:
                 val = rec[provfld]
             except:
                 val = None
-            # Also use ID field to construct URLs
-            if stdfld == 's2n:scientific_name':
-                try:
-                    auth_str = rec['valid_authority']
-                    newrec[stdfld] = '{}{}'.format(val, auth_str)
-                except:
-                    newrec[stdfld] = val
-                    
-            elif stdfld == data_std_fld:
-                try:
-                    key = rec['valid_AphiaID']
-                    newrec[stdfld] = WORMS.get_species_data(key)
-                except:
-                    newrec[stdfld] = None
+                
+            # Special cases
+            if provfld == prov_sciname_fn:
+                newrec[stdfld] = sciname_str
+                
+            elif provfld == prov_canname_fn:
+                newrec[stdfld] = canonical_str
+                
+            # Use ID field to construct data_url
+            elif provfld == WORMS.ID_FLDNAME:
+                newrec[stdfld] = val
+                newrec[data_std_fld] = WORMS.get_species_data(val)
 
             # Assemble from other fields
             elif provfld == hierarchy_fld:
@@ -111,7 +124,7 @@ class WormsAPI(APIQuery):
                         hierarchy[rnk] = val
                 newrec[stdfld] = [hierarchy]
                 
-            # all others
+            # all others, including view_url
             else:
                 newrec[stdfld] = val
         return newrec
@@ -136,6 +149,29 @@ class WormsAPI(APIQuery):
 
     # ...............................................
     @classmethod
+    def _standardize_output(
+            cls, output, service, query_status=None, query_urls=[], is_accepted=False, errinfo={}):
+        """
+        list of lists of dictionaries
+        """
+        total = 0
+        stdrecs = []
+        # output is a list of lists of dictionaries
+        for taxconcept_lst in output:
+            for rec in taxconcept_lst:
+                total +=1
+                newrec = cls._standardize_record(rec, is_accepted=is_accepted)
+                if newrec:
+                    stdrecs.append(newrec)
+        prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
+        std_output = S2nOutput(
+            total, service, provider=prov_meta, records=stdrecs, errors=errinfo)
+        
+        return std_output
+    
+
+    # ...............................................
+    @classmethod
     def match_name(cls, namestr, is_accepted=False, logger=None):
         """Return closest accepted species in WoRMS taxonomy,
         
@@ -155,10 +191,7 @@ class WormsAPI(APIQuery):
         if is_accepted:
             status = 'accepted'
         name_clean = namestr.strip()
-        other_filters = {'name': name_clean, 'verbose': 'true'}
-        api = WormsAPI(
-            service=GBIF.SPECIES_SERVICE, key='match',
-            other_filters=other_filters, logger=logger)
+        api = WormsAPI(name_clean, other_filters={'marine_only': 'false'}, logger=logger)
         
         try:
             api.query()
@@ -171,12 +204,11 @@ class WormsAPI(APIQuery):
             if api.error:
                 errinfo['error'] =  [api.error]
             # Standardize output from provider response
-            std_output = cls._standardize_match_output(
-                api.output, status, api.status_code, query_urls=[api.url], errinfo=errinfo)
+            std_output = cls._standardize_output(
+                api.output, S2nEndpoint.Name, query_status=api.status_code, query_urls=[api.url], 
+                is_accepted=is_accepted, errinfo=errinfo)
             
         return std_output
-
-
 
 
 
