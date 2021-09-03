@@ -18,14 +18,44 @@ field_part_mapper = {
 
 # Replace field name with a label
 label_mapper = {
-    'idigbio:uuid': 'iDigBio UUID',
-    'mopho:specimen.specimen_id': 'MorphoSource Specimen ID',
+    'idigbio:uuid': 'iDigBio Record UUID',
+    'mopho:specimen.specimen_id': 'MorphoSource ID',
+    'dwc:stateProvince': 'State/Province',
+    'gbif:gbifID': 'GBIF Record ID',
+    'gbif:publishingOrgKey': 'GBIF Publisher ID',
+    's2n:specify_identifier': 'Speciify Record ID',
+    'dcterms:modified': 'Modified by Host',
 }
 
-# Replace field name and field value with label and a transformed value
+# Replace field value with a transformed value
 value_mapper = {
-
+    'gbif:publishingOrgKey': lambda publishingOrgKey:
+        template(
+            'link',
+            dict(
+                href=f'https://www.gbif.org/publisher/{publishingOrgKey}',
+                label=publishingOrgKey
+            )
+        ) if publishingOrgKey else ''
 }
+
+merge_fields = [
+    {
+        'field_names': ['dwc:year', 'dwc:month', 'dwc:day'],
+        'label': 'Collection Date',
+        'title': 'dwc:month / dwc:day / dwc:year',
+        'merge_function': lambda year, month, day:
+            template(
+                'date',
+                dict(
+                    value=
+                        '' if None in [year, month, day] \
+                        else f'{year}-{month.zfill(2)}-{day.zfill(2)}',
+                    label='Collection Date'
+                )
+            )
+    }
+]
 
 
 def label_from_field_name(field_name: str) -> str:
@@ -78,24 +108,52 @@ def default_value_formatter(value):
     else:
         return format_value(value)
 
-def map_fields(table):
+def transpose(target_list):
+    return list(zip(*target_list))
+
+def map_fields(dictionary):
     mapped_table = []
-    for row in table:
-        field_name, *values = row
+    merged_fields = []
+    for field_name, values in dictionary.items():
+
+        if field_name in merged_fields:
+            continue
 
         label = \
             label_mapper[field_name] \
             if field_name in label_mapper \
             else label_from_field_name(field_name)
 
-        resolved_value_mapper = \
-            value_mapper[field_name] \
-            if field_name in value_mapper \
-            else default_value_formatter
+        resolved_value_mapper = None
+        mapped_values = None
 
-        mapped_values = [
-            resolved_value_mapper(value) for value in values
-        ]
+        if field_name in value_mapper:
+            resolved_value_mapper = value_mapper[field_name]
+        else:
+            for mapping in merge_fields:
+                if field_name in mapping['field_names']:
+                    label = mapping['label']
+                    field_values = transpose([
+                        dictionary[field_name]
+                        if field_name in dictionary
+                        else None
+                        for field_name in mapping['field_names']
+                    ])
+                    mapped_values = [
+                        mapping['merge_function'](*values)
+                        for values in field_values
+                    ]
+                    field_name = mapping['title']
+                    merged_fields.extend(mapping['field_names'])
+                    break
+
+        if resolved_value_mapper is None:
+            resolved_value_mapper = default_value_formatter
+
+        if not mapped_values:
+            mapped_values = [
+                resolved_value_mapper(value) for value in values
+            ]
 
         mapped_table.append([
             field_name,
