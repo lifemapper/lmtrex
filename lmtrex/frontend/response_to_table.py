@@ -14,7 +14,11 @@ fields_to_exclude = [
     's2n:api_url',
     's2n:issues',
     's2n:hierarchy',
-    's2n:gbif_occurrence_url'
+    's2n:gbif_occurrence_url',
+    'dcterms:type',
+    'dwc:taxonRank',
+    'dcterms:language',
+    'dwc:scientificNameAuthorship',
 ]
 
 def unique_keys(array):
@@ -60,16 +64,13 @@ def response_to_table(responses):
             icon_url=icon_url
         ))
 
-    rows = []
+    dictionary = {}
     for key in get_response_keys(responses):
-        rows.append([
-            key,
-            *[
-                response[key]
-                if key in response
-                else ''
-                for response in responses
-            ]
-        ])
+        dictionary[key] = [
+            response[key]
+            if key in response
+            else ''
+            for response in responses
+        ]
 
-    return header_row, map_fields(rows)
+    return header_row, map_fields(dictionary)
