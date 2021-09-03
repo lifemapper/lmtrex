@@ -134,15 +134,8 @@ class S2nSchema:
         # 'provider_links': COMMUNITY_SCHEMA.S2N,
         'view_url': COMMUNITY_SCHEMA.S2N,
         'api_url': COMMUNITY_SCHEMA.S2N,
-
-        'accessRights': COMMUNITY_SCHEMA.DCT,
-        'language': COMMUNITY_SCHEMA.DCT,
-        'license': COMMUNITY_SCHEMA.DCT,
-        'modified': COMMUNITY_SCHEMA.DCT,
-        'type': COMMUNITY_SCHEMA.DCT,
         
-        # # Dictionary of contents
-        # 'taxon': COMMUNITY_SCHEMA.S2N,     # dictionary of taxonomic elements 
+        'scientificName': COMMUNITY_SCHEMA.DWC,
         'taxonRank': COMMUNITY_SCHEMA.DWC,
         'kingdom': COMMUNITY_SCHEMA.DWC,
         'phylum': COMMUNITY_SCHEMA.DWC,
@@ -150,38 +143,46 @@ class S2nSchema:
         'order': COMMUNITY_SCHEMA.DWC,
         'family': COMMUNITY_SCHEMA.DWC,
         'genus': COMMUNITY_SCHEMA.DWC,
-        'scientificName': COMMUNITY_SCHEMA.DWC,
         'specificEpithet': COMMUNITY_SCHEMA.DWC, 
         'scientificNameAuthorship': COMMUNITY_SCHEMA.DWC,
     
+        'catalogNumber': COMMUNITY_SCHEMA.DWC,
+        'collectionCode': COMMUNITY_SCHEMA.DWC,
+        'institutionCode': COMMUNITY_SCHEMA.DWC,
+        'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
+        'datasetName': COMMUNITY_SCHEMA.DWC,
+
+        'year': COMMUNITY_SCHEMA.DWC,
+        'month': COMMUNITY_SCHEMA.DWC,
+        'day': COMMUNITY_SCHEMA.DWC,
+
         'recordedBy': COMMUNITY_SCHEMA.DWC,
         'fieldNumber': COMMUNITY_SCHEMA.DWC,
-        'occurrenceID': COMMUNITY_SCHEMA.DWC, 
-        'institutionCode': COMMUNITY_SCHEMA.DWC,
-        'collectionCode': COMMUNITY_SCHEMA.DWC,
-        'catalogNumber': COMMUNITY_SCHEMA.DWC,
-        'basisOfRecord': COMMUNITY_SCHEMA.DWC,
-        'preparations': COMMUNITY_SCHEMA.DWC,
-        'datasetName': COMMUNITY_SCHEMA.DWC,
-    
-        'associatedReferences': COMMUNITY_SCHEMA.DWC,       # list of strings 
-        'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
-        'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
-        
+
+        'locality': COMMUNITY_SCHEMA.DWC,
         'county': COMMUNITY_SCHEMA.DWC,
         'stateProvince': COMMUNITY_SCHEMA.DWC,
         'country': COMMUNITY_SCHEMA.DWC,
         'countryCode': COMMUNITY_SCHEMA.DWC,
-        'locality': COMMUNITY_SCHEMA.DWC,
         'decimalLongitude': COMMUNITY_SCHEMA.DWC,
         'decimalLatitude': COMMUNITY_SCHEMA.DWC,
         'geodeticDatum': COMMUNITY_SCHEMA.DWC,
-        'year': COMMUNITY_SCHEMA.DWC,
-        'month': COMMUNITY_SCHEMA.DWC,
-        'day': COMMUNITY_SCHEMA.DWC,
+
+        'basisOfRecord': COMMUNITY_SCHEMA.DWC,
+        'preparations': COMMUNITY_SCHEMA.DWC,
+    
+        'associatedReferences': COMMUNITY_SCHEMA.DWC,       # list of strings 
+        'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
+        
         
         # S2n resolution of non-standard contents
         'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
+        
+        'accessRights': COMMUNITY_SCHEMA.DCT,
+        'language': COMMUNITY_SCHEMA.DCT,
+        'license': COMMUNITY_SCHEMA.DCT,
+        'modified': COMMUNITY_SCHEMA.DCT,
+        'type': COMMUNITY_SCHEMA.DCT,
 
         # GBIF-specific field
         'gbifID': COMMUNITY_SCHEMA.GBIF,
