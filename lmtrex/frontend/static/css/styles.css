@@ -40,24 +40,43 @@ main.sections {
   row-gap: var(--half-size);
 }
 
+article.issue h2, article.issue ul {
+  margin: 0;
+}
+
 article.issue {
-  background: #fff3cd;
   padding: var(--double-size);
   border-radius: var(--half-size);
   display: flex;
   flex-direction: column;
   row-gap: var(--size);
-  border: var(--border-size) solid #ffeeba;
 }
 
 article.issue h2, article.issue ul {
   margin: 0;
 }
 
-article.issue h2 {
-  color: var(--t3);
+.alert {
+  padding: var(--double-size);
+  border-radius: var(--half-size);
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--size);
+  border: var(--border-size) solid transparent;
 }
 
-article.issue ul {
+.alert.alert-warning {
+  background: #fff3cd;
+  border-color: #ffeeba;
   color: #856404;
+}
+
+.alert.alert-error {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.alert.alert-warning h2 {
+  color: var(--t3);
 }

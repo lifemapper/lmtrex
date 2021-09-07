@@ -1,5 +1,7 @@
-window.addEventListener('load', () => {
+function initializeMaps() {
   const mapContainer = document.getElementById('map');
+  if(!mapContainer)
+    return;
   const pre = mapContainer.getElementsByTagName('pre')[0];
   const response = JSON.parse(pre.innerText);
   pre.remove();
@@ -9,7 +11,7 @@ window.addEventListener('load', () => {
   )[0];
   const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
   drawMap(response, map, collectionMap, mapDetails);
-});
+}
 
 const extractField = (responses, aggregator, field) =>
   responses.find(

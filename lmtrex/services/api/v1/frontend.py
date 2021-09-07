@@ -33,6 +33,11 @@ class FrontendSvc(_S2nService):
             Responses from all agregators formatted as an HTML page
         """
 
+        show_loader = 'loader' not in kwargs or kwargs['loader']!='false'
+
+        if show_loader:
+            return index_template('')
+
         try:
             good_params, errors = self._standardize_params(
                 namestr=namestr,
@@ -53,8 +58,9 @@ class FrontendSvc(_S2nService):
 
         if good_params['occid'] is None and good_params['namestr'] is None:
             cherrypy.response.status = 400
-            return index_template(
-                'Invalid request URL'
+            return template(
+                'error',
+                dict(body='Invalid request URL')
             )
 
         occurrence_info = [
@@ -193,19 +199,18 @@ class FrontendSvc(_S2nService):
 
         if len(sections) == 0:
             cherrypy.response.status = 404
-            return index_template(
-                'Unable to find any information for this record'
+            return template(
+                'error',
+                dict(body='Unable to find any information for this record')
             )
 
-        return index_template(
-            template(
-                'layout',
-                dict(
-                    title=scientific_name if \
-                        scientific_name \
-                        else 'Scientific Name Unknown',
-                    sections=sections
-                )
+        return template(
+            'layout',
+            dict(
+                title=scientific_name if \
+                    scientific_name \
+                    else 'Scientific Name Unknown',
+                sections=sections
             )
         )
 

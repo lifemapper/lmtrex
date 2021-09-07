@@ -1,10 +1,10 @@
-<!Doctype html>
+<!DOCTYPE html>
 <html lang="en-US">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>SpNet</title>
-    <link rel="icon" href="https://lifemapper.ku.edu/wp-content/themes/lifemapper/images/favicon.ico">
+    <title>Specify Network</title>
+    <link rel="icon" href="https://broker-dev.spcoco.org/api/v1/badge/?provider=specify&icon_status=active">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css"
@@ -13,6 +13,7 @@
       referrerpolicy="no-referrer"
     />
     <style>${main_styles}</style>
+    <style>${loader_styles}</style>
     <style>${response_styles}</style>
     <style>${leaflet_styles}</style>
     <style>${table_styles}</style>
@@ -22,8 +23,19 @@
     <meta name="keywords" content="S^N">
     <meta name="author" content="KU Biodiversity Institute">
   </head>
-  <body>
-    ${body}
+  <body class="loading">
+    <div id="loader">
+      <div>
+        <span></span>
+        <div class="logo-container">
+          <div class="logo">
+            <img src="https://broker-dev.spcoco.org/api/v1/badge/?provider=specify&icon_status=active" alt="Specify Network Logo"/>
+          </div>
+        </div>
+        <h1>Loading...</h1>
+      </div>
+    </div>
+    <div id="content">${body}</div>
     <script>${main_script}</script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"

@@ -34,6 +34,7 @@ def index_template(body):
             key: inline_static(file_path)
             for key, file_path in [
                 ['main_styles', 'static/css/styles.css'],
+                ['loader_styles', 'static/css/loader.css'],
                 ['response_styles', 'static/css/response.css'],
                 ['leaflet_styles', 'static/css/leaflet.css'],
                 ['table_styles', 'static/css/table.css'],
