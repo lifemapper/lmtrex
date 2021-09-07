@@ -17,7 +17,7 @@ def format_list(values: List[any]) -> str:
             formatted list
     """
     if not values:
-        return "(no data)"
+        return ''
     else:
         fields = {
             "[%d]" % index: value for index, value in enumerate(values)
@@ -118,7 +118,7 @@ def format_dict(
             formatted list
     """
     if not fields:
-        return "(no data)"
+        return ''
     else:
         fields = [
             format_line(label, format_value(value))

@@ -20,6 +20,12 @@ fields_to_exclude = [
     'dwc:taxonRank',
     'dcterms:language',
     'dwc:scientificNameAuthorship',
+    's2n:worms_isMarine',
+    's2n:worms_isBrackish',
+    's2n:worms_isFreshwater',
+    's2n:worms_isTerrestrial',
+    's2n:worms_isExtinct',
+    's2n:worms_match_type',
 ]
 
 def unique_keys(array):

@@ -14,6 +14,9 @@ field_part_mapper = {
     'id': 'ID',
     'uuid': 'UUID',
     'url': 'URL',
+    'tsn': 'TSN',
+    'lsid': 'LSID',
+    'worms': 'WoRMS',
 }
 
 # Replace field name with a label
@@ -23,20 +26,22 @@ label_mapper = {
     'dwc:stateProvince': 'State/Province',
     'gbif:gbifID': 'GBIF Record ID',
     'gbif:publishingOrgKey': 'GBIF Publisher ID',
-    's2n:specify_identifier': 'Speciify Record ID',
+    's2n:specify_identifier': 'Specify Record ID',
     'dcterms:modified': 'Modified by Host',
+    'dwc:decimalLongitude': 'Longitude',
+    'dwc:decimalLatitude': 'Latitude',
 }
 
 # Replace field value with a transformed value
 value_mapper = {
-    'gbif:publishingOrgKey': lambda publishingOrgKey:
+    'gbif:publishingOrgKey': lambda publishing_org_key:
         template(
             'link',
             dict(
-                href=f'https://www.gbif.org/publisher/{publishingOrgKey}',
-                label=publishingOrgKey
+                href=f'https://www.gbif.org/publisher/{publishing_org_key}',
+                label=publishing_org_key
             )
-        ) if publishingOrgKey else ''
+        ) if publishing_org_key else ''
 }
 
 merge_fields = [
