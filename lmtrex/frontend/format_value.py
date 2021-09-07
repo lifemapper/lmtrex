@@ -103,7 +103,8 @@ def format_line(
 
 
 def format_dict(
-    fields: Dict[str, any], is_list_of_values: bool = False
+    fields: Dict[str, any],
+    is_list_of_values: bool = False
 ) -> str:
     """
     Format a dict.

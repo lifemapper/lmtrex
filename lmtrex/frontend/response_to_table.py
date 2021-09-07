@@ -14,7 +14,6 @@ fields_to_exclude = [
     's2n:view_url',
     's2n:api_url',
     's2n:issues',
-    's2n:hierarchy',
     's2n:gbif_occurrence_url',
     'dcterms:type',
     'dwc:taxonRank',
@@ -25,7 +24,23 @@ fields_to_exclude = [
     's2n:worms_isFreshwater',
     's2n:worms_isTerrestrial',
     's2n:worms_isExtinct',
-    's2n:worms_match_type',
+    'dwc:kingdom',
+    'dwc:phylum',
+    'dwc:class',
+    'dwc:order',
+]
+
+fields_to_exclude_specific = [
+    {
+        "service": "name",
+        "provider": "itis",
+        "field": "s2n:hierarchy",
+    },
+    {
+        "service": "name",
+        "provider": "worms",
+        "field": "s2n:hierarchy",
+    }
 ]
 
 def unique_keys(array):
@@ -55,6 +70,18 @@ def get_response_keys(responses):
         key for key in unique_keys(all_keys) if key not in fields_to_exclude
     ]
 
+def get_value(response, key):
+    if key not in response:
+        return ''
+    for item in fields_to_exclude_specific:
+        if item['field'] == key \
+            and item['service'] == response['internal:service'] \
+            and item['provider'] == response['internal:provider']['code']:
+            return ''
+
+    return response[key]
+
+
 def response_to_table(responses):
     header_row = []
     for response in responses:
@@ -74,9 +101,7 @@ def response_to_table(responses):
     dictionary = {}
     for key in get_response_keys(responses):
         dictionary[key] = [
-            response[key]
-            if key in response
-            else ''
+            get_value(response,key)
             for response in responses
         ]
 

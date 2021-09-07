@@ -2,7 +2,7 @@
 
 import re
 
-from lmtrex.frontend.format_value import format_list, format_value
+from lmtrex.frontend.format_value import format_value
 
 # Replace a word with a mapped variant
 from lmtrex.frontend.templates import template
@@ -30,6 +30,7 @@ label_mapper = {
     'dcterms:modified': 'Modified by Host',
     'dwc:decimalLongitude': 'Longitude',
     'dwc:decimalLatitude': 'Latitude',
+    's2n:worms_match_type': 'WoRMS Match Type'
 }
 
 # Replace field value with a transformed value

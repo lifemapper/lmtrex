@@ -17,7 +17,7 @@
 }
 
 .collapsed .value::after {
-  content: "{...}";
+  content: "(collapsed)";
 }
 
 .collapsed:hover > .value::after {
