@@ -17,13 +17,15 @@ def table_data_to_html(
                         'th_for_col',
                         {
                             'icon_url': header_cell['icon_url'],
-                            'label': template(
-                                'link',
-                                dict(
-                                    href=header_cell['view_url'],
-                                    label=header_cell['label']
+                            'label': f"""{header_cell['label']} {
+                                template(
+                                    'link',
+                                    dict(
+                                        href=header_cell['view_url'],
+                                        label='(see more)'
+                                    )
                                 )
-                            )
+                            }"""
                         } if header_cell['view_url'] else header_cell
                     )
                     for header_cell in header_row
