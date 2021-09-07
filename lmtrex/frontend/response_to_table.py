@@ -2,6 +2,7 @@ from itertools import combinations
 
 from lmtrex.frontend.helpers import provider_label_to_icon_url
 from lmtrex.frontend.field_mapper import map_fields
+from lmtrex.frontend.reorder_fields import reorder_fields
 
 def flatten_array(array):
     return [item for sublist in array for item in sublist]
@@ -73,4 +74,4 @@ def response_to_table(responses):
             for response in responses
         ]
 
-    return header_row, map_fields(dictionary)
+    return header_row, map_fields(reorder_fields(dictionary))
