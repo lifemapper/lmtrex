@@ -82,3 +82,12 @@
 .dictionary-label:hover::after {
   color: var(--t1);
 }
+
+input[type="date"] {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+}

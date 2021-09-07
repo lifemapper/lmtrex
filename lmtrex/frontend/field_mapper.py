@@ -45,12 +45,11 @@ merge_fields = [
         'label': 'Collection Date',
         'title': 'dwc:month / dwc:day / dwc:year',
         'merge_function': lambda year, month, day:
-            template(
+            '' if None in [year, month, day]
+            else template(
                 'date',
                 dict(
-                    value=
-                        '' if None in [year, month, day] \
-                        else f'{year}-{month.zfill(2)}-{day.zfill(2)}',
+                    value=f'{year}-{month.zfill(2)}-{day.zfill(2)}',
                     label='Collection Date'
                 )
             )
