@@ -38,14 +38,18 @@ class SpecifyPortalAPI(APIQuery):
     @classmethod
     def _standardize_sp6_record(cls, rec):
         newrec = {}
+        to_str_prov_fields = ['year', 'month', 'day']
         mapping = S2nSchema.get_specifycache_occurrence_map()
         for stdfld, provfld in mapping.items():
             try:
                 val = rec[provfld]
             except:
                 val = None
-
-            newrec[stdfld] = val
+            # Modify int date elements to string (to match iDigBio)
+            if val and provfld in to_str_prov_fields:
+                newrec[stdfld] = str(val)
+            else:
+                newrec[stdfld] =  val
         return newrec
                 
     # ...............................................
