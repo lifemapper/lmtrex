@@ -210,7 +210,7 @@ class FrontendSvc(_S2nService):
             if section
         ]
 
-        if len(sections) == 0:
+        if len(sections) == 0 or not scientific_name:
             cherrypy.response.status = 404
             return template(
                 'error',

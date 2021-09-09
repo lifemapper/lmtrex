@@ -57,7 +57,7 @@ value_mapper = {
                 label=extract_morphosource_id(specimen_view_url)
             )
         ) if extract_morphosource_id(specimen_view_url)
-        else specimen_view_url
+        else specimen_view_url if specimen_view_url else ''
 }
 
 merge_fields = [

@@ -11,6 +11,7 @@ L.Control.FullScreen = L.Control.extend({
         <path d="M0 13H2V18H7V20H0Z"/>
       </svg>`;
 
+    let scrollTop = 0;
     L.DomEvent.on(control, 'click', (event) => {
       L.DomEvent.stopPropagation(event);
       L.DomEvent.preventDefault(event);
@@ -19,8 +20,14 @@ L.Control.FullScreen = L.Control.extend({
       if(isFullScreen) {
         map._container.classList.remove('leaflet-map-full-screen');
         document.body.classList.remove('full-screen');
+        window.scrollTo({
+          left: 0,
+          top: scrollTop,
+          behavior: 'auto',
+        });
       }
       else {
+        scrollTop = window.scrollY;
         map._container.classList.add('leaflet-map-full-screen');
         document.body.classList.add('full-screen');
       }

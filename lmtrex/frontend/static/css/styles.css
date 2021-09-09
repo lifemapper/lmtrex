@@ -80,7 +80,7 @@ article {
 }
 
 .alert {
-  padding: var(--double-size);
+  padding: var(--size);
   border-radius: var(--half-size);
   display: flex;
   flex-direction: column;
