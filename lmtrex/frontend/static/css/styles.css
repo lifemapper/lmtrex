@@ -5,8 +5,8 @@
   --t1: #666;
   --t2: #888;
   --t3: #000;
-  --red: #f00;
-  --green: #0f0;
+  --red: #a00;
+  --green: #0a0;
   --border-color: #888;
   --darken: #000c;
 
@@ -28,13 +28,34 @@ body {
   box-sizing: border-box;
 }
 
-h2, h3, ul, p {
+h1, h2, h3, h4, ul, p {
   margin: 0;
   padding: 0;
 }
 
 li {
   margin-left: var(--double-size);
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--size);
+}
+
+header h1 {
+  display: flex;
+  align-items: center;
+  column-gap: var(--half-size);
+  justify-content: flex-end;
+  border-bottom: var(--border-size) solid var(--t3);
+  padding-bottom: var(--size);
+  font-weight: normal;
+  margin: var(--size) 0;
+}
+
+header h1 img {
+  width: var(--double-size);
 }
 
 main.sections {
@@ -53,6 +74,11 @@ article {
   row-gap: var(--half-size);
 }
 
+#issues article {
+  padding: var(--size);
+  border: var(--border-size) solid var(--t3);
+}
+
 .alert {
   padding: var(--double-size);
   border-radius: var(--half-size);
@@ -68,6 +94,6 @@ article {
   color: #721c24;
 }
 
-.alert.alert-warning h2 {
+.alert.alert-warning h3 {
   color: var(--t3);
 }

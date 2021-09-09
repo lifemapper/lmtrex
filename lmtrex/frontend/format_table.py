@@ -36,7 +36,7 @@ def table_data_to_html(
                     'tr',
                     dict(
                         class_name='identical' \
-                            if len(set(cells))==1
+                            if len(set([cell for cell in cells if cell]))==1
                             else '',
                         cells=[
                             template(

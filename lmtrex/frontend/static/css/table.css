@@ -50,6 +50,6 @@ tbody td {
   word-break: break-word;
 }
 
-tr.identical td {
-  color: var(--t2);
+tr:not(.identical) td {
+  color: var(--red);
 }
