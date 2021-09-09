@@ -1,24 +1,25 @@
 from collections import OrderedDict
 from http import HTTPStatus
+import pykew.ipni as ipni
+from pykew.ipni_terms import Name
 import urllib
 
 from lmtrex.common.lmconstants import (
-    ENCODING, GBIF, ServiceProvider, URL_ESCAPES, WORMS)
+    ENCODING, ServiceProvider, URL_ESCAPES, WORMS)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
 
-
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils  import get_traceback, add_errinfo
+from lmtrex.tools.utils  import get_traceback
 
 # .............................................................................
-class WormsAPI(APIQuery):
+class IpniAPI(APIQuery):
     """Class to query WoRMS API for a name match
     
     Todo:
         Extend for other services
     """
-    PROVIDER = ServiceProvider.WoRMS
-    NAME_MAP = S2nSchema.get_worms_name_map()
+    PROVIDER = ServiceProvider.IPNI
+    # NAME_MAP = S2nSchema.get_ipni_name_map()
     
     # ...............................................
     def __init__(self, name, other_filters={}, logger=None):
@@ -169,22 +170,30 @@ class WormsAPI(APIQuery):
     # ...............................................
     @classmethod
     def match_name(cls, namestr, is_accepted=False, logger=None):
-        """Return closest accepted species in WoRMS taxonomy,
+        """Return closest accepted species in IPNI taxonomy,
         
         Args:
             namestr: A scientific namestring possibly including author, year, 
                 rank marker or other name information.
-            is_accepted: if True, return the validName in the WoRMS record, otherwise return the Name
+            is_accepted: match the ACCEPTED TaxonomicStatus 
                 
         Returns:
-            Either a dictionary containing a matching record .  
+            Either a dictionary containing a matching record with status 
+                'accepted' or 'synonym' without 'alternatives'.  
+            Or, if there is no matching record, return the first/best 
+                'alternative' record with status 'accepted' or 'synonym'.
         """
         status = None
         errinfo = {}
         if is_accepted:
             status = 'accepted'
         name_clean = namestr.strip()
-        api = WormsAPI(name_clean, other_filters={'marine_only': 'false'}, logger=logger)
+        
+        query = { Name.genus: 'Poa', Name.species: 'annua' }
+        res = ipni.search(query)
+
+        
+        api = IpniAPI(name_clean, other_filters={'marine_only': 'false'}, logger=logger)
         
         try:
             api.query()
@@ -219,3 +228,23 @@ class WormsAPI(APIQuery):
 if __name__ == '__main__':
     # test
     pass
+
+
+"""
+import pykew.ipni as ipni
+import pykew.powo as powo
+
+from pykew.ipni_terms import Name
+from pykew.powo_terms import Filter
+
+gn = 'Poa'
+sp = 'annua'
+
+can = '{} {}'.format(gn, sp)
+filter = { Name.genus: 'Poa', Name.species: 'annua' }
+
+res1 = ipni.search(can)
+res2 = ipni.search(filter)
+
+
+"""
