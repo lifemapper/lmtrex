@@ -190,6 +190,11 @@ class ServiceProvider:
                  'inactive': '{}/idigbio_colors_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/idigbio_colors_hover-01.png'.format(ICON_DIR)}
         }
+    IPNI = {
+        S2nKey.NAME: 'IPNI', 
+        S2nKey.PARAM: 'ipni', 
+        S2nKey.SERVICES: [S2nEndpoint.Name]
+        }
     ITISSolr = {
         S2nKey.NAME: 'ITIS', 
         S2nKey.PARAM: 'itis', 
