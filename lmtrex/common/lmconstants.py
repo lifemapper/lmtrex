@@ -230,7 +230,7 @@ class ServiceProvider:
                  'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
     # TODO: need an WoRMS badge
     WoRMS = {
-        S2nKey.NAME: 'World Register of Marine Species, WoRMS', 
+        S2nKey.NAME: 'WoRMS',
         S2nKey.PARAM: 'worms', 
         S2nKey.SERVICES: [S2nEndpoint.Name],
         # 'icon': {}

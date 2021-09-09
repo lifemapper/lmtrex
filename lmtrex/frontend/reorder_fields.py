@@ -1,5 +1,6 @@
 field_order = {
     'gbif:acceptedScientificName': {'after': 'dwc:scientificName'},
+    'dwc:datasetName': {'after': 'dwc:specificEpithet'},
 }
 
 

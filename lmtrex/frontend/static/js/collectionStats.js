@@ -8,9 +8,7 @@ async function getGbifMeta(publishingOrgKey) {
 async function showCollectionStats(publishingOrgKey, collectionMap) {
   if(!publishingOrgKey)
     return;
-  document.getElementsByClassName(
-    'gbif-collection-map'
-  )[0].style.display = '';
+  document.getElementById('collection-distribution').style.display = 'block';
 
   const { minYear, maxYear } = await getGbifMeta(publishingOrgKey);
 

@@ -22,7 +22,7 @@ def table_data_to_html(
                                     'link',
                                     dict(
                                         href=header_cell['view_url'],
-                                        label='(see more)'
+                                        label='(link)'
                                     )
                                 )
                             }"""
