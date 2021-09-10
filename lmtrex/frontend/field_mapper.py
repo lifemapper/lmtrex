@@ -30,7 +30,8 @@ label_mapper = {
     'dcterms:modified': 'Modified by Host',
     'dwc:decimalLongitude': 'Longitude',
     'dwc:decimalLatitude': 'Latitude',
-    's2n:worms_match_type': 'WoRMS Match Type'
+    's2n:worms_match_type': 'WoRMS Match Type',
+    's2n:hierarchy': 'Classification',
 }
 
 def extract_morphosource_id(link):
