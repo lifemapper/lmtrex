@@ -251,6 +251,9 @@ class ServiceProvider:
             ServiceProvider.iDigBio[S2nKey.NAME], ServiceProvider.iDigBio[S2nKey.PARAM]):
             return ServiceProvider.iDigBio
         elif param_or_name in (
+            ServiceProvider.IPNI[S2nKey.NAME], ServiceProvider.IPNI[S2nKey.PARAM]):
+            return ServiceProvider.IPNI
+        elif param_or_name in (
             ServiceProvider.ITISSolr[S2nKey.NAME], ServiceProvider.ITISSolr[S2nKey.PARAM]):
             return ServiceProvider.ITISSolr
         elif param_or_name in (
@@ -299,8 +302,8 @@ class ServiceProvider:
     @classmethod
     def all(cls):
         return [
-            ServiceProvider.GBIF, ServiceProvider.iDigBio, ServiceProvider.ITISSolr, 
-            ServiceProvider.Lifemapper, ServiceProvider.MorphoSource, 
+            ServiceProvider.GBIF, ServiceProvider.iDigBio, ServiceProvider.IPNI, 
+            ServiceProvider.ITISSolr, ServiceProvider.Lifemapper, ServiceProvider.MorphoSource, 
             ServiceProvider.Specify, ServiceProvider.WoRMS, ServiceProvider.Broker]
 
  # .............................................................................
@@ -608,7 +611,9 @@ class WORMS:
             url = '{}/{}/{}'.format(WORMS.REST_URL, WORMS.NAME_SERVICE, key)
         return url
 
-
+class IPNI:
+    base_url = 'http://beta.ipni.org/api/1'
+    
 # .............................................................................
 class ITIS:
     """ITIS constants enumeration
