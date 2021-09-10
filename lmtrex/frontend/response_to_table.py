@@ -24,10 +24,15 @@ fields_to_exclude = [
     's2n:worms_isFreshwater',
     's2n:worms_isTerrestrial',
     's2n:worms_isExtinct',
+    's2n:kingdom',
     'dwc:kingdom',
     'dwc:phylum',
     'dwc:class',
     'dwc:order',
+    'dwc:associatedReferences',
+    'dwc:associatedSequences',
+    'dcterms:accessRights',
+    'dcterms:license',
 ]
 
 fields_to_exclude_specific = [

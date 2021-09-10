@@ -230,11 +230,13 @@ class ServiceProvider:
                  'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
     # TODO: need an WoRMS badge
     WoRMS = {
-        S2nKey.NAME: 'World Register of Marine Species, WoRMS', 
+        S2nKey.NAME: 'WoRMS',
         S2nKey.PARAM: 'worms', 
-        S2nKey.SERVICES: [S2nEndpoint.Name],
-        # 'icon': {}
+        S2nKey.SERVICES: [S2nEndpoint.Badge, S2nEndpoint.Name],
+        'icon': {
+            'active': '{}/worms_active.png'.format(ICON_DIR),
         }
+    }
     # TODO: need a Broker badge
     Broker = {
         S2nKey.NAME: 'Specify Network', 

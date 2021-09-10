@@ -36,6 +36,9 @@ class BadgeSvc(_S2nService):
         # Specify
         elif provider == ServiceProvider.Specify[S2nKey.PARAM]:
             fname = ServiceProvider.Specify['icon'][icon_status]
+        # WoRMS
+        elif provider == ServiceProvider.WoRMS[S2nKey.PARAM]:
+            fname = ServiceProvider.WoRMS['icon'][icon_status]
         # Not yet defined
         else:
             return None

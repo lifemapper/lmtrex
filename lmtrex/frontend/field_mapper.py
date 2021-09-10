@@ -30,8 +30,15 @@ label_mapper = {
     'dcterms:modified': 'Modified by Host',
     'dwc:decimalLongitude': 'Longitude',
     'dwc:decimalLatitude': 'Latitude',
-    's2n:worms_match_type': 'WoRMS Match Type'
+    's2n:worms_match_type': 'WoRMS Match Type',
+    's2n:hierarchy': 'Classification',
 }
+
+def extract_morphosource_id(link):
+    if not link or not link.startswith('https://www'):
+        return False
+    match = re.search(r'/[^/]+$', link)
+    return match.group()[1:] if match else False
 
 # Replace field value with a transformed value
 value_mapper = {
@@ -42,7 +49,16 @@ value_mapper = {
                 href=f'https://www.gbif.org/publisher/{publishing_org_key}',
                 label=publishing_org_key
             )
-        ) if publishing_org_key else ''
+        ) if publishing_org_key else '',
+    'mopho:specimen.specimen_id': lambda specimen_view_url:
+        template(
+            'link',
+            dict(
+                href=specimen_view_url,
+                label=extract_morphosource_id(specimen_view_url)
+            )
+        ) if extract_morphosource_id(specimen_view_url)
+        else specimen_view_url if specimen_view_url else ''
 }
 
 merge_fields = [

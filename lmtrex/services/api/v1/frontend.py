@@ -67,13 +67,32 @@ class FrontendSvc(_S2nService):
             {
                 'internal:service': response['service'],
                 'internal:provider': response['provider'],
-                **response['records'][0]
+                **response['records'][0],
+                # 'mopho:specimen.specimen_id':
             }
             for response in serialize_response(
                 OccurrenceSvc().GET(occid=good_params['occid'])['records']
             )
             if len(response['records'])>0
         ] if good_params['occid'] else []
+
+        morpho_source_responses = [
+            response
+            for response in occurrence_info
+            if response['internal:provider']['code'] == 'mopho'
+        ]
+        if morpho_source_responses:
+            morpho_source_response = response_to_table(
+                morpho_source_responses)
+            occurrence_info = [
+                {
+                    **response,
+                    'mopho:specimen.specimen_id':
+                        response['mopho:specimen.specimen_id']
+                        if response['mopho:specimen.specimen_id']
+                        else morpho_source_response[0][0]['view_url']
+                } for response in occurrence_info
+            ]
 
         scientific_names = [
             response['dwc:scientificName']
@@ -95,7 +114,7 @@ class FrontendSvc(_S2nService):
             if len(response['records']) > 0
         ] if scientific_name else []
 
-        issues = {}
+        issues = []
         for response in occurrence_info:
             if 's2n:issues' not in response:
                 continue
@@ -104,26 +123,13 @@ class FrontendSvc(_S2nService):
             if not provider_issues:
                 continue
 
-            label = response['internal:provider']['label']
-            formatted_issues = [
-                f'{message} ({key})'
-                for key, message in provider_issues.items()
-            ]
-            issues[label] = formatted_issues
-
-        morpho_source_responses = [
-            response
-            for response in occurrence_info
-            if response['internal:provider']['code'] == 'mopho'
-        ]
-        if morpho_source_responses:
-            morpho_source_response = response_to_table(morpho_source_responses)
-            morpho_source_response = template(
-                'inline_section',
-                morpho_source_response[0][0]
-            )
-        else:
-            morpho_source_response = ''
+            issues.append({
+                'provider':response['internal:provider'],
+                'issues': [
+                    f'{message} ({key})'
+                    for key, message in provider_issues.items()
+                ]
+            })
 
         occurrence_info = [
             response
@@ -137,35 +143,45 @@ class FrontendSvc(_S2nService):
             rows,
         )
 
-        occurrence_sections = [
-            section
-            for section in [
-                morpho_source_response,
-                *[
+        issues_section=template(
+            'section',
+            dict(
+                label='Data Quality',
+                anchor='issues',
+                content=[
                     template(
-                        'issue_block',
+                        'subsection',
                         dict(
-                            label=label,
-                            provider_issues=[
-                                template('li', dict(content=issue))
-                                for issue in provider_issues
-                            ]
+                            label=(
+                                "Reported by "
+                                f"{issue_block['provider']['label']}"
+                            ),
+                            anchor=f"issues_{issue_block['provider']['code']}",
+                            content=template(
+                                'ul',
+                                dict(
+                                    items=[
+                                        template('li', dict(content=issue))
+                                        for issue in issue_block['issues']
+                                    ]
+                                )
+                            )
                         )
                     )
-                    for label, provider_issues in issues.items()
-                ],
-                occurrence_table
-            ]
-            if section
-        ]
+                    for issue_block in issues
+                ]
+            )
+        ) if issues else ''
+
         occurrence_section = template(
             'section',
             dict(
                 anchor='occ',
-                label='Occurrence data',
-                content=occurrence_sections
+                label='Collection Object',
+                content=occurrence_table
             )
-        ) if occurrence_sections else ''
+        ) if occurrence_table else ''
+
 
         header_row, rows = response_to_table(name_info)
         name_table = table_data_to_html(
@@ -176,20 +192,17 @@ class FrontendSvc(_S2nService):
             'section',
             dict(
                 anchor='name',
-                label='Species data',
+                label='Taxonomy',
                 content=name_table
             )
         ) if name_table else ''
 
-        leaflet_map_data = leaflet(occurrence_info, name_info, scientific_name)
-        leaflet_map_section = \
-            template('section', leaflet_map_data) \
-            if leaflet_map_data \
-            else ''
+        leaflet_map_section = leaflet(occurrence_info, name_info, scientific_name)
 
         sections = [
             section
             for section in [
+                issues_section,
                 occurrence_section,
                 name_section,
                 leaflet_map_section
@@ -197,7 +210,7 @@ class FrontendSvc(_S2nService):
             if section
         ]
 
-        if len(sections) == 0:
+        if len(sections) == 0 or not scientific_name:
             cherrypy.response.status = 404
             return template(
                 'error',

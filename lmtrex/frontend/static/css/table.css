@@ -13,11 +13,19 @@ thead td, th {
   border: var(--border-size) solid var(--t3);
 }
 
+thead th {
+  font-size: var(--size);
+}
+
+thead th {
+  font-size: calc(var(--size) * 1.2);
+}
+
 th {
   background: var(--b3);
 }
 
-thead div, .inline-section {
+thead div {
   display: flex;
   column-gap: var(--half-size);
   justify-content: center;
@@ -42,14 +50,6 @@ tbody td {
   word-break: break-word;
 }
 
-tr.identical td {
-  color: var(--t2);
-}
-
-.inline-section {
-  display: inline-flex;
-}
-
-.inline-section span {
-  display: contents;
+tr:not(.identical) td {
+  color: var(--red);
 }

@@ -8,9 +8,7 @@ async function getGbifMeta(publishingOrgKey) {
 async function showCollectionStats(publishingOrgKey, collectionMap) {
   if(!publishingOrgKey)
     return;
-  document.getElementsByClassName(
-    'gbif-collection-map'
-  )[0].style.display = '';
+  document.getElementById('collection-distribution').style.display = 'block';
 
   const { minYear, maxYear } = await getGbifMeta(publishingOrgKey);
 
@@ -62,11 +60,13 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
     input.addEventListener('change', changeHandler);
   });
 
+  const labelsLayer = Object.values(leafletTileServers['overlays'])[0]();
   const baseLayer = Object.values(leafletTileServers['baseMaps'])[0]();
 
   const map = L.map(collectionMap, {
     maxZoom: 23,
-    layers: [baseLayer],
+    layers: [baseLayer, labelsLayer],
+    gestureHandling: true
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
   addFullScreenButton(map);
@@ -93,6 +93,7 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
       }
     );
     overlay.addTo(map);
+    labelsLayer.bringToFront();
   }
   redrawMap(defaultMinValue, defaultMaxValue);
 }

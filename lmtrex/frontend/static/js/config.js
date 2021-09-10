@@ -39,6 +39,7 @@ const leafletTileServers = {
         {
           attribution:
             'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',
+          className: 'darkened',
         }
       ),
   },
