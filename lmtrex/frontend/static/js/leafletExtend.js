@@ -25,11 +25,13 @@ L.Control.FullScreen = L.Control.extend({
           top: scrollTop,
           behavior: 'auto',
         });
+        map.gestureHandling.enable();
       }
       else {
         scrollTop = window.scrollY;
         map._container.classList.add('leaflet-map-full-screen');
         document.body.classList.add('full-screen');
+        map.gestureHandling.disable();
       }
 
       map.invalidateSize();
