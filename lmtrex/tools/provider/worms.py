@@ -75,19 +75,19 @@ class WormsAPI(APIQuery):
         
         # Assemble scientific name
         try:
-            auth_str = rec['valid_authority']
-        except:
-            if is_accepted is False:
-                auth_str = rec['authority']
-            else:
-                auth_str = ''
-        try:
             canonical_str = rec['valid_name']
         except:
             if is_accepted is False:
                 canonical_str = rec['name']
             else:
                 canonical_str = ''
+        try:
+            auth_str = rec['valid_authority']
+        except:
+            if is_accepted is False:
+                auth_str = ' {}'.format(rec['authority'])
+            else:
+                auth_str = ''
         sciname_str = '{}{}'.format(canonical_str, auth_str)
             
         for stdfld, provfld in cls.NAME_MAP.items():
