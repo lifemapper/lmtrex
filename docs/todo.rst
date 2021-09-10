@@ -6,3 +6,8 @@ https://services.tropicos.org/
 
 https://globalnames.org/docs/home/
 
+Synchronous API calls
+----------------------
+
+https://docs.aiohttp.org/en/stable/
+pip install aiohttp[speedups]
