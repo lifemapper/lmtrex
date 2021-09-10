@@ -428,12 +428,14 @@ class S2nSchema:
         stdfld_provfld = OrderedDict()
         for fn, comschem in S2nSchema.MAP.items():
             std_name = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'species_name':
-                stdfld_provfld[std_name] = 'speciesName'
-            elif fn == 'lm_status_code':
-                stdfld_provfld[std_name] = 'status'
+            # Handle species name in standardize_record - 
+            # there are 2 different spellings in LM response
+            # if fn == 'species_name':
+            #     stdfld_provfld[std_name] = 'speciesName'
+            if fn == 'api_url':
+                stdfld_provfld[std_name] = 'url'
             elif fn == 'modtime':
-                stdfld_provfld[std_name] = 'modtime'
+                stdfld_provfld[std_name] = 'status_mod_time'
             else:
                 stdfld_provfld[std_name] = fn
         return stdfld_provfld
