@@ -68,38 +68,55 @@ class IdigbioAPI(APIQuery):
         newrec = {}
         to_list_fields = ('dwc:associatedSequences', 'dwc:associatedReferences')
         issue_fld = 's2n:issues'
+        cc_std_fld = 'dwc:countryCode'
         view_std_fld = S2nSchema.get_view_url_fld()
         data_std_fld = S2nSchema.get_data_url_fld()
 
-        # Outer record must contain 'data' element
+        # Outer record must contain 'data' and may contain 'indexTerms' elements
         try:
             data_elt = big_rec['data']
         except Exception as e:
             pass
         else:
+            # Pull uuid from outer record
+            try:
+                uuid = big_rec[Idigbio.ID_FIELD]
+            except:
+                print('Record missing uuid field')
+                uuid = None
+
+            # Pull indexTerms from outer record
+            try:
+                idx_elt = big_rec['indexTerms']
+            except Exception as e:
+                pass
+            else:
+                # Pull optional 'flags' element from 'indexTerms'
+                try:
+                    issue_codes = idx_elt['flags']
+                except Exception:
+                    issue_codes = None
+                try:
+                    ctry_code = idx_elt['countrycode']
+                except Exception:
+                    ctry_code = None
+
+                    
             # Iterate over desired output fields
             for stdfld, provfld in cls.OCCURRENCE_MAP.items():
                 # Include ID fields and issues even if empty
                 if provfld == Idigbio.ID_FIELD:
-                    # Pull uuid from outer record
-                    try:
-                        uuid = big_rec[Idigbio.ID_FIELD]
-                    except:
-                        print('Record missing uuid field')
-                        uuid = None
                     newrec[stdfld] = uuid                    
                     newrec[view_std_fld] = Idigbio.get_occurrence_view(uuid)
                     newrec[data_std_fld] = Idigbio.get_occurrence_data(uuid)
                     
                 elif provfld == issue_fld:
-                    # Pull optional 'flags' element from outer record 'indexTerms'
-                    try:
-                        issue_codes = big_rec['indexTerms']['flags']
-                    except Exception:
-                        issue_codes = None                    
                     newrec[stdfld] = cls._get_code2description_dict(
                         issue_codes, ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]])
                 
+                elif stdfld == cc_std_fld:
+                    newrec[stdfld] = ctry_code
+                    
                 else:
                     # all other fields are pulled from data element
                     try:
