@@ -69,3 +69,46 @@
 .saturated {
   filter: saturate(150%);
 }
+
+.leaflet-legend-gradient {
+  --left-color: transparent;
+  --right-color: transparent;
+  background: linear-gradient(90deg, var(--left-color), var(--right-color));
+  display: flex;
+  justify-content: space-between;
+  padding: var(--quarter-size);
+  flex: 1;
+}
+
+.leaflet-legend-gradient:before {
+  content: '0';
+}
+
+.leaflet-legend-gradient:after {
+  content: '100+';
+}
+
+.leaflet-legend-point {
+  --color: transparent;
+  background: var(--color);
+  width: var(--size);
+  height: var(--size);
+  display: inline-block;
+  border-radius: 100vw;
+}
+
+.leaflet-control-layers-overlays > label > div {
+  display: flex;
+  column-gap: var(--half-size);
+  align-items: center;
+}
+
+.leaflet-control-layers-overlays > label > div > span {
+  display: contents;
+}
+
+.leaflet-control-layers-selector {
+  margin: 0;
+  padding: 0;
+  position: static;
+}

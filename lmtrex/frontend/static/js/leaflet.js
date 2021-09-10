@@ -183,9 +183,12 @@ async function getIdbLayers(scientificName, collectionCode) {
   if (!scientificName) return [];
 
   const layers = await Promise.all([
-    getIdbLayer(scientificName, undefined, { label: 'iDigBio', default: true }),
+    getIdbLayer(scientificName, undefined, {
+      label: `iDigBio ${legendPoint('#e68')}`,
+      default: true
+    }),
     getIdbLayer(scientificName, collectionCode, {
-      label: `iDigBio (${collectionCode} points only)`,
+      label: `iDigBio (${collectionCode} points only) ${legendPoint('#197')}`,
       default: true,
       className: 'idb-local-points',
     }),
@@ -194,12 +197,24 @@ async function getIdbLayers(scientificName, collectionCode) {
   return layers.filter((data) => data);
 }
 
+const legendPoint = (color)=>`<span
+  aria-hidden="true"
+  style="--color: ${color}"
+  class="leaflet-legend-point"
+></span>`;
+
+const legendGradient = (leftColor, rightColor)=>`<span
+  aria-hidden="true"
+  style="--left-color: ${leftColor}; --right-color: ${rightColor}"
+  class="leaflet-legend-gradient"
+></span>`;
+
 function getGbifLayers(taxonKey) {
   if(!taxonKey)
     return [];
   return [
     [
-      { default: true, label: 'GBIF' },
+      { default: true, label: `GBIF ${legendGradient('#ee0', '#d11')}` },
       L.tileLayer(
         'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
         {
