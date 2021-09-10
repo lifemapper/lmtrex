@@ -264,6 +264,7 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
   const map = L.map(mapContainer, {
     maxZoom: 23,
     layers: enabledLayers,
+    gestureHandling: true
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
   const layerGroup = L.control.layers({}, overlayLayers);

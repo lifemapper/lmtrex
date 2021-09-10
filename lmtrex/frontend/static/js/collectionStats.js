@@ -66,6 +66,7 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
   const map = L.map(collectionMap, {
     maxZoom: 23,
     layers: [baseLayer, labelsLayer],
+    gestureHandling: true
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
   addFullScreenButton(map);
