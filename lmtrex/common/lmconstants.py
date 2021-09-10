@@ -174,6 +174,14 @@ class APIService:
 
 # .............................................................................
 class ServiceProvider:
+    Broker = {
+        S2nKey.NAME: 'Specify Network', 
+        S2nKey.PARAM: 'specifynetwork', 
+        S2nKey.SERVICES: [S2nEndpoint.Badge],
+        # 'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
+        #          'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
+        #          'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}
+        }
     GBIF = {
         S2nKey.NAME: 'GBIF', 
         S2nKey.PARAM: 'gbif', 
@@ -225,9 +233,9 @@ class ServiceProvider:
         S2nKey.PARAM: 'specify', 
         S2nKey.SERVICES: [
             S2nEndpoint.Badge, S2nEndpoint.Occurrence, S2nEndpoint.Resolve],
-        'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
-                 'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
-                 'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
+        'icon': {'active': '{}/specify6_active.png'.format(ICON_DIR),
+                 'inactive': '{}/specify6_inactive.png'.format(ICON_DIR),
+                 'hover': '{}/specify6_hover.png'.format(ICON_DIR)}}
     # TODO: need an WoRMS badge
     WoRMS = {
         S2nKey.NAME: 'WoRMS',
@@ -237,11 +245,6 @@ class ServiceProvider:
             'active': '{}/worms_active.png'.format(ICON_DIR),
         }
     }
-    # TODO: need a Broker badge
-    Broker = {
-        S2nKey.NAME: 'Specify Network', 
-        S2nKey.PARAM: 'specifynetwork', 
-        S2nKey.SERVICES: []}
     
 # ....................
     @classmethod
