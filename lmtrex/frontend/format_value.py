@@ -20,7 +20,7 @@ def format_list(values: List[any]) -> str:
         return ''
     else:
         fields = {
-            "[%d]" % index: value for index, value in enumerate(values)
+            "[%d]" % index: value for index, value in enumerate(values, start=1)
         }
         return format_dict(fields, is_list_of_values=True)
 
