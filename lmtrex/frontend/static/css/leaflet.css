@@ -70,6 +70,23 @@
   filter: saturate(150%);
 }
 
+
+.leaflet-control-layers-overlays > label > div {
+  display: flex;
+  column-gap: var(--half-size);
+  align-items: center;
+}
+
+.leaflet-control-layers-overlays > label > div > span {
+  display: contents;
+}
+
+.leaflet-control-layers-selector {
+  margin: 0;
+  padding: 0;
+  position: static;
+}
+
 .leaflet-legend-gradient {
   --left-color: transparent;
   --right-color: transparent;
@@ -95,20 +112,4 @@
   height: var(--size);
   display: inline-block;
   border-radius: 100vw;
-}
-
-.leaflet-control-layers-overlays > label > div {
-  display: flex;
-  column-gap: var(--half-size);
-  align-items: center;
-}
-
-.leaflet-control-layers-overlays > label > div > span {
-  display: contents;
-}
-
-.leaflet-control-layers-selector {
-  margin: 0;
-  padding: 0;
-  position: static;
 }

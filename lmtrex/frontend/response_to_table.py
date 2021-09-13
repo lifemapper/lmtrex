@@ -33,6 +33,7 @@ fields_to_exclude = [
     'dwc:associatedSequences',
     'dcterms:accessRights',
     'dcterms:license',
+    'dwc:countryCode',
 ]
 
 fields_to_exclude_specific = [

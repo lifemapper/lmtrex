@@ -18,9 +18,11 @@ def format_list(values: List[any]) -> str:
     """
     if not values:
         return ''
+    if len(values) == 1:
+        return format_value(values[0])
     else:
         fields = {
-            "[%d]" % index: value for index, value in enumerate(values)
+            "[%d]" % index: value for index, value in enumerate(values, start=1)
         }
         return format_dict(fields, is_list_of_values=True)
 

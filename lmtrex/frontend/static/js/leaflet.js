@@ -184,11 +184,11 @@ async function getIdbLayers(scientificName, collectionCode) {
 
   const layers = await Promise.all([
     getIdbLayer(scientificName, undefined, {
-      label: `iDigBio ${legendPoint('#e68')}`,
+      label: `iDigBio ${legendPoint('#197')}`,
       default: true
     }),
     getIdbLayer(scientificName, collectionCode, {
-      label: `iDigBio (${collectionCode} points only) ${legendPoint('#197')}`,
+      label: `iDigBio (${collectionCode} points only) ${legendPoint('#e68')}`,
       default: true,
       className: 'idb-local-points',
     }),
