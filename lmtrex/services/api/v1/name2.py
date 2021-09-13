@@ -22,7 +22,7 @@ class NameSvc(_S2nService):
     ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Name['endpoint'])
     
     # ...............................................
-    def _get_gbif_records(self, namestr, is_accepted, gbif_count):
+    def _get_gbif_records(self, session, namestr, is_accepted, gbif_count):
         try:
             output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
@@ -67,7 +67,7 @@ class NameSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def _get_ipni_records(self, namestr, is_accepted):
+    def _get_ipni_records(self, session, namestr, is_accepted):
         try:
             output = IpniAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
@@ -81,7 +81,7 @@ class NameSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def _get_itis_records(self, namestr, is_accepted, kingdom):
+    def _get_itis_records(self, session, namestr, is_accepted, kingdom):
         try:
             output = ItisAPI.match_name(namestr, is_accepted=is_accepted, kingdom=kingdom)
         except Exception as e:
@@ -95,7 +95,7 @@ class NameSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def _get_worms_records(self, namestr, is_accepted):
+    def _get_worms_records(self, session, namestr, is_accepted):
         try:
             output = WormsAPI.match_name(namestr, is_accepted=is_accepted)
         except Exception as e:
@@ -109,7 +109,7 @@ class NameSvc(_S2nService):
         return output.response
 
     # ...............................................
-    def get_records(
+    async def get_records(
             self, namestr, req_providers, is_accepted, gbif_count, kingdom):
         allrecs = []
         # for response metadata
@@ -117,26 +117,27 @@ class NameSvc(_S2nService):
         if namestr is not None:
             query_term = 'namestr={}&provider={}&is_accepted={}&gbif_count={}&kingdom={}'.format(
                 namestr, ','.join(req_providers), is_accepted, gbif_count, kingdom)
-            
-        for pr in req_providers:
-            # Address single record
-            if namestr is not None:
-                # GBIF
-                if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
-                    allrecs.append(goutput)
-                # IPNI
-                elif pr == ServiceProvider.IPNI[S2nKey.PARAM]:
-                    isoutput = self._get_ipni_records(namestr, is_accepted)
-                    allrecs.append(isoutput)
-                #  ITIS
-                elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
-                    isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
-                    allrecs.append(isoutput)
-                #  WoRMS
-                elif pr == ServiceProvider.WoRMS[S2nKey.PARAM]:
-                    woutput = self._get_worms_records(namestr, is_accepted)
-                    allrecs.append(woutput)
+        
+        async with aiohttp.ClientSession() as session:
+            for pr in req_providers:
+                # Address single record
+                if namestr is not None:
+                    # GBIF
+                    if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
+                        goutput = self._get_gbif_records(session, namestr, is_accepted, gbif_count)
+                        allrecs.append(goutput)
+                    # IPNI
+                    elif pr == ServiceProvider.IPNI[S2nKey.PARAM]:
+                        isoutput = self._get_ipni_records(session, namestr, is_accepted)
+                        allrecs.append(isoutput)
+                    #  ITIS
+                    elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
+                        isoutput = self._get_itis_records(session, namestr, is_accepted, kingdom)
+                        allrecs.append(isoutput)
+                    #  WoRMS
+                    elif pr == ServiceProvider.WoRMS[S2nKey.PARAM]:
+                        woutput = self._get_worms_records(session, namestr, is_accepted)
+                        allrecs.append(woutput)
             # TODO: enable filter parameters
             
         # Assemble

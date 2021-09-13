@@ -163,6 +163,9 @@ class SpecifyResolverAPI(APIQuery):
 # ...............................................
 
 """
+
+curl https://dev.syftorium.org/api/v1/resolve/bffe655b-ea32-4838-8e80-a80e391d5b11
+
 solr query through API: https://dev.syftorium.org/api/v1/resolve/2facc7a2-dd88-44af-b95a-733cc27527d4
 response:
 {"_version_":1701562470690193418,
