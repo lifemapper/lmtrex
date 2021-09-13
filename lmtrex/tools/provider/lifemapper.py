@@ -95,7 +95,7 @@ class LifemapperAPI(APIQuery):
             # Must be spatialRaster or spatialVector
             try:
                 lyr_elt = rec['spatialRaster']
-                lyrtype = 'vector'
+                lyrtype = 'raster'
             except:
                 try:
                     lyr_elt = rec['spatialVector']
