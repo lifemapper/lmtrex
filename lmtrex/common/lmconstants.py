@@ -233,9 +233,7 @@ class ServiceProvider:
         S2nKey.PARAM: 'specify', 
         S2nKey.SERVICES: [
             S2nEndpoint.Badge, S2nEndpoint.Occurrence, S2nEndpoint.Resolve],
-        'icon': {'active': '{}/specify6_active.png'.format(ICON_DIR),
-                 'inactive': '{}/specify6_inactive.png'.format(ICON_DIR),
-                 'hover': '{}/specify6_hover.png'.format(ICON_DIR)}}
+        'icon': {'active': '{}/specify_network_active.png'.format(ICON_DIR),}}
     # TODO: need an WoRMS badge
     WoRMS = {
         S2nKey.NAME: 'WoRMS',
