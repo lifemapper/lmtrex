@@ -27,7 +27,7 @@ async function drawMap(response, map, collectionMap, mapDetails) {
   const layerCounts = {};
   let layers = [];
   try {
-    response.records[0].records
+    layers = response.records[0].records
       .filter(
         (record) =>
           typeof record['s2n:sdm_projection_scenario_code'] !== 'string' ||
