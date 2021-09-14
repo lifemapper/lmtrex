@@ -171,7 +171,7 @@ if __name__ == '__main__':
     for namestr in names:
         for scodes in (None, 'worldclim-curr'):
             for prov in svc.get_providers():
-                out = svc.GET(namestr=namestr, scenariocode=scodes, provider=prov)
+                out = svc.GET(namestr=namestr, scenariocode=scodes)
                 print_s2n_output(out, do_print_rec=True)
 
 """
