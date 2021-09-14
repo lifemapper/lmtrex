@@ -5,7 +5,7 @@ from lmtrex.common.lmconstants import (APIService)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.occ import OccurrenceSvc
 from lmtrex.services.api.v1.name import NameSvc
-from lmtrex.frontend.templates import template, index_template
+from lmtrex.frontend.templates import inline_static, template, index_template
 from lmtrex.frontend.leaflet import leaflet
 from lmtrex.frontend.response_to_table import response_to_table
 from lmtrex.frontend.format_table import table_data_to_html
@@ -68,7 +68,6 @@ class FrontendSvc(_S2nService):
                 'internal:service': response['service'],
                 'internal:provider': response['provider'],
                 **response['records'][0],
-                # 'mopho:specimen.specimen_id':
             }
             for response in serialize_response(
                 OccurrenceSvc().GET(occid=good_params['occid'])['records']
@@ -146,7 +145,7 @@ class FrontendSvc(_S2nService):
         issues_section=template(
             'section',
             dict(
-                label='Data Quality',
+                label='Data Quality (according to TDWG\'s metrics',
                 anchor='issues',
                 content=[
                     template(
@@ -220,10 +219,10 @@ class FrontendSvc(_S2nService):
         return template(
             'layout',
             dict(
-                title=scientific_name if \
-                    scientific_name \
-                    else 'Scientific Name Unknown',
-                sections=sections
+                title=scientific_name,
+                sections=sections,
+                specify_network_long=\
+                    inline_static(f'static/img/specify_network_long.svg')
             )
         )
 
