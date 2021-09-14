@@ -82,12 +82,9 @@ class WormsAPI(APIQuery):
             else:
                 canonical_str = ''
         try:
-            auth_str = rec['valid_authority']
+            auth_str = ' {}'.format(rec['authority'])
         except:
-            if is_accepted is False:
-                auth_str = ' {}'.format(rec['authority'])
-            else:
-                auth_str = ''
+            auth_str = ''
         sciname_str = '{}{}'.format(canonical_str, auth_str)
             
         for stdfld, provfld in cls.NAME_MAP.items():
