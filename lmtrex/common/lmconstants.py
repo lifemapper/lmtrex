@@ -201,7 +201,7 @@ class ServiceProvider:
     IPNI = {
         S2nKey.NAME: 'IPNI', 
         S2nKey.PARAM: 'ipni', 
-        S2nKey.SERVICES: [S2nEndpoint.Name]
+        S2nKey.SERVICES: []
         }
     ITISSolr = {
         S2nKey.NAME: 'ITIS', 
