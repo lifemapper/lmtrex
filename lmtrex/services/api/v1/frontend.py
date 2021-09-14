@@ -145,30 +145,52 @@ class FrontendSvc(_S2nService):
         issues_section=template(
             'section',
             dict(
-                label='Data Quality (according to TDWG\'s metrics',
+                label='Data Quality (according to TDWG\'s metrics)',
                 anchor='issues',
-                content=[
-                    template(
-                        'subsection',
-                        dict(
-                            label=(
-                                "Reported by "
-                                f"{issue_block['provider']['label']}"
-                            ),
-                            anchor=f"issues_{issue_block['provider']['code']}",
-                            content=template(
-                                'ul',
+                content= template(
+                    'table',
+                    dict(
+                        class_name='issues',
+                        header='',
+                        body=[
+                            template(
+                                'tr',
                                 dict(
-                                    items=[
-                                        template('li', dict(content=issue))
-                                        for issue in issue_block['issues']
+                                    class_name='',
+                                    cells=[
+                                        template(
+                                            'th_for_row',
+                                            dict(
+                                                field_name='',
+                                                label=(
+                                                    "Reported by "
+                                                    f"{issue_block['provider']['label']}"
+                                                )
+                                            )
+                                        ),
+                                        template(
+                                            'td',
+                                            dict(
+                                                cell=template(
+                                                    'ul',
+                                                    dict(
+                                                        items=[
+                                                            template('li', dict(
+                                                                content=issue))
+                                                            for issue in
+                                                            issue_block['issues']
+                                                        ]
+                                                    )
+                                                )
+                                            )
+                                        )
                                     ]
                                 )
                             )
-                        )
+                            for issue_block in issues
+                        ],
                     )
-                    for issue_block in issues
-                ]
+                )
             )
         ) if issues else ''
 

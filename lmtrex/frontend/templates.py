@@ -23,8 +23,6 @@ def inline_static(file_path):
     with open(os.path.join(base_dir,file_path), 'r', encoding='utf-8') as file:
         return file.read()
 
-
-
 static_files = None
 
 def index_template(body):
@@ -44,6 +42,10 @@ def index_template(body):
                 ['config_script', 'static/js/config.js'],
                 ['collection_stats_script', 'static/js/collectionStats.js'],
                 ['leaflet_script', 'static/js/leaflet.js'],
+                [
+                    'specify_network_square',
+                    'static/img/specify_network_square.svg'
+                ]
             ]
         }
     return template('index', {

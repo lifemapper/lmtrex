@@ -10,27 +10,33 @@ def table_data_to_html(
     return template(
         'table',
         dict(
-            header=[
-                template('td', dict(cell='')),
-                *[
-                    template(
-                        'th_for_col',
-                        {
-                            'icon_url': header_cell['icon_url'],
-                            'label': f"""{header_cell['label']} {
-                                template(
-                                    'link',
-                                    dict(
-                                        href=header_cell['view_url'],
-                                        label='(link)'
-                                    )
-                                )
-                            }"""
-                        } if header_cell['view_url'] else header_cell
-                    )
-                    for header_cell in header_row
-                ]
-            ],
+            class_name='data',
+            header=template(
+                'thead',
+                dict(
+                    header=[
+                        template('td', dict(cell='')),
+                        *[
+                            template(
+                                'th_for_col',
+                                {
+                                    'icon_url': header_cell['icon_url'],
+                                    'label': f"""{header_cell['label']} {
+                                        template(
+                                            'link',
+                                            dict(
+                                                href=header_cell['view_url'],
+                                                label='(link)'
+                                            )
+                                        )
+                                    }"""
+                                } if header_cell['view_url'] else header_cell
+                            )
+                            for header_cell in header_row
+                        ]
+                    ]
+                )
+            ),
             body=[
                 template(
                     'tr',

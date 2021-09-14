@@ -1,5 +1,8 @@
 table {
   border-collapse: collapse;
+}
+
+table.data {
   table-layout: fixed;
   width: 100%;
 }
@@ -50,6 +53,6 @@ tbody td {
   word-break: break-word;
 }
 
-tr:not(.identical) td {
+table.data tr:not(.identical) td {
   color: var(--red);
 }
