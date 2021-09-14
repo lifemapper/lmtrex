@@ -54,18 +54,18 @@ li {
   row-gap: var(--size);
 }
 
-header h1 {
+header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   column-gap: var(--half-size);
-  justify-content: flex-end;
-  border-bottom: var(--border-size) solid var(--t3);
-  padding-bottom: var(--size);
+  justify-content: space-between;
   font-weight: normal;
-  margin: var(--size) 0;
+  flex-direction: row-reverse;
+  font-size: calc(var(--size) * 1.2);
+  padding-bottom: var(--size);
 }
 
-header h1 svg {
+header svg {
   height: var(--double-size);
 }
 
