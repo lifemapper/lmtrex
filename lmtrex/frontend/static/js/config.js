@@ -3,10 +3,6 @@ const lifemapperLayerVariations = {
     layerLabel: 'Projection',
     transparent: true,
   },
-  vector: {
-    layerLabel: 'Occurrence Points',
-    transparent: true,
-  },
 };
 
 const coMapTileServers = [

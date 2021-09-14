@@ -30,19 +30,7 @@ async function drawMap(response, map, collectionMap, mapDetails) {
     layers = response.records[0].records
       .filter(
         (record) =>
-          typeof record['s2n:sdm_projection_scenario_code'] !== 'string' ||
           record['s2n:sdm_projection_scenario_code'] === 'worldclim-curr'
-      )
-      .sort(
-        (
-          { 's2n:layer_type': layerTypeLeft },
-          { 's2n:layer_type': layerTypeRight }
-        ) =>
-          layerTypeLeft === layerTypeRight
-            ? 0
-            : layerTypeLeft > layerTypeRight
-            ? 1
-            : -1
       )
       .map((record) => {
         const layerType = record['s2n:layer_type'];
