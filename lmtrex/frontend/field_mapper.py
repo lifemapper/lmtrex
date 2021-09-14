@@ -40,16 +40,20 @@ def extract_morphosource_id(link):
     match = re.search(r'/[^/]+$', link)
     return match.group()[1:] if match else False
 
+
+linkify = lambda link: lambda key: template(
+    'link',
+    dict(
+        href=f'{link}{key}',
+        label=key
+    )
+) if key else ''
+
 # Replace field value with a transformed value
 value_mapper = {
-    'gbif:publishingOrgKey': lambda publishing_org_key:
-        template(
-            'link',
-            dict(
-                href=f'https://www.gbif.org/publisher/{publishing_org_key}',
-                label=publishing_org_key
-            )
-        ) if publishing_org_key else '',
+    'gbif:publishingOrgKey': linkify('https://www.gbif.org/publisher/'),
+    'gbif:gbifID': linkify('https://www.gbif.org/occurrence/'),
+    'idigbio:uuid': linkify('https://www.idigbio.org/portal/records/'),
     'mopho:specimen.specimen_id': lambda specimen_view_url:
         template(
             'link',
