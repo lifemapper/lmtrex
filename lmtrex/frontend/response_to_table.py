@@ -34,6 +34,7 @@ fields_to_exclude = [
     'dcterms:accessRights',
     'dcterms:license',
     'dwc:countryCode',
+    'dwc:otherCatalogNumbers',
 ]
 
 fields_to_exclude_specific = [
