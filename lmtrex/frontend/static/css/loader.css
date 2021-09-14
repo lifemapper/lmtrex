@@ -44,8 +44,13 @@ body.loading {
   animation: pulse-red 2s infinite;
 }
 
+#loader h1 {
+  text-align: center;
+}
+
 #loader svg {
   z-index: 10;
+  width: calc(var(--double-size) * 6);
 }
 
 @keyframes pulse-red {
