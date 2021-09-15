@@ -9,6 +9,7 @@ from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.occ import OccurrenceSvc
 from lmtrex.services.api.v1.badge import BadgeSvc
 from lmtrex.services.api.v1.frontend import FrontendSvc
+from lmtrex.services.api.v1.stats import StatsSvc
 from lmtrex.services.api.v1.address import AddressSvc
 
 from lmtrex.common.lmconstants import (CHERRYPY_CONFIG_FILE)
@@ -77,7 +78,10 @@ def start_cherrypy_services():
 
     # Frontend services
     cherrypy.tree.mount(FrontendSvc(), FrontendSvc.endpoint(), conf)
-    
+
+    # Stats services
+    cherrypy.tree.mount(StatsSvc(), StatsSvc.endpoint(), conf)
+
 
 # .............................................................................
 if __name__ == '__main__':

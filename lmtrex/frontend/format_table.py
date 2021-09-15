@@ -15,7 +15,7 @@ def table_data_to_html(
                 'thead',
                 dict(
                     header=[
-                        template('td', dict(cell='')),
+                        template('tag', dict(tag='td', children='')),
                         *[
                             template(
                                 'th_for_col',
@@ -54,9 +54,10 @@ def table_data_to_html(
                             ),
                             *[
                                 template(
-                                    'td',
+                                    'tag',
                                     dict(
-                                        cell=cell
+                                        tag='td',
+                                        children=cell
                                     )
                                 )
                                 for cell in cells

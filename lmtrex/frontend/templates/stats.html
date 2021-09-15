@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Specify Network</title>
+    <link rel="icon" href="https://broker-dev.spcoco.org/api/v1/badge/?provider=specify&icon_status=active">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css"
+      integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="//unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css"
+      type="text/css"
+    />
+    <style>${main_styles}</style>
+    <style>${stats_styles}</style>
+    <style>${loader_styles}</style>
+    <style>${leaflet_styles}</style>
+    <style>${slider_styles}</style>
+    <meta name="robots" content="index,follow">
+    <meta
+      name="description"
+      content="This page is a synopsis of the information held by global biodiversity data aggregation services related to a specimen in a Specify Collections Consortium database. The page includes responses from remote sources relating to data issues in a published Darwin Core Archive, as well as occurrence, taxonomy and geographic distribution data for the specimen and species."
+    >
+    <!--<meta name="keywords" content="S^N">-->
+    <meta name="author" content="KU Biodiversity Institute">
+  </head>
+  <body class="loading">
+    <div id="loader">
+      <div>
+        <span></span>
+        <div class="logo-container">
+          <div class="logo">
+             ${specify_network_square}
+          </div>
+        </div>
+        <h1>Loading...</h1>
+      </div>
+    </div>
+    <div id="content">${body}</div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="//unpkg.com/leaflet-gesture-handling"></script>
+    <script>${utils_script}</script>
+    <script>${leaflet_extend_script}</script>
+    <script>${config_script}</script>
+    <script>${collection_stats_script}</script>
+    <script>${loader_script}</script>
+    <script>${stats_script}</script>
+  </body>
+</html>

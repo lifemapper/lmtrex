@@ -16,6 +16,9 @@ const coMapTileServers = [
   },
 ];
 
+const DEFAULT_CENTER = [0, 0];
+const DEFAULT_ZOOM = 2;
+
 const leafletTileServers = {
   baseMaps: {
     'Satellite Map (ESRI)': () =>

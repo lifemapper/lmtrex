@@ -21,7 +21,7 @@ def template(name, arguments):
 
 
 def inline_static(file_path):
-    signature = f'/*{file_path}\n\n*/' \
+    signature = f'/*{file_path}*/\n\n' \
         if file_path.endswith('css') or file_path.endswith('js') \
         else ''
     with open(os.path.join(base_dir,file_path), 'r', encoding='utf-8') as file:
@@ -77,10 +77,11 @@ def stats_template(body):
                 ['leaflet_extend_script', 'static/js/leafletExtend.js'],
                 ['config_script', 'static/js/config.js'],
                 ['collection_stats_script', 'static/js/collectionStats.js'],
+                ['loader_script', 'static/js/loader.js'],
                 ['stats_script', 'static/js/stats.js'],
             ]
         }
-    return template('index', {
+    return template('stats', {
         **stats_static_files,
         'body': body,
     })

@@ -170,7 +170,11 @@ class APIService:
         'endpoint': S2nEndpoint.Frontend,
         'params': ['occid', 'namestr'],
         S2nKey.RECORD_FORMAT: ''}
-    
+    Stats = {
+        'endpoint': S2nEndpoint.Stats,
+        'params': [],
+        S2nKey.RECORD_FORMAT: ''}
+
 
 # .............................................................................
 class ServiceProvider:

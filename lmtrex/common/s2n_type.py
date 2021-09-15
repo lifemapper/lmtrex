@@ -15,6 +15,7 @@ class S2nEndpoint:
     Resolve = 'resolve'
     SpecimenExtension = 'occext'
     Frontend = 'frontend'
+    Stats = 'stats'
 
 # .............................................................................
 class S2nKey:

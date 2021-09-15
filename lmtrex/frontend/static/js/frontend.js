@@ -1,7 +1,6 @@
-const reOccId = /^\w{8}-(?:\w{4}-){3}\w{12}$/;
 const occId = getQueryParameter(
   'occid',
-  (occId)=>occId.match(reOccId) !== null
+  (occId)=>occId.length>0
 );
 const nameStr = getQueryParameter(
   'namestr',

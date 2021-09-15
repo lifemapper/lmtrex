@@ -12,17 +12,51 @@ def leaflet(occurrence_info, name_info, scientific_name):
         {
             'label': 'Distribution',
             'anchor': 'map',
-            'content': template(
-                'leaflet-species',
-                {
-                    'map_info': json.dumps(
-                        {
-                            'occurrence_info': occurrence_info,
-                            'name_info': name_info,
-                            **map_info,
-                        }
-                    )
-                }
-            )
+            'content': [
+                template(
+                    'subsection',
+                    {
+                        'label': 'Occurrences of this species',
+                        'anchor': 'species-distribution',
+                        'content': template(
+                            'leaflet-species',
+                            {
+                                'map_info': json.dumps(
+                                    {
+                                        'occurrence_info': occurrence_info,
+                                        'name_info': name_info,
+                                        **map_info,
+                                    }
+                                )
+                            }
+                        )
+                    }
+                ),
+                template(
+                    'subsection',
+                    {
+                        'label': 'Institution and Collection analysis',
+                        'anchor': 'stats',
+                        'content': template(
+                            'tag',
+                            dict(
+                                tag='p',
+                                children=[
+                                    'Institution and Collection distribution ',
+                                    'maps are available on ',
+                                    template(
+                                        'link',
+                                        dict(
+                                            href='/api/v1/stats/?',
+                                            label='the Syftorium page'
+                                        )
+                                    ),
+                                    '.'
+                                ]
+                            )
+                        )
+                    }
+                )
+            ],
         }
     )

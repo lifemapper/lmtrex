@@ -171,14 +171,18 @@ class FrontendSvc(_S2nService):
                                             )
                                         ),
                                         template(
-                                            'td',
+                                            'tag',
                                             dict(
-                                                cell=template(
-                                                    'ul',
+                                                tag='td',
+                                                children=template(
+                                                    'tag',
                                                     dict(
-                                                        items=[
-                                                            template('li', dict(
-                                                                content=issue))
+                                                        tag='ul',
+                                                        children=[
+                                                            template('tag', dict(
+                                                                tag='li',
+                                                                children=issue
+                                                            ))
                                                             for issue in
                                                             issue_block['issues']
                                                         ]
@@ -228,7 +232,7 @@ class FrontendSvc(_S2nService):
                 issues_section,
                 occurrence_section,
                 name_section,
-                leaflet_map_section
+                leaflet_map_section,
             ]
             if section
         ]

@@ -6,11 +6,38 @@ function initializeMaps() {
   const response = JSON.parse(pre.innerText);
   pre.remove();
   const map = mapContainer.getElementsByClassName('leaflet-map')[0];
-  const collectionMap = mapContainer.getElementsByClassName(
-    'leaflet-collection-map'
-  )[0];
   const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
-  drawMap(response, map, collectionMap, mapDetails);
+  drawMap(response, map, mapDetails);
+
+  const statsQueryString = [
+    {
+      'name': 'institution_code',
+      'key': 'dwc:institutionCode',
+      'providers': ['idb', 'gbif'],
+    },
+    {
+      'name': 'collection_code',
+      'key': 'dwc:collectionCode',
+      'providers': ['idb', 'gbif'],
+    },
+    {
+      'name': 'publishing_org_key',
+      'key': 'gbif:publishingOrgKey',
+      'providers': ['gbif'],
+    }
+  ].map(({name, key, providers})=>[
+    name,
+    providers.map(provider=>
+      extractField(response.occurrence_info, provider, key)
+    ).find(value=>value)
+  ]).filter(([_key, value])=>value)
+    .map(([key,value])=>`${key}=${encodeURIComponent(value)}`)
+    .join('&');
+  const statsContainer = document.getElementById('stats');
+  if(statsQueryString.length === 0)
+    statsContainer.remove();
+  else
+    statsContainer.getElementsByTagName('a')[0].href += statsQueryString;
 }
 
 const extractField = (responses, aggregator, field) =>
@@ -18,7 +45,7 @@ const extractField = (responses, aggregator, field) =>
     (response) => response['internal:provider']['code'] === aggregator
   )?.[field];
 
-async function drawMap(response, map, collectionMap, mapDetails) {
+async function drawMap(response, map, mapDetails) {
   const messages = {
     errorDetails: [],
     infoSection: [],
@@ -222,9 +249,6 @@ function getGbifLayers(taxonKey) {
     ],
   ];
 }
-
-const DEFAULT_CENTER = [0, 0];
-const DEFAULT_ZOOM = 2;
 
 async function showCOMap(mapContainer, listOfLayersRaw) {
   const listOfLayers = [
