@@ -2,14 +2,18 @@ table {
   border-collapse: collapse;
 }
 
-table.data {
-  table-layout: fixed;
-  width: 100%;
-}
-
 thead td {
   background: var(--t2);
-  width: calc(var(--double-size) * 5);
+}
+
+@media only screen and (min-width: 768px) {
+  thead td {
+    width: calc(var(--double-size) * 5);
+  }
+  table.data {
+    table-layout: fixed;
+    width: 100%;
+  }
 }
 
 thead td, th {
@@ -28,12 +32,17 @@ th {
   background: var(--b3);
 }
 
-thead div {
+thead th > div {
   display: flex;
   column-gap: var(--half-size);
   justify-content: center;
   align-items: center;
   padding: var(--half-size);
+  flex-wrap: wrap;
+}
+
+thead span {
+  display: contents;
 }
 
 thead img {
