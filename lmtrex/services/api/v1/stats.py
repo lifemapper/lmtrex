@@ -24,16 +24,36 @@ class StatsSvc(_S2nService):
                 'section',
                 {
                     'label': '',
-                    'anchor': 'institution-distribution',
+                    'anchor': 'collection-distribution',
                     'content': template('leaflet-stats', { })
                 }
             ),
             template(
                 'section',
                 {
+                    'label': 'Or choose a different collection:',
+                    'anchor': 'change-collection',
+                    'content': template(
+                        'tag',
+                        {
+                            'tag': 'div',
+                            'children': template(
+                                'tag',
+                                {
+                                    'tag': 'select',
+                                    'children': ''
+                                }
+                            )
+                        }
+                    )
+                }
+            ),
+            template(
+                'section',
+                {
                     'label': '',
-                    'anchor': 'collection-distribution',
+                    'anchor': 'institution-distribution',
                     'content': template('leaflet-stats', { })
                 }
-            )
+            ),
         ])

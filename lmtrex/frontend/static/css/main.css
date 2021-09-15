@@ -49,10 +49,14 @@ li {
   border: 0;
 }
 
-#content {
+main, section, article, .sections {
   display: flex;
   flex-direction: column;
   row-gap: var(--size);
+}
+
+.sections {
+  row-gap: calc(var(--double-size) * 1.5);
 }
 
 .alert {

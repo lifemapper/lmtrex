@@ -1,18 +1,26 @@
-async function getGbifMeta(publishingOrgKey) {
+async function getInstitutionMapMeta(publishingOrgKey) {
   const request = await fetch(
     `https://api.gbif.org/v2/map/occurrence/density/capabilities.json?publishingOrg=${publishingOrgKey}`
   );
   return await request.json();
 }
 
-async function showCollectionStats(publishingOrgKey, collectionMap) {
-  if(!publishingOrgKey)
-    return;
-  document.getElementById('collection-distribution').style.display = 'block';
+async function getCollectionMapData(datasetKey) {
+  const request = await fetch(
+    `https://api.gbif.org/v2/map/occurrence/density/capabilities.json?datasetKey=${datasetKey}`
+  );
+  return await request.json();
+}
 
-  const { minYear, maxYear } = await getGbifMeta(publishingOrgKey);
+let activeMaps = [];
 
-  const slider = document.getElementsByClassName('slider')[0];
+async function showStatsMap(mapData, mapOptions, mapContainer) {
+  mapContainer.style.display = '';
+
+  const { minYear, maxYear } = mapData;
+
+  const slider =
+    mapContainer.parentElement.getElementsByClassName('slider')[0];
   const inputs = Array.from(slider.getElementsByTagName('input'));
   function changeHandler(event) {
     let boundaries = Object.fromEntries(
@@ -61,9 +69,9 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
   });
 
   const labelsLayer = Object.values(leafletTileServers['overlays'])[0]();
-  const baseLayer = Object.values(leafletTileServers['baseMaps'])[0]();
+  const baseLayer = Object.values(leafletTileServers['baseMaps'])[0](false);
 
-  const map = L.map(collectionMap, {
+  const map = L.map(mapContainer, {
     maxZoom: 23,
     layers: [baseLayer, labelsLayer],
     gestureHandling: true
@@ -85,8 +93,8 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
           srs: 'EPSG:3857',
           style: 'classic.poly',
           bin: 'hex',
-          publishingOrg: publishingOrgKey,
           year: `${minYear},${maxYear}`,
+          ...mapOptions
         })
           .map(([key, value]) => `${key}=${value}`)
           .join('&'),
@@ -96,4 +104,13 @@ async function showCollectionStats(publishingOrgKey, collectionMap) {
     labelsLayer.bringToFront();
   }
   redrawMap(defaultMinValue, defaultMaxValue);
+
+  activeMaps.push(map);
+
+  return ()=>{
+    inputs.map(input=>input.removeEventListener('change', changeHandler));
+    map.off();
+    map.remove();
+    activeMaps=activeMaps.filter(potentialMap=>potentialMap!==map)
+  }
 }

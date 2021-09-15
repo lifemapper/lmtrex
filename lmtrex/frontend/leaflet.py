@@ -41,18 +41,15 @@ def leaflet(occurrence_info, name_info, scientific_name):
                             'tag',
                             dict(
                                 tag='p',
-                                children=[
-                                    'Institution and Collection distribution ',
-                                    'maps are available on ',
+                                children=
                                     template(
                                         'link',
                                         dict(
                                             href='/api/v1/stats/?',
-                                            label='the Syftorium page'
+                                            label=''
                                         )
-                                    ),
-                                    '.'
-                                ]
+                                    )
+
                             )
                         )
                     }

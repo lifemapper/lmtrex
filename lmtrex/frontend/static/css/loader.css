@@ -4,6 +4,10 @@ body.loading {
   overflow-y: hidden;
 }
 
+body.loading main {
+  display: none;
+}
+
 #loader {
   height: 100vh;
   display: flex;

@@ -34,7 +34,7 @@
   z-index: 20;
 }
 
-.full-screen .leaflet-container:not(.leaflet-map-full-screen),
+.full-screen .leaflet-map:not(.leaflet-map-full-screen),
 .full-screen table,
 .full-screen .alert {
   display: none;

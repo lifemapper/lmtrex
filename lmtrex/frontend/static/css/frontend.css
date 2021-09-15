@@ -20,18 +20,6 @@ header svg {
   height: var(--double-size);
 }
 
-main.sections {
-  display: flex;
-  flex-direction: column;
-  row-gap: calc(var(--double-size) * 1.5);
-}
-
-section, article {
-  display: flex;
-  flex-direction: column;
-  row-gap: var(--size);
-}
-
 section#occ {
   overflow-x: auto;
 }

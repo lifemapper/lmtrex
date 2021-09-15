@@ -1,6 +1,6 @@
 const lifemapperLayerVariations = {
   raster: {
-    layerLabel: 'Projection',
+    layerLabel: 'Lifemapper Projection',
     transparent: true,
   },
 };
@@ -21,11 +21,11 @@ const DEFAULT_ZOOM = 2;
 
 const leafletTileServers = {
   baseMaps: {
-    'Satellite Map (ESRI)': () =>
+    'Satellite Map (ESRI)': (grayscale = true) =>
       L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {
-          className: 'grayscale',
+          className: grayscale ? 'grayscale' : '',
           attribution:
             'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
         }
@@ -51,6 +51,6 @@ const lifemapperMessagesMeta = {
   },
   infoSection: {
     className: 'info-section',
-    title: 'Projection Details:',
+    title: 'Lifemapper Projection Details:',
   },
 };

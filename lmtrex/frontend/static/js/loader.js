@@ -1,6 +1,7 @@
 const loader = (task, callback) =>
   task().then((innerHTML) => {
-    document.getElementById('content').innerHTML = innerHTML;
+    if(typeof innerHTML === 'string')
+      document.getElementsByTagName('main')[0].innerHTML = innerHTML;
     document.body.classList.remove('loading');
     document.getElementById('loader').remove();
     callback?.();

@@ -9,7 +9,7 @@ function initializeMaps() {
   const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
   drawMap(response, map, mapDetails);
 
-  const statsQueryString = [
+  const statsPageParameters = [
     {
       'name': 'institution_code',
       'key': 'dwc:institutionCode',
@@ -30,14 +30,21 @@ function initializeMaps() {
     providers.map(provider=>
       extractField(response.occurrence_info, provider, key)
     ).find(value=>value)
-  ]).filter(([_key, value])=>value)
+  ]).filter(([_key, value])=>value);
+  const statsQueryString = statsPageParameters
     .map(([key,value])=>`${key}=${encodeURIComponent(value)}`)
     .join('&');
   const statsContainer = document.getElementById('stats');
   if(statsQueryString.length === 0)
     statsContainer.remove();
-  else
-    statsContainer.getElementsByTagName('a')[0].href += statsQueryString;
+  else {
+    const link = statsContainer.getElementsByTagName('a')[0];
+    link.href += statsQueryString;
+    const parameters = Object.fromEntries(statsPageParameters);
+    link.textContent = `Distribution map of all species in the
+      ${parameters['collection_code']} collection and
+      ${parameters['institution_code']} institution is available.`;
+  }
 }
 
 const extractField = (responses, aggregator, field) =>
@@ -97,9 +104,12 @@ async function drawMap(response, map, mapDetails) {
       .filter((record) => record);
 
     const modificationTime = response.records[0].records[0]['s2n:modtime'];
-    messages.infoSection.push(`Model Creation date: ${modificationTime}`);
+    messages.infoSection.push(`
+      The Lifemapper distribution model is a probability surface computed by
+      Maxent that ranges from black to bright red, where the latter represents
+      higher probability. Model creation date: ${modificationTime}`);
   } catch {
-    console.warn('Failed to find LifeMapper projection map for this species');
+    console.warn('Failed to find Lifemapper projection map for this species');
   }
 
   mapDetails.innerHTML = Object.entries(messages)
@@ -128,11 +138,6 @@ async function drawMap(response, map, mapDetails) {
     response['name_info'],
     'gbif',
     's2n:gbif_taxon_key'
-  );
-  const gbifPublishingOrgKey = extractField(
-    response['occurrence_info'],
-    'gbif',
-    'gbif:publishingOrgKey'
   );
 
   const mapPromise = showCOMap(map, layers);
