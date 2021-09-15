@@ -122,8 +122,6 @@ async function drawMap(response, map, collectionMap, mapDetails) {
 
   addAggregatorOverlays(getGbifLayers(gbifTaxonKey));
 
-  showCollectionStats(gbifPublishingOrgKey, collectionMap);
-
   addAggregatorOverlays(await idbLayersPromise);
 
   if(!hasLayers){
@@ -178,7 +176,7 @@ async function getIdbLayers(scientificName, collectionCode) {
     getIdbLayer(scientificName, collectionCode, {
       label: `iDigBio (${collectionCode} points only) ${legendPoint('#e68')}`,
       default: true,
-      className: 'idb-local-points',
+      className: 'hue-rotate',
     }),
   ]);
 

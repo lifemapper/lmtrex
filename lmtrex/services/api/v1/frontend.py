@@ -5,7 +5,7 @@ from lmtrex.common.lmconstants import (APIService)
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.services.api.v1.occ import OccurrenceSvc
 from lmtrex.services.api.v1.name import NameSvc
-from lmtrex.frontend.templates import inline_static, template, index_template
+from lmtrex.frontend.templates import inline_static, template, frontend_template
 from lmtrex.frontend.leaflet import leaflet
 from lmtrex.frontend.response_to_table import response_to_table
 from lmtrex.frontend.format_table import table_data_to_html
@@ -27,6 +27,8 @@ class FrontendSvc(_S2nService):
         Args:
             occid: an occurrenceID, a DarwinCore field intended for a globally
                 unique identifier (https://dwc.tdwg.org/list/#dwc_occurrenceID)
+            namestr: Species name. Used only as a fallback if failed to resolve
+                occurrenceID
             kwargs: any additional keyword arguments are ignored
 
         Return:
@@ -36,7 +38,7 @@ class FrontendSvc(_S2nService):
         show_loader = 'loader' not in kwargs or kwargs['loader']!='false'
 
         if show_loader:
-            return index_template('')
+            return frontend_template()
 
         try:
             good_params, errors = self._standardize_params(

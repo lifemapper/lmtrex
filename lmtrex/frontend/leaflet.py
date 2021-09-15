@@ -12,34 +12,17 @@ def leaflet(occurrence_info, name_info, scientific_name):
         {
             'label': 'Distribution',
             'anchor': 'map',
-            'content': [
-                template(
-                    'subsection',
-                    {
-                        'label': 'Occurrences of this species',
-                        'anchor': 'species-distribution',
-                        'content': template(
-                            'leaflet-species',
-                            {
-                                'map_info': json.dumps(
-                                    {
-                                        'occurrence_info': occurrence_info,
-                                        'name_info': name_info,
-                                        **map_info,
-                                    }
-                                )
-                            }
-                        )
-                    }
-                ),
-                template(
-                    'subsection',
-                    {
-                        'label':'All collection occurrences over time',
-                        'anchor': 'collection-distribution',
-                        'content': template('leaflet-collection', {})
-                    }
-                )
-            ],
+            'content': template(
+                'leaflet-species',
+                {
+                    'map_info': json.dumps(
+                        {
+                            'occurrence_info': occurrence_info,
+                            'name_info': name_info,
+                            **map_info,
+                        }
+                    )
+                }
+            )
         }
     )

@@ -1,15 +1,6 @@
-#collection_distribution {
-  display: none;
-}
-
-.leaflet-map,
-.leaflet-collection-map {
+.leaflet-map {
   height: 50vh;
   width: 100%;
-}
-
-.idb-local-points {
-  filter: hue-rotate(180deg);
 }
 
 .leaflet-full-screen-toggle, .leaflet-print-map {
@@ -58,19 +49,6 @@
   display: none;
 }
 
-.grayscale {
-  filter: grayscale(100%) brightness(150%);
-}
-
-.darkened {
-  filter: brightness(40%);
-}
-
-.saturated {
-  filter: saturate(150%);
-}
-
-
 .leaflet-control-layers-overlays > label > div {
   display: flex;
   column-gap: var(--half-size);
@@ -112,4 +90,20 @@
   height: var(--size);
   display: inline-block;
   border-radius: 100vw;
+}
+
+.hue-rotate {
+  filter: hue-rotate(180deg);
+}
+
+.grayscale {
+  filter: grayscale(100%) brightness(150%);
+}
+
+.darkened {
+  filter: brightness(40%);
+}
+
+.saturated {
+  filter: saturate(150%);
 }

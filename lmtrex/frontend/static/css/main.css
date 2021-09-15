@@ -54,53 +54,6 @@ li {
   row-gap: var(--size);
 }
 
-header {
-  display: flex;
-  align-items: baseline;
-  column-gap: var(--half-size);
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-weight: normal;
-  flex-direction: row-reverse;
-  font-size: calc(var(--size) * 1.2);
-  padding-bottom: var(--size);
-}
-
-@media only screen and (max-width: 767px) {
-  header {
-    flex-direction: column;
-  }
-}
-
-header svg {
-  height: var(--double-size);
-}
-
-main.sections {
-  display: flex;
-  flex-direction: column;
-  row-gap: calc(var(--double-size) * 1.5);
-}
-
-section, article {
-  display: flex;
-  flex-direction: column;
-  row-gap: var(--size);
-}
-
-section#occ {
-  overflow-x: auto;
-}
-
-article {
-  row-gap: var(--half-size);
-}
-
-#issues article {
-  padding: var(--size);
-  border: var(--border-size) solid var(--t3);
-}
-
 .alert {
   padding: var(--size);
   border-radius: var(--half-size);

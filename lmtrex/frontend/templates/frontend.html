@@ -18,11 +18,11 @@
       type="text/css"
     />
     <style>${main_styles}</style>
+    <style>${frontend_styles}</style>
     <style>${loader_styles}</style>
     <style>${response_styles}</style>
     <style>${leaflet_styles}</style>
     <style>${table_styles}</style>
-    <style>${slider_styles}</style>
     <meta name="robots" content="index,follow">
     <meta
       name="description"
@@ -43,8 +43,7 @@
         <h1>Loading...</h1>
       </div>
     </div>
-    <div id="content">${body}</div>
-    <script>${main_script}</script>
+    <div id="content"></div>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"
       integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
@@ -52,9 +51,12 @@
       referrerpolicy="no-referrer"
     ></script>
     <script src="//unpkg.com/leaflet-gesture-handling"></script>
+    <script>${utils_script}</script>
     <script>${leaflet_extend_script}</script>
     <script>${config_script}</script>
-    <script>${collection_stats_script}</script>
     <script>${leaflet_script}</script>
+    <script>${loader_script}</script>
+    <script>${response_collapse_script}</script>
+    <script>${frontend_script}</script>
   </body>
 </html>
