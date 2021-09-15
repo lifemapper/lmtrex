@@ -20,6 +20,7 @@
 
 body {
   margin: var(--size);
+  margin-bottom: calc(var(--double-size) * 2);
   background: var(--b2);
   font-family: "Calibri", sans-serif;
 }

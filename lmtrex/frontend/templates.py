@@ -1,5 +1,6 @@
 import os
 from string import Template
+import random
 
 base_dir = os.path.dirname(os.path.realpath(__file__))
 templates_dir = os.path.join(base_dir, 'templates/')
@@ -29,6 +30,16 @@ def inline_static(file_path):
 
 frontend_static_files = None
 
+def get_loading_tagline():
+    return f"""{random.choice([
+        'Searching', 'Running',
+        'Exploring', 'Hustling',
+        'Gathering', 'Hacking',
+        'Pursuing', 'Going after',
+        'Assembling', 'Fetching',
+        'Grabbing', 'Loading'
+    ])}..."""
+
 def frontend_template():
     global frontend_static_files
     if not frontend_static_files or is_development:
@@ -54,7 +65,10 @@ def frontend_template():
                 ['frontend_script', 'static/js/frontend.js'],
             ]
         }
-    return template('frontend', frontend_static_files)
+    return template('frontend', {
+        **frontend_static_files,
+        'tagline': get_loading_tagline(),
+    })
 
 stats_static_files = None
 
@@ -83,5 +97,6 @@ def stats_template(body):
         }
     return template('stats', {
         **stats_static_files,
+        'tagline': get_loading_tagline(),
         'body': body,
     })
