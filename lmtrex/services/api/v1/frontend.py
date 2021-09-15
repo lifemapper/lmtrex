@@ -145,7 +145,7 @@ class FrontendSvc(_S2nService):
         issues_section=template(
             'section',
             dict(
-                label='Data Quality (according to TDWG\'s metrics)',
+                label='Data Quality',
                 anchor='issues',
                 content= template(
                     'table',
