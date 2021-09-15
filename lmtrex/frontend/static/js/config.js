@@ -31,7 +31,7 @@ const leafletTileServers = {
   overlays: {
     'Labels and boundaries': () =>
       L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}',
         {
           attribution:
             'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',

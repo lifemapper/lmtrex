@@ -63,7 +63,7 @@
 }
 
 .darkened {
-  filter: brightness(0);
+  filter: brightness(40%);
 }
 
 .saturated {
