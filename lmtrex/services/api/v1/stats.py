@@ -23,15 +23,7 @@ class StatsSvc(_S2nService):
             template(
                 'section',
                 {
-                    'label': '',
-                    'anchor': 'collection-distribution',
-                    'content': template('leaflet-stats', { })
-                }
-            ),
-            template(
-                'section',
-                {
-                    'label': 'Or choose a different collection:',
+                    'label': 'Choose collection:',
                     'anchor': 'change-collection',
                     'content': template(
                         'tag',
@@ -46,6 +38,14 @@ class StatsSvc(_S2nService):
                             )
                         }
                     )
+                }
+            ),
+            template(
+                'section',
+                {
+                    'label': '',
+                    'anchor': 'collection-distribution',
+                    'content': template('leaflet-stats', { })
                 }
             ),
             template(

@@ -20,15 +20,6 @@ header svg {
   height: var(--double-size);
 }
 
-section#occ {
+section#occ, section#name {
   overflow-x: auto;
-}
-
-article {
-  row-gap: var(--half-size);
-}
-
-#issues article {
-  padding: var(--size);
-  border: var(--border-size) solid var(--t3);
 }

@@ -40,12 +40,14 @@ function initializeMaps() {
   const statsContainer = document.getElementById('stats');
   if (statsQueryString.length === 0) statsContainer.remove();
   else {
-    const link = statsContainer.getElementsByTagName('a')[0];
-    link.href += statsQueryString;
     const parameters = Object.fromEntries(statsPageParameters);
-    link.textContent = `Distribution map of all species in the
-      ${parameters['collection_code']} collection and
-      ${parameters['institution_code']} institution is available.`;
+    const paragraph = statsContainer.getElementsByTagName('p')[0];
+    paragraph.innerText = ['Distribution maps of all species in the ',
+      `${parameters['collection_code']} collection and`,
+      `${parameters['institution_code']} institution are available `].join('');
+    paragraph.innerHTML += `<a
+      href="/api/v1/stats/?${statsQueryString}"
+    >here</a>.`;
   }
 }
 
@@ -111,7 +113,8 @@ async function drawMap(response, map, mapDetails) {
       datetime="${dateObject.toISOString()}"
     >${dateObject.toDateString()}</time>`;
     messages.infoSection.push(`
-      The Lifemapper distribution model is a probability surface computed by
+      It also displays a predicted distribution model from Lifemapper. The
+      Lifemapper distribution model is a probability surface computed by
       Maxent that ranges from black to bright red, where the latter represents
       higher probability. Model computed: ${formattedModificationTime}`);
   } catch {

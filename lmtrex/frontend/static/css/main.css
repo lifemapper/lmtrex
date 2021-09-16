@@ -59,6 +59,10 @@ main, section, article, .sections {
   row-gap: calc(var(--double-size) * 1.5);
 }
 
+article {
+  row-gap: var(--half-size);
+}
+
 .alert {
   padding: var(--size);
   border-radius: var(--half-size);

@@ -224,7 +224,7 @@ class FrontendSvc(_S2nService):
             )
         ) if name_table else ''
 
-        leaflet_map_section = leaflet(occurrence_info, name_info, scientific_name)
+        leaflet_sections = leaflet(occurrence_info, name_info, scientific_name)
 
         sections = [
             section
@@ -232,7 +232,7 @@ class FrontendSvc(_S2nService):
                 issues_section,
                 occurrence_section,
                 name_section,
-                leaflet_map_section,
+                *leaflet_sections,
             ]
             if section
         ]

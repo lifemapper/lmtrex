@@ -7,53 +7,40 @@ from lmtrex.services.api.v1.map import MapSvc
 
 def leaflet(occurrence_info, name_info, scientific_name):
     map_info = serialize_response(MapSvc().GET(namestr=scientific_name))
-    return template(
-        'section',
-        {
-            'label': 'Distribution',
-            'anchor': 'map',
-            'content': [
-                template(
-                    'subsection',
-                    {
-                        'label': 'Occurrences of this species',
-                        'anchor': 'species-distribution',
-                        'content': template(
-                            'leaflet-species',
-                            {
-                                'map_info': json.dumps(
-                                    {
-                                        'occurrence_info': occurrence_info,
-                                        'name_info': name_info,
-                                        **map_info,
-                                    }
-                                )
-                            }
-                        )
-                    }
-                ),
-                template(
-                    'subsection',
-                    {
-                        'label': 'Institution and Collection analysis',
-                        'anchor': 'stats',
-                        'content': template(
-                            'tag',
-                            dict(
-                                tag='p',
-                                children=
-                                    template(
-                                        'link',
-                                        dict(
-                                            href='/api/v1/stats/?',
-                                            label=''
-                                        )
-                                    )
-
+    return [
+        template(
+            'section',
+            {
+                'label': 'Distribution',
+                'anchor': 'map',
+                'content': [
+                    template(
+                        'leaflet-species',
+                        {
+                            'map_info': json.dumps(
+                                {
+                                    'occurrence_info': occurrence_info,
+                                    'name_info': name_info,
+                                    **map_info,
+                                }
                             )
-                        )
-                    }
+                        }
+                    ),
+                ],
+            }
+        ),
+        template(
+            'section',
+            {
+                'label': 'Institution and Collection Analyses',
+                'anchor': 'stats',
+                'content': template(
+                    'tag',
+                    dict(
+                        tag='p',
+                        children=''
+                    )
                 )
-            ],
-        }
-    )
+            }
+        ),
+    ]

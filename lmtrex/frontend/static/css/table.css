@@ -1,9 +1,11 @@
 table {
   border-collapse: collapse;
+  --b-header: #bef;
+  --b-first-cell: #7cf;
 }
 
 thead td {
-  background: var(--t2);
+  background: var(--b-first-cell);
 }
 
 @media only screen and (min-width: 768px) {
@@ -29,7 +31,7 @@ thead th {
 }
 
 th {
-  background: var(--b3);
+  background: var(--b-header);
 }
 
 thead th > div {
