@@ -3,7 +3,7 @@ L.Control.FullScreen = L.Control.extend({
   onAdd(map) {
     const control = L.DomUtil.create('span');
     control.classList.add('leaflet-full-screen-toggle');
-    control.innerHTML=`
+    control.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white">
         <path d="M0 0H7V2H2V7H0Z"/>
         <path d="M13 0H20V7H18V2H13Z"/>
@@ -16,8 +16,10 @@ L.Control.FullScreen = L.Control.extend({
       L.DomEvent.stopPropagation(event);
       L.DomEvent.preventDefault(event);
 
-      const isFullScreen = map._container.classList.contains('leaflet-map-full-screen');
-      if(isFullScreen) {
+      const isFullScreen = map._container.classList.contains(
+        'leaflet-map-full-screen'
+      );
+      if (isFullScreen) {
         map._container.classList.remove('leaflet-map-full-screen');
         document.body.classList.remove('full-screen');
         window.scrollTo({
@@ -26,8 +28,7 @@ L.Control.FullScreen = L.Control.extend({
           behavior: 'auto',
         });
         map.gestureHandling.enable();
-      }
-      else {
+      } else {
         scrollTop = window.scrollY;
         map._container.classList.add('leaflet-map-full-screen');
         document.body.classList.add('full-screen');
@@ -70,7 +71,6 @@ L.Control.PrintMap = L.Control.extend({
     L.DomEvent.off(this.button);
   },
 });
-
 
 function addFullScreenButton(map) {
   new L.Control.FullScreen({ position: 'topleft' }).addTo(map);

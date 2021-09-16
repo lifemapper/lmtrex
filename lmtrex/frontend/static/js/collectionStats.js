@@ -12,61 +12,8 @@ async function getCollectionMapData(datasetKey) {
   return await request.json();
 }
 
-let activeMaps = [];
-
-async function showStatsMap(mapData, mapOptions, mapContainer) {
+function showStatsMap(mapContainer) {
   mapContainer.style.display = '';
-
-  const { minYear, maxYear } = mapData;
-
-  const slider =
-    mapContainer.parentElement.getElementsByClassName('slider')[0];
-  const inputs = Array.from(slider.getElementsByTagName('input'));
-  function changeHandler(event) {
-    let boundaries = Object.fromEntries(
-      inputs
-        .filter((input) => input.type === event.target.type)
-        .map((input) => [
-          input.classList.contains('min') ? 'min' : 'max',
-          input.value,
-        ])
-    );
-
-    if (
-      event.target.type === 'range' &&
-      boundaries['min'] > boundaries['max']
-    ) {
-      if (event.target.classList.contains('min')) {
-        boundaries['max'] = boundaries['min'];
-        inputs.find(
-          (input) => input.type === event.target.type && input !== event.target
-        ).value = boundaries['max'];
-      } else {
-        boundaries['min'] = boundaries['max'];
-        event.target.value = boundaries['max'];
-      }
-    }
-
-    inputs
-      .filter((input) => input.type !== event.target.type)
-      .forEach((input) => {
-        input.value =
-          boundaries[input.classList.contains('min') ? 'min' : 'max'];
-      });
-
-    redrawMap(boundaries['min'], boundaries['max']);
-  }
-
-  const defaultMinValue = Math.round(minYear + (maxYear - minYear) * 0.4);
-  const defaultMaxValue = maxYear;
-  inputs.forEach((input) => {
-    input.min = minYear;
-    input.max = maxYear;
-    input.value = input.classList.contains('min')
-      ? defaultMinValue
-      : defaultMaxValue;
-    input.addEventListener('change', changeHandler);
-  });
 
   const labelsLayer = Object.values(leafletTileServers['overlays'])[0]();
   const baseLayer = Object.values(leafletTileServers['baseMaps'])[0](false);
@@ -74,13 +21,72 @@ async function showStatsMap(mapData, mapOptions, mapContainer) {
   const map = L.map(mapContainer, {
     maxZoom: 23,
     layers: [baseLayer, labelsLayer],
-    gestureHandling: true
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+  map.gestureHandling.enable();
 
   addFullScreenButton(map);
   addPrintMapButton(map);
 
-  let overlay;
+  return map;
+}
+
+let overlay;
+
+const sliderChangeHandler = (inputs, redrawMap) => (event) => {
+  let boundaries = Object.fromEntries(
+    inputs
+      .filter((input) => input.type === event.target.type)
+      .map((input) => [
+        input.classList.contains('min') ? 'min' : 'max',
+        input.value,
+      ])
+  );
+
+  if (event.target.type === 'range' && boundaries['min'] > boundaries['max']) {
+    if (event.target.classList.contains('min')) {
+      boundaries['max'] = boundaries['min'];
+      inputs.find(
+        (input) => input.type === event.target.type && input !== event.target
+      ).value = boundaries['max'];
+    } else {
+      boundaries['min'] = boundaries['max'];
+      event.target.value = boundaries['max'];
+    }
+  }
+
+  inputs
+    .filter((input) => input.type !== event.target.type)
+    .forEach((input) => {
+      input.value = boundaries[input.classList.contains('min') ? 'min' : 'max'];
+    });
+
+  redrawMap(boundaries['min'], boundaries['max']);
+};
+
+function changeCollectionMap(mapData, mapOptions, mapContainer, map) {
+  const slider = mapContainer.parentElement.getElementsByClassName('slider')[0];
+  const inputs = Array.from(slider.getElementsByTagName('input'));
+
+  const hasYears = 'minYear' in mapData && 'maxYear' in mapData;
+  const { minYear, maxYear } = mapData;
+  const defaultMinValue = Math.round(minYear + (maxYear - minYear) * 0.4);
+  const defaultMaxValue = maxYear;
+  inputs.forEach((input) => {
+    input.min = minYear ?? '0';
+    input.max = maxYear ?? '0';
+    const value = input.classList.contains('min')
+      ? defaultMinValue
+      : defaultMaxValue;
+    input.value =
+      typeof value === 'undefined' || Number.isNaN(value) ? '' : value;
+    if (hasYears)
+      input.addEventListener(
+        'change',
+        sliderChangeHandler.bind(inputs, redrawMap)
+      );
+    else input.disabled = true;
+  });
+
   function redrawMap(minYear, maxYear) {
     if (overlay) map.removeLayer(overlay);
     overlay = L.tileLayer(
@@ -93,24 +99,16 @@ async function showStatsMap(mapData, mapOptions, mapContainer) {
           srs: 'EPSG:3857',
           style: 'classic.poly',
           bin: 'hex',
-          year: `${minYear},${maxYear}`,
-          ...mapOptions
+          ...(hasYears ? { year: `${minYear},${maxYear}` } : {}),
+          ...mapOptions,
         })
           .map(([key, value]) => `${key}=${value}`)
           .join('&'),
       }
     );
     overlay.addTo(map);
+    const labelsLayer = Object.values(leafletTileServers['overlays'])[0]();
     labelsLayer.bringToFront();
   }
   redrawMap(defaultMinValue, defaultMaxValue);
-
-  activeMaps.push(map);
-
-  return ()=>{
-    inputs.map(input=>input.removeEventListener('change', changeHandler));
-    map.off();
-    map.remove();
-    activeMaps=activeMaps.filter(potentialMap=>potentialMap!==map)
-  }
 }

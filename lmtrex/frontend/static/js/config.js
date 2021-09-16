@@ -51,6 +51,5 @@ const lifemapperMessagesMeta = {
   },
   infoSection: {
     className: 'info-section',
-    title: 'Lifemapper Projection Details:',
   },
 };

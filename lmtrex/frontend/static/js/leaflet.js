@@ -1,7 +1,6 @@
 function initializeMaps() {
   const mapContainer = document.getElementById('map');
-  if(!mapContainer)
-    return;
+  if (!mapContainer) return;
   const pre = mapContainer.getElementsByTagName('pre')[0];
   const response = JSON.parse(pre.innerText);
   pre.remove();
@@ -11,32 +10,35 @@ function initializeMaps() {
 
   const statsPageParameters = [
     {
-      'name': 'institution_code',
-      'key': 'dwc:institutionCode',
-      'providers': ['idb', 'gbif'],
+      name: 'institution_code',
+      key: 'dwc:institutionCode',
+      providers: ['idb', 'gbif'],
     },
     {
-      'name': 'collection_code',
-      'key': 'dwc:collectionCode',
-      'providers': ['idb', 'gbif'],
+      name: 'collection_code',
+      key: 'dwc:collectionCode',
+      providers: ['idb', 'gbif'],
     },
     {
-      'name': 'publishing_org_key',
-      'key': 'gbif:publishingOrgKey',
-      'providers': ['gbif'],
-    }
-  ].map(({name, key, providers})=>[
-    name,
-    providers.map(provider=>
-      extractField(response.occurrence_info, provider, key)
-    ).find(value=>value)
-  ]).filter(([_key, value])=>value);
+      name: 'publishing_org_key',
+      key: 'gbif:publishingOrgKey',
+      providers: ['gbif'],
+    },
+  ]
+    .map(({ name, key, providers }) => [
+      name,
+      providers
+        .map((provider) =>
+          extractField(response.occurrence_info, provider, key)
+        )
+        .find((value) => value),
+    ])
+    .filter(([_key, value]) => value);
   const statsQueryString = statsPageParameters
-    .map(([key,value])=>`${key}=${encodeURIComponent(value)}`)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
     .join('&');
   const statsContainer = document.getElementById('stats');
-  if(statsQueryString.length === 0)
-    statsContainer.remove();
+  if (statsQueryString.length === 0) statsContainer.remove();
   else {
     const link = statsContainer.getElementsByTagName('a')[0];
     link.href += statsQueryString;
@@ -104,10 +106,14 @@ async function drawMap(response, map, mapDetails) {
       .filter((record) => record);
 
     const modificationTime = response.records[0].records[0]['s2n:modtime'];
+    const dateObject = new Date(modificationTime);
+    const formattedModificationTime = `<time
+      datetime="${dateObject.toISOString()}"
+    >${dateObject.toDateString()}</time>`;
     messages.infoSection.push(`
       The Lifemapper distribution model is a probability surface computed by
       Maxent that ranges from black to bright red, where the latter represents
-      higher probability. Model creation date: ${modificationTime}`);
+      higher probability. Model computed: ${formattedModificationTime}`);
   } catch {
     console.warn('Failed to find Lifemapper projection map for this species');
   }
@@ -118,7 +124,11 @@ async function drawMap(response, map, mapDetails) {
       ([name, messages]) => `<span
     class="lifemapper-message-section ${lifemapperMessagesMeta[name].className}"
   >
-    <i>${lifemapperMessagesMeta[name].title}</i><br>
+    ${
+      'title' in lifemapperMessagesMeta[name]
+        ? `<h4>${lifemapperMessagesMeta[name].title}</h4><br>`
+        : ''
+    }
     ${messages.join('<br>')}
   </span>`
     )
@@ -145,7 +155,7 @@ async function drawMap(response, map, mapDetails) {
   const [leafletMap, layerGroup] = await mapPromise;
 
   let hasLayers = false;
-  const addAggregatorOverlays = (layers)=>
+  const addAggregatorOverlays = (layers) =>
     layers.forEach(([options, layer]) => {
       hasLayers = true;
       layerGroup.addOverlay(layer, options.label);
@@ -156,10 +166,11 @@ async function drawMap(response, map, mapDetails) {
 
   addAggregatorOverlays(await idbLayersPromise);
 
-  if(!hasLayers){
+  if (!hasLayers) {
     leafletMap.off();
     leafletMap.remove();
-    map.parentElement.innerText='Unable to find any information for this record'
+    map.parentElement.innerText =
+      'Unable to find any information for this record';
   }
 }
 
@@ -203,7 +214,7 @@ async function getIdbLayers(scientificName, collectionCode) {
   const layers = await Promise.all([
     getIdbLayer(scientificName, undefined, {
       label: `iDigBio ${legendPoint('#197')}`,
-      default: true
+      default: true,
     }),
     getIdbLayer(scientificName, collectionCode, {
       label: `iDigBio (${collectionCode} points only) ${legendPoint('#e68')}`,
@@ -215,21 +226,20 @@ async function getIdbLayers(scientificName, collectionCode) {
   return layers.filter((data) => data);
 }
 
-const legendPoint = (color)=>`<span
+const legendPoint = (color) => `<span
   aria-hidden="true"
   style="--color: ${color}"
   class="leaflet-legend-point"
 ></span>`;
 
-const legendGradient = (leftColor, rightColor)=>`<span
+const legendGradient = (leftColor, rightColor) => `<span
   aria-hidden="true"
   style="--left-color: ${leftColor}; --right-color: ${rightColor}"
   class="leaflet-legend-gradient"
 ></span>`;
 
 function getGbifLayers(taxonKey) {
-  if(!taxonKey)
-    return [];
+  if (!taxonKey) return [];
   return [
     [
       { default: true, label: `GBIF ${legendGradient('#ee0', '#d11')}` },
@@ -294,7 +304,7 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
   const map = L.map(mapContainer, {
     maxZoom: 23,
     layers: enabledLayers,
-    gestureHandling: true
+    gestureHandling: true,
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
   const layerGroup = L.control.layers({}, overlayLayers);
