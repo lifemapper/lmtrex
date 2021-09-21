@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -134,11 +133,8 @@ src/web/.DS_Store
 .settings/org.eclipse.core.resources.prefs
 .project
 
-# PyCharm
-.idea
-
-# MacOS
-.DS_Store
+# Node.js
+node_modules
 
 # Testing-generated directories
 src/LmRex/automated_testing
