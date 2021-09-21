@@ -1,13 +1,14 @@
 import os
 from string import Template
 import random
+import json
 
 base_dir = os.path.dirname(os.path.realpath(__file__))
 templates_dir = os.path.join(base_dir, 'templates/')
 
 templates = dict()
 
-is_development = True
+is_development = False
 
 def template(name, arguments):
     if name not in templates or is_development:
@@ -22,7 +23,7 @@ def template(name, arguments):
 
 
 def inline_static(file_path):
-    signature = f'/*{file_path}*/\n\n' \
+    signature = f'/* {file_path} */\n\n' \
         if file_path.endswith('css') or file_path.endswith('js') \
         else ''
     with open(os.path.join(base_dir,file_path), 'r', encoding='utf-8') as file:
@@ -32,13 +33,24 @@ frontend_static_files = None
 
 def get_loading_tagline():
     return f"""{random.choice([
-        'Searching', 'Running',
-        'Exploring', 'Hustling',
-        'Gathering', 'Hacking',
-        'Pursuing', 'Going after',
-        'Assembling', 'Fetching',
-        'Grabbing', 'Loading'
+        'Searching',
+        'Running',
+        'Exploring',
+        'Hustling',
+        'Gathering',
+        'Hacking',
+        'Pursuing',
+        'Going after',
+        'Assembling',
+        'Fetching',
+        'Grabbing',
+        'Loading'
     ])}..."""
+
+def get_bundle_location(name):
+    manifest = json.loads(inline_static('js_src/dist/manifest.json'))
+    file_name = os.path.basename(manifest[name])
+    return f'js_src/dist/{file_name}'
 
 def frontend_template():
     global frontend_static_files
@@ -46,28 +58,27 @@ def frontend_template():
         frontend_static_files = {
             key: inline_static(file_path)
             for key, file_path in [
-                ['main_styles', 'static/css/main.css'],
-                ['frontend_styles', 'static/css/frontend.css'],
-                ['loader_styles', 'static/css/loader.css'],
-                ['response_styles', 'static/css/response.css'],
-                ['leaflet_styles', 'static/css/leaflet.css'],
-                ['table_styles', 'static/css/table.css'],
                 [
                     'specify_network_square',
-                    'static/img/specify_network_square.svg'
+                    'js_src/static/img/specify_network_square.svg'
                 ],
-                ['utils_script', 'static/js/utils.js'],
-                ['leaflet_extend_script', 'static/js/leafletExtend.js'],
-                ['config_script', 'static/js/config.js'],
-                ['leaflet_script', 'static/js/leaflet.js'],
-                ['loader_script', 'static/js/loader.js'],
-                ['response_collapse_script', 'static/js/responseCollapse.js'],
-                ['frontend_script', 'static/js/frontend.js'],
+                [
+                    'bundle',
+                    get_bundle_location('frontend.js')
+                ]
             ]
         }
-    return template('frontend', {
+    return template('index', {
         **frontend_static_files,
         'tagline': get_loading_tagline(),
+        'description': (
+            'This page compares the information contained in a specimen record '
+            'in a Specify database with that held by biodiversity aggregators '
+            'and name authorities. The page includes responses from global '
+            'providers on the occurrence, taxonomy and geographic distribution '
+            'of the species.'
+        ),
+        'body': '',
     })
 
 stats_static_files = None
@@ -78,25 +89,27 @@ def stats_template(body):
         stats_static_files = {
             key: inline_static(file_path)
             for key, file_path in [
-                ['main_styles', 'static/css/main.css'],
-                ['stats_styles', 'static/css/stats.css'],
-                ['loader_styles', 'static/css/loader.css'],
-                ['leaflet_styles', 'static/css/leaflet.css'],
-                ['slider_styles', 'static/css/slider.css'],
                 [
                     'specify_network_square',
-                    'static/img/specify_network_square.svg'
+                    'js_src/static/img/specify_network_square.svg'
                 ],
-                ['utils_script', 'static/js/utils.js'],
-                ['leaflet_extend_script', 'static/js/leafletExtend.js'],
-                ['config_script', 'static/js/config.js'],
-                ['collection_stats_script', 'static/js/collectionStats.js'],
-                ['loader_script', 'static/js/loader.js'],
-                ['stats_script', 'static/js/stats.js'],
+                [
+                    'bundle',
+                    get_bundle_location('stats.js')
+                ]
             ]
         }
-    return template('stats', {
+    return template('index', {
         **stats_static_files,
         'tagline': get_loading_tagline(),
+        'description': (
+            'The maps on this page visualize the geographic locality of the '
+            'digitized biological specimens held in museums and herbaria as '
+            'reported to GBIF. The first map shows all vouchered species '
+            'occurrence points by biological discipline within an institution. '
+            'The second map visualizes the point localities for all digitized '
+            'specimens, for all species, across all disciplines within an '
+            'institution.'
+        ),
         'body': body,
     })
