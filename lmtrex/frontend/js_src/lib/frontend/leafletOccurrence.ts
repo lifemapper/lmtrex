@@ -70,35 +70,40 @@ export function addMarkersToMap(
     )
   ) as RR<MarkerLayerName, L.FeatureGroup>;
 
+  const groupsWithMarkers = new Set<string>();
+
   // Sort markers by layer groups
   markers.forEach((markers) =>
     Object.entries(markers).forEach(([markerGroupName, markers]) =>
-      (markers as Marker[]).forEach((marker) =>
-        layerGroups[markerGroupName as MarkerLayerName].addLayer(marker)
-      )
+      (markers as Marker[]).forEach((marker) => {
+        layerGroups[markerGroupName as MarkerLayerName].addLayer(marker);
+        groupsWithMarkers.add(markerGroupName);
+      })
     )
   );
 
   const layerLabels: RR<MarkerLayerName, string> = {
-    marker: 'Pins',
-    polygon: 'Polygons',
-    polygonBoundary: 'Polygon Boundaries',
-    errorRadius: 'Error Radius',
+    marker: 'Specify 7 Pins',
+    polygon: 'Specify 7 Polygons',
+    polygonBoundary: 'Specify 7 Polygon Boundaries',
+    errorRadius: 'Specify 7 Pin Error Radius',
   };
 
   const addLayers = addAggregatorOverlays(map, controlLayers);
   // Add layer groups' checkboxes to the layer control menu
   addLayers(
-    Object.entries(layerLabels).map<AggregatorLayer>(([key, label]) => [
-      {
-        label,
-        default: isOverlayDefault(
-          key,
-          defaultMarkerGroupsState[key as MarkerLayerName]
-        ),
-      },
-      layerGroups[key as MarkerLayerName],
-    ])
+    Object.entries(layerLabels)
+      .filter(([key]) => groupsWithMarkers.has(key))
+      .map<AggregatorLayer>(([key, label]) => [
+        {
+          label,
+          default: isOverlayDefault(
+            key,
+            defaultMarkerGroupsState[key as MarkerLayerName]
+          ),
+        },
+        layerGroups[key as MarkerLayerName],
+      ])
   );
 }
 
@@ -138,7 +143,7 @@ const createLine = (
 
 export const formatLocalityData = (
   localityData: LocalityData,
-  index,
+  viewUrl: string,
   hideRedundant = false
 ): string =>
   [
@@ -156,23 +161,22 @@ export const formatLocalityData = (
           ? `<b>${field.value}</b>`
           : `<b>${field.headerName}</b>: ${field.value}`
       ),
-    `<button
-        type="button"
-        class="view-record"
-        data-index="${index}"
-      >View Record</button>`,
+    `<a
+        href="${viewUrl}"
+        target="_blank"
+      >View Record</a>`,
   ].join('<br>');
 
 export function getMarkersFromLocalityData({
   localityData,
   markerClickCallback,
   iconClass,
-  index,
+  viewUrl,
 }: {
   readonly localityData: LocalityData;
   readonly markerClickCallback?: string | L.LeafletEventHandlerFn;
   readonly iconClass?: string;
-  readonly index: number;
+  readonly viewUrl: string;
 }): MarkerGroups {
   const markers: MarkerGroups = {
     marker: [],
@@ -258,7 +262,7 @@ export function getMarkersFromLocalityData({
     .forEach((vector) => {
       if (typeof markerClickCallback === 'function')
         vector.on('click', markerClickCallback);
-      vector.bindPopup(formatLocalityData(localityData, index, false));
+      vector.bindPopup(formatLocalityData(localityData, viewUrl, false));
     });
 
   return markers;

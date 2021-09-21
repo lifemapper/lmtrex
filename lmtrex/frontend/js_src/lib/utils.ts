@@ -1,7 +1,6 @@
 import '../static/css/loader.css';
 
 import type { RA } from './config';
-import { showMap } from './leafletUtils';
 
 const urlParameters = new URLSearchParams(window.location.search);
 
@@ -37,6 +36,8 @@ export const loader = async (
 /*
  * A generator of promises that can be resolved even before they are created
  *
+ * See: https://stackoverflow.com/q/26150232/8584605
+ *
  * Usage:
  * const [resolve, getPromise] = inversePromise<boolean>();
  * resolve(false);
@@ -59,7 +60,7 @@ export function inversePromise<T>(): [
       new Promise<T>(async (resolve) => {
         if (!resolved) data = await promise;
         resolved = true;
-        resolve(data);
+        resolve(data!);
       }),
   ];
 }

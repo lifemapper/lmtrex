@@ -3,7 +3,6 @@ import '../../static/css/frontend.css';
 import '../../static/css/response.css';
 import '../../static/css/table.css';
 
-import type { showMap } from '../leafletUtils';
 import { getQueryParameter, inversePromise, loader } from '../utils';
 import { initializeMap } from './leaflet';
 import type { IncomingMessage, OutgoingMessage } from './occurrence';
@@ -23,7 +22,7 @@ const origin = getQueryParameter('origin', (origin) =>
 );
 export const [resolveMap, getMap] =
   inversePromise<Readonly<[L.Map, L.Control.Layers, HTMLElement]>>();
-const sendMessage = (action: OutgoingMessage) =>
+const sendMessage = (action: OutgoingMessage): void =>
   window.opener?.postMessage(action, origin);
 
 loader(
@@ -41,6 +40,7 @@ loader(
             ...action,
             state: {
               sendMessage,
+              origin,
             },
           });
         window.addEventListener('message', (event) => {
@@ -56,25 +56,7 @@ loader(
         });
       }),
     ]).then(([innerHtml]) => innerHtml),
-  () => {
-    initializeMap();
-    getMap().then(([_map, _layerGroup, mapContainer]) => {
-      const popUpPane =
-        mapContainer.getElementsByClassName('leaflet-popup-pane')[0];
-      if (!popUpPane) throw new Error('Unable to find the pop up pane');
-      popUpPane.addEventListener('click', (event) => {
-        if (!event.target) return;
-        const button = event.target as HTMLElement;
-        if (button.tagName !== 'BUTTON') return;
-        const index = button.getAttribute('data-index');
-        if (!index) return;
-        sendMessage({
-          type: 'ViewRecordAction',
-          index: Number.parseInt(index),
-        });
-      });
-    });
-  }
+  initializeMap
 );
 
 document.body.addEventListener('click', (event) => {

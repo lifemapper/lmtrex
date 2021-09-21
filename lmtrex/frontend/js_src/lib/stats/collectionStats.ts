@@ -100,10 +100,7 @@ export function changeCollectionMap(
     input.value =
       typeof value === 'undefined' || Number.isNaN(value) ? '' : `${value}`;
     if (hasYears)
-      input.addEventListener(
-        'change',
-        sliderChangeHandler.bind(undefined, inputs, redrawMap)
-      );
+      input.addEventListener('change', sliderChangeHandler(inputs, redrawMap));
     else input.disabled = true;
   });
 

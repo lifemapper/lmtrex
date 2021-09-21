@@ -12,15 +12,23 @@ import L, { addFullScreenButton, addPrintMapButton } from './leaflet';
 
 export function rememberSelectedBaseLayers(
   map: L.Map,
+  layerGroup: L.Control.Layers,
   cacheName: string
 ): void {
   const layers = leafletTileServers.baseMaps;
   const currentLayer = cache.get('leafletBaseLayer', cacheName);
-  const baseLayer =
-    (currentLayer && currentLayer in layers
-      ? layers[currentLayer]
-      : layers[preferredBaseLayer]) ?? Object.values(layers)[0];
-  baseLayer().addTo(map);
+  let layerLabel =
+    currentLayer !== false && currentLayer in layers
+      ? currentLayer
+      : preferredBaseLayer;
+  if (typeof layers[layerLabel] === 'undefined')
+    layerLabel = Object.keys(layers)[0];
+  const baseLayer = layers[layerLabel]();
+  baseLayer.addTo(map);
+
+  Object.entries(layers).forEach(([label, layer]) =>
+    layerGroup.addBaseLayer(label === layerLabel ? baseLayer : layer(), label)
+  );
 
   map.on('baselayerchange', ({ name }: { readonly name: string }) => {
     cache.set('leafletBaseLayer', cacheName, name, { overwrite: true });
@@ -69,12 +77,6 @@ export const legendGradient = (
   class="leaflet-legend-gradient"
 ></span>`;
 
-/*
- * TODO: add ability to change base layers
- * TODO: clean up sp7 code
- * TODO: commit all chagnes in separate commits
- */
-
 export type AggregatorLayer = Readonly<
   [
     {
@@ -98,13 +100,13 @@ export function showMap(
   // @ts-expect-error GestureHandling plugin has no type definitions
   map.gestureHandling.enable();
 
-  addFullScreenButton(map);
-  addPrintMapButton(map);
-  rememberSelectedBaseLayers(map, cacheName);
-  rememberSelectedOverlays(map);
-
   const layerGroup = L.control.layers({}, {});
   layerGroup.addTo(map);
+
+  addFullScreenButton(map);
+  addPrintMapButton(map);
+  rememberSelectedBaseLayers(map, layerGroup, cacheName);
+  rememberSelectedOverlays(map);
 
   const addOverlays = addAggregatorOverlays(map, layerGroup);
   addOverlays(

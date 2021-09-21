@@ -4,7 +4,7 @@
   "exclude": ["node_modules"],
   "compilerOptions": {
     /* Basic Options */
-    "isolatedModules": true
+    "isolatedModules": true,
     "jsx": "react",
     "lib": [
       "es6",

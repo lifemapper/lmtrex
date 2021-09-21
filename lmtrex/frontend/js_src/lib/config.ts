@@ -33,7 +33,7 @@ export let leafletTileServers: RR<
         'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}',
         {
           attribution:
-            'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',
+            'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community',
           className: 'darkened',
         }
       ),

@@ -32,7 +32,10 @@ const parseLayersFromJson = (
 
             return [
               layerName,
-              (grayscale = layerGroup === 'baseLayer') =>
+              (
+                grayscale = layerGroup === 'baseMaps' &&
+                  layerName.startsWith('Satelite')
+              ) =>
                 layerClass(endpoint, {
                   className: grayscale ? 'grayscale' : '',
                   ...layerOptions,
@@ -48,43 +51,45 @@ type LoadedAction = Action<'LoadedAction', { version: string }>;
 
 type GetPinInfoAction = Action<'GetPinInfoAction', { index: number }>;
 
-type ViewRecordAction = Action<'ViewRecordAction', { index: number }>;
-
-export type OutgoingMessage =
-  | LoadedAction
-  | GetPinInfoAction
-  | ViewRecordAction;
+export type OutgoingMessage = LoadedAction | GetPinInfoAction;
 
 let markers: RA<MarkerGroups> | undefined;
-let localities: RA<LocalityData> | undefined;
+let occurrences: RA<OccurrenceData> | undefined;
 const fetchedMarkers = new Set<number>();
 
 export const dispatch = generateDispatch<IncomingMessageExtended>({
   BasicInformationAction: ({ leafletLayers }) => {
     updateLeafletTileServers(parseLayersFromJson(leafletLayers));
   },
-  async LocalOccurrencesAction({ localityData, state: { sendMessage } }) {
-    localities = localityData;
+  async LocalOccurrencesAction({
+    occurrences: occurrencesData,
+    state: { sendMessage, origin },
+  }) {
+    occurrences = occurrencesData;
     const [leafletMap, layerGroup] = await getMap();
-    markers = localityData.map((localityData, index) =>
-      getMarkersFromLocalityData({
-        localityData,
-        markerClickCallback() {
-          if (fetchedMarkers.has(index)) return;
-          sendMessage({
-            type: 'GetPinInfoAction',
-            index,
-          });
-        },
-        index,
-      })
+    markers = occurrencesData.map(
+      ({ localityData, collectionObjectId }, index) =>
+        getMarkersFromLocalityData({
+          localityData,
+          markerClickCallback() {
+            if (fetchedMarkers.has(index)) return;
+            sendMessage({
+              type: 'GetPinInfoAction',
+              index,
+            });
+          },
+          viewUrl: `${origin}/specify/view/collectionobject/${collectionObjectId}/`,
+        })
     );
     addMarkersToMap(leafletMap, layerGroup, markers);
   },
-  PointDataAction({ index, localityData }) {
-    if (!Array.isArray(markers) || !localities)
-      throw new Error("Markers aren't loaded");
-    const formattedLocality = formatLocalityData(localityData, index, true);
+  PointDataAction({ index, localityData, state: { origin } }) {
+    if (!markers || !occurrences) throw new Error("Markers aren't loaded");
+    const formattedLocality = formatLocalityData(
+      localityData,
+      `${origin}/specify/view/collectionobject/${occurrences[index].collectionObjectId}/`,
+      true
+    );
     Object.values(markers[index])
       .flat()
       .map((marker) => marker.getPopup()?.setContent(formattedLocality));
@@ -100,7 +105,6 @@ export type OccurrenceData = {
   readonly collectingEventId: number;
   readonly localityId: number;
   readonly localityData: LocalityData;
-  readonly fetchMoreData: () => Promise<LocalityData | false>;
 };
 
 type BasicInformationAction = State<
@@ -121,7 +125,7 @@ type BasicInformationAction = State<
 type LocalOccurrencesAction = State<
   'LocalOccurrencesAction',
   {
-    localityData: RA<LocalityData>;
+    occurrences: RA<OccurrenceData>;
   }
 >;
 
@@ -141,5 +145,6 @@ export type IncomingMessage =
 type IncomingMessageExtended = IncomingMessage & {
   state: {
     readonly sendMessage: (message: OutgoingMessage) => void;
+    readonly origin: string;
   };
 };
