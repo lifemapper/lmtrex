@@ -244,7 +244,7 @@ class FrontendSvc(_S2nService):
                 title=scientific_name,
                 sections=sections,
                 specify_network_long=\
-                    inline_static(f'static/img/specify_network_long.svg')
+                    inline_static(f'js_src/static/img/specify_network_long.svg')
             )
         )
 
