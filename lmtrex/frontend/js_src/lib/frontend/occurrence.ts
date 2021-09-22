@@ -34,7 +34,7 @@ const parseLayersFromJson = (
               layerName,
               (
                 grayscale = layerGroup === 'baseMaps' &&
-                  layerName.startsWith('Satelite')
+                  layerName.startsWith('Satellite')
               ) =>
                 layerClass(endpoint, {
                   className: grayscale ? 'grayscale' : '',
