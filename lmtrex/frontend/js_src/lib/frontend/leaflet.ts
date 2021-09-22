@@ -198,11 +198,9 @@ async function drawMap(
     })
     .join('');
 
-  const idbScientificName = extractField(
-    response.occurrence_info,
-    'idb',
-    'dwc:scientificName'
-  );
+  const idbScientificName =
+    extractField(response.occurrence_info, 'idb', 'dwc:scientificName') ??
+    extractField(response.name_info, 'gbif', 's2n:canonical_name');
   const idbCollectionCode = extractField(
     response.occurrence_info,
     'idb',
@@ -239,24 +237,29 @@ async function getIdbLayer(
   options: AggregatorLayer[0],
   className?: string
 ): Promise<AggregatorLayer | undefined> {
-  const request = await fetch('https://search.idigbio.org/v2/mapping/', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      rq: {
-        scientificname: scientificName,
-        ...(typeof collectionCode === 'string'
-          ? {
-              collectioncode: collectionCode,
-            }
-          : {}),
+  let request: Response | undefined;
+  try {
+    request = await fetch('https://search.idigbio.org/v2/mapping/', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
       },
-      type: 'auto',
-      threshold: 100_000,
-    }),
-  });
+      body: JSON.stringify({
+        rq: {
+          scientificname: scientificName,
+          ...(typeof collectionCode === 'string'
+            ? {
+                collectioncode: collectionCode,
+              }
+            : {}),
+        },
+        type: 'auto',
+        threshold: 100_000,
+      }),
+    });
+  } catch {
+    return undefined;
+  }
   const response = await request.json();
   const pointCount = response.itemCount;
   if (pointCount === 0) return undefined;

@@ -43,9 +43,9 @@ def start_cherrypy_services():
 #     cherrypy.config.update(CHERRYPY_CONFIG_FILE)
     cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
     cherrypy.config.update(
-        {'server.socket_port': 80,
-         'log.error_file': '{}/log/cherrypyErrors.log'.format(SCRATCH_PATH),
-         'log.access_file': '{}/log/cherrypyAccess.log'.format(SCRATCH_PATH),
+        {'server.socket_port': 8080,
+         'log.error_file': '/Users/maxxxxxdlp/.Trash/log/cherrypyErrors.log'.format(SCRATCH_PATH),
+         'log.access_file': '/Users/maxxxxxdlp/.Trash/log/cherrypyAccess.log'.format(SCRATCH_PATH),
          'response.timeout': 1000000,
          'tools.CORS.on': True,
          'tools.encode.encoding': 'utf-8',
@@ -53,7 +53,7 @@ def start_cherrypy_services():
          'tools.etags.autotags': True,
          'tools.sessions.on': True,
          'tools.sessions.storage_class': cherrypy.lib.sessions.FileSession,
-         'tools.sessions.storage_path': '{}/sessions'.format(SCRATCH_PATH),
+         'tools.sessions.storage_path': '/Users/maxxxxxdlp/.Trash/sessions'.format(SCRATCH_PATH),
          '/static': {
              'tools.staticdir.on': True,
              'cors.expose.on': True

@@ -8,7 +8,7 @@ templates_dir = os.path.join(base_dir, 'templates/')
 
 templates = dict()
 
-is_development = False
+is_development = True
 
 def template(name, arguments):
     if name not in templates or is_development:

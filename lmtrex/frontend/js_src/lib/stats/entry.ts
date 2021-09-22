@@ -14,23 +14,39 @@ import {
 const reGuid = /^\w{8}-(\w{4}-){3}\w{12}$/;
 const isGuid = (guid: string): boolean => reGuid.exec(guid) !== null;
 
-const institutionCode = getQueryParameter(
-  'institution_code',
-  (value) => value.length > 0
-);
+/*
+ *Const institutionCode = getQueryParameter(
+ *'institution_code',
+ *(value) => value.length > 0
+ *);
+ */
 const publishingOrgKey = getQueryParameter('publishing_org_key', isGuid);
 let datasetKey = getQueryParameter('dataset_key', isGuid);
-let institutionMap: L.Map | undefined = undefined;
-const institutionMapContainer = document.querySelector(
-  '#institution-distribution .leaflet-map'
-);
-let collectionMap: L.Map | undefined = undefined;
-const collectionMapContainer = document.querySelector(
-  '#collection-distribution .leaflet-map'
-);
 
-if (!institutionMapContainer || !collectionMapContainer)
-  throw new Error('Unable to find mind containers');
+let institutionMap: L.Map | undefined = undefined;
+let collectionMap: L.Map | undefined = undefined;
+
+const institutionContainer = document.getElementById(
+  'institution-distribution'
+);
+const collectionContainer = document.getElementById('collection-distribution');
+const listOfCollectionsContainer = document.getElementById('change-collection');
+
+if (
+  !institutionContainer ||
+  !collectionContainer ||
+  !listOfCollectionsContainer
+)
+  throw new Error('Unable to find map containers');
+
+const institutionMapContainer =
+  institutionContainer.getElementsByClassName('leaflet-map')[0];
+const collectionMapContainer =
+  collectionContainer.getElementsByClassName('leaflet-map')[0];
+const listOfCollections =
+  listOfCollectionsContainer.getElementsByTagName('select')[0];
+
+let hasData = true;
 
 const fetchDataSets = async (): Promise<IR<string>> =>
   publishingOrgKey
@@ -53,35 +69,56 @@ const fetchDataSets = async (): Promise<IR<string>> =>
         )
     : {};
 
+function noDataMessage(): void {
+  document.getElementsByTagName('main')[0].innerHTML = `
+    <p class="alert alert-error">Unable to find any data</p>
+  `;
+  hasData = false;
+}
+
 loader(
   async () =>
     Promise.all([
       publishingOrgKey
-        ? getInstitutionMapMeta(publishingOrgKey).then((mapData) => {
-            institutionMap = showMap(
-              institutionMapContainer as HTMLElement,
-              'institution'
-            )[0];
-            changeCollectionMap(
-              mapData,
-              { publishingOrg: publishingOrgKey },
-              institutionMapContainer as HTMLElement,
-              institutionMap
-            );
-          })
+        ? getInstitutionMapMeta(publishingOrgKey)
+            .then((mapData) => {
+              institutionMap = showMap(
+                institutionMapContainer as HTMLElement,
+                'institution'
+              )[0];
+              changeCollectionMap(
+                mapData,
+                { publishingOrg: publishingOrgKey },
+                institutionMapContainer as HTMLElement,
+                institutionMap
+              );
+            })
+            .catch((error) => {
+              console.error(error);
+              noDataMessage();
+            })
         : Promise.resolve(),
-      fetchDataSets().then((datasets) => {
-        if (Object.keys(datasets).length === 0) return;
-        if (!(datasetKey in datasets)) datasetKey = Object.keys(datasets)[0];
-        populateDataSetList(datasets, datasetKey);
-        collectionMap = showMap(
-          collectionMapContainer as HTMLElement,
-          'collection'
-        )[0];
-        return changeCollection(datasetKey);
-      }),
+      fetchDataSets()
+        .then((datasets) => {
+          if (Object.keys(datasets).length === 0) {
+            noDataMessage();
+            return;
+          }
+          if (!(datasetKey in datasets)) datasetKey = Object.keys(datasets)[0];
+          populateDataSetList(datasets, datasetKey);
+          collectionMap = showMap(
+            collectionMapContainer as HTMLElement,
+            'collection'
+          )[0];
+          return changeCollection(datasetKey);
+        })
+        .catch((error) => {
+          console.error(error);
+          noDataMessage();
+        }),
     ]),
   () => {
+    if (!hasData) return;
     const header = document.querySelector('#institution-distribution h3');
     if (!header) throw new Error('Unable to find map header');
     header.textContent = `
@@ -92,8 +129,8 @@ loader(
 );
 
 async function changeCollection(collection: string): Promise<void> {
+  if (!hasData) return;
   datasetKey = collection;
-  if (!collectionMapContainer) throw new Error('Unable to find the map');
   if (!collectionMap) throw new Error('Collection map is not defined');
   changeCollectionMap(
     await getCollectionMapData(datasetKey),
@@ -104,17 +141,14 @@ async function changeCollection(collection: string): Promise<void> {
   const header = document.querySelector('#collection-distribution h3');
   if (!header) throw new Error('Unable to find map header');
   header.textContent = `
-    Geographic distribution of all species in the collection 
-    based on GBIF`;
+    Geographic distribution of all digitized specimen localities for all species
+    in the collection based on data in GBIF`;
 }
 
 function populateDataSetList(
   dataSets: IR<string>,
   currentDataSet: string
 ): void {
-  const listOfCollections = document.querySelector('#change-collection select');
-  if (!listOfCollections)
-    throw new Error('Unable to find the list of datasets');
   listOfCollections.innerHTML = Object.entries(dataSets)
     .map(
       ([key, label]) =>
@@ -125,6 +159,6 @@ function populateDataSetList(
     )
     .join('');
   listOfCollections.addEventListener('change', async () =>
-    changeCollection((listOfCollections as HTMLSelectElement).value)
+    changeCollection(listOfCollections.value)
   );
 }
