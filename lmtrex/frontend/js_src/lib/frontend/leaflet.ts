@@ -71,6 +71,7 @@ export function initializeMap(): void {
     ].join('');
     paragraph.innerHTML += `<a
       href="/api/v1/stats/?${statsQueryString}"
+      target="_blank"
     >here</a>.`;
   }
 }
