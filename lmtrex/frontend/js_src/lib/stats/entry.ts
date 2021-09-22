@@ -85,8 +85,8 @@ loader(
     const header = document.querySelector('#institution-distribution h3');
     if (!header) throw new Error('Unable to find map header');
     header.textContent = `
-      Geographic distribution of all species from ${institutionCode} based on
-      GBIF`;
+      Geographic distribution of all digitized specimens for all species for all
+      collections at KU based on data in GBIF`;
     [collectionMap, institutionMap].forEach((map) => map?.invalidateSize());
   }
 );

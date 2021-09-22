@@ -178,10 +178,8 @@ async function drawMap(
       datetime="${dateObject.toISOString()}"
     >${dateObject.toDateString()}</time>`;
     messages.infoSection.push(`
-      It also displays a predicted distribution model from Lifemapper. The
-      Lifemapper distribution model is a probability surface computed by
-      Maxent that ranges from black to bright red, where the latter represents
-      higher probability. Model computed: ${formattedModificationTime}`);
+      It also displays a predicted distribution model from Lifemapper. Model
+      computed with default Maxent parameters: ${formattedModificationTime}`);
   } catch {
     console.warn('Failed to find Lifemapper projection map for this species');
   }
