@@ -15,11 +15,14 @@ TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
 # Point to production or dev services depending on current location
 if (FQDN.find('notyeti') >= 0 or FQDN.find('broker-dev') >= 0):
-    ICON_API = 'https://broker-dev.spcoco.org/api/v1/badge'
-    SPECIFY_CACHE_API = 'https://dev.syftorium.org/api/v1/sp_cache'
+    BROKER_BASE = 'https://broker-dev.spcoco.org'
+    SYFT_BASE = 'https://dev.syftorium.org'
 else:
-    ICON_API = 'https://broker.spcoco.org/api/v1/badge'
-    SPECIFY_CACHE_API = 'https://syftorium.org/api/v1/sp_cache'
+    BROKER_BASE = 'https://broker.spcoco.org'
+    SYFT_BASE = 'https://syftorium.org'
+    
+ICON_API = '{}/api/v1/badge'.format(BROKER_BASE)
+SPECIFY_CACHE_API = '{}/api/v1/sp_cache'.format(SYFT_BASE)
 
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
@@ -497,8 +500,7 @@ class SPECIFY:
     
 # ......................................................
 class SYFTER:
-    REST_URL = 'https://syftorium.org/api/v1'
-    REST_URL_DEV = 'https://dev.syftorium.org/api/v1'
+    REST_URL = '{}/api/v1'.format(SYFT_BASE)
     RESOLVE_RESOURCE = 'resolve'
     
     

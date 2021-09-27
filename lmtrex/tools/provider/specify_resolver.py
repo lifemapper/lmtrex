@@ -12,7 +12,7 @@ class SpecifyResolverAPI(APIQuery):
     RES_MAP = S2nSchema.get_specify_resolver_map()
     
     # ...............................................
-    def __init__(self, ident=None, resource=SYFTER.RESOLVE_RESOURCE, logger=None, is_dev=True):
+    def __init__(self, ident=None, resource=SYFTER.RESOLVE_RESOURCE, logger=None):
         """Constructor
         
         Args:
@@ -25,8 +25,6 @@ class SpecifyResolverAPI(APIQuery):
                 prints to stdout    
         """
         base_url = SYFTER.REST_URL
-        if is_dev:
-            base_url = SYFTER.REST_URL_DEV
         url = '{}/{}'.format(base_url, resource)
         if ident is not None:
             url = '{}/{}'.format(url, ident)
