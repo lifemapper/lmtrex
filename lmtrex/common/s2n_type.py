@@ -188,6 +188,7 @@ class S2nSchema:
         # GBIF-specific field
         'gbifID': COMMUNITY_SCHEMA.GBIF,
         'publishingOrgKey': COMMUNITY_SCHEMA.GBIF,
+        'datasetKey': COMMUNITY_SCHEMA.GBIF,
         'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
 
         # iDigBio-specific field
