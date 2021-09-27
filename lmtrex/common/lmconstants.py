@@ -89,7 +89,9 @@ class TST_VALUES:
     ]
 
     DS_GUIDS_W_SPECIFY_ACCESS_RECS = [
-        '56caf05f-1364-4f24-85f6-0c82520c2792', 
+        # Fish Tissue
+        '56caf05f-1364-4f24-85f6-0c82520c2792',
+        # Fish
         '8f79c802-a58c-447f-99aa-1d6a0790825a']
     GUIDS_W_SPECIFY_ACCESS = [
         '2facc7a2-dd88-44af-b95a-733cc27527d4',
