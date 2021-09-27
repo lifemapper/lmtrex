@@ -23,8 +23,25 @@
     <Directory /var/www/lmtrex>
         WSGIProcessGroup lmtrex
         WSGIApplicationGroup %{GLOBAL}
-        Order deny,allow
+        Order allow,deny
         Allow from all
     </Directory>
+    
+    Alias /js  "@LMHOME@/lmtrex/services/public/js/"
+    <Directory "@LMHOME@/lmtrex/services/public/js">
+        Options FollowSymLinks Indexes
+        AllowOverride None
+        Require all granted
+        Order allow,deny
+    </Directory>
+
+    Alias /css "@LMHOME@/lmtrex/services/public/css/"
+    <Directory "@LMHOME@/lmtrex/services/public/css">
+        Options FollowSymLinks Indexes
+        AllowOverride None
+        Require all granted
+        Order allow,deny
+    </Directory>
+
 
 </VirtualHost>

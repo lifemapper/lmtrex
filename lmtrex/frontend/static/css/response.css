@@ -17,7 +17,7 @@
 }
 
 .collapsed .value::after {
-  content: "{...}";
+  content: "(collapsed)";
 }
 
 .collapsed:hover > .value::after {
@@ -32,7 +32,8 @@
   display: grid;
   grid-template-columns: auto 1fr;
   grid-auto-rows: auto;
-  row-gap: 1rem;
+  row-gap: 0.5rem;
+  column-gap: 0.5rem;
 }
 
 .list-of-values > .field:not(:last-child) > * {
@@ -46,19 +47,16 @@
 
 .label {
   line-height: 2rem;
-  padding-right: 1rem;
+  min-width: calc(var(--double-size) * 2);
 }
 
-.string,
-.text {
+.textbox {
   width: 100%;
+  min-width: calc(var(--double-size) * 3);
   padding: 0.5rem;
   border: 1px solid var(--b3);
   border-radius: 3px;
-}
-
-.text {
-  resize: vertical;
+  background: var(--b2);
 }
 
 .value {
@@ -85,4 +83,14 @@
 
 .dictionary-label:hover::after {
   color: var(--t1);
+}
+
+input[type="date"] {
+  background: transparent;
+  border: none;
+  pointer-events: none;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+  color: inherit;
 }

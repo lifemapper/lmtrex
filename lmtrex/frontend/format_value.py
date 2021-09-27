@@ -2,6 +2,7 @@
 """Format different parts of the response object."""
 
 from typing import Dict, List
+import json
 
 
 def format_list(values: List[any]) -> str:
@@ -16,10 +17,12 @@ def format_list(values: List[any]) -> str:
             formatted list
     """
     if not values:
-        return "[]"
+        return ''
+    if len(values) == 1:
+        return format_value(values[0])
     else:
         fields = {
-            "[%d]" % index: value for index, value in enumerate(values)
+            "[%d]" % index: value for index, value in enumerate(values, start=1)
         }
         return format_dict(fields, is_list_of_values=True)
 
@@ -35,8 +38,13 @@ def format_string(value: str) -> str:
         str:
             formatted string
     """
-    return f"""<label>
-        <textarea class="text" readonly>{value}</textarea>
+    return f"""<label class="textbox-container">
+        <div
+            class="textbox"
+            aria-role="textbox"
+            aria-multiline="true"
+            aria-readonly="true"
+        >{value}</div>
     </label>"""
 
 
@@ -97,7 +105,8 @@ def format_line(
 
 
 def format_dict(
-    fields: Dict[str, any], is_list_of_values: bool = False
+    fields: Dict[str, any],
+    is_list_of_values: bool = False
 ) -> str:
     """
     Format a dict.
@@ -112,7 +121,7 @@ def format_dict(
             formatted list
     """
     if not fields:
-        return "{}"
+        return ''
     else:
         fields = [
             format_line(label, format_value(value))
@@ -125,15 +134,5 @@ def format_dict(
         }</div>"""
 
 
-def format_response(response: Dict[str, any]) -> str:
-    """
-    Format the response object.
-
-    Args:
-        response (Dict[str,any]): response object
-
-    Returns:
-        str:
-            formatted response
-    """
-    return format_value(response)
+def serialize_response(response):
+    return json.loads(json.dumps(response))

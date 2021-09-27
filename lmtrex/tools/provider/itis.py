@@ -1,12 +1,13 @@
+from collections import OrderedDict
 from http import HTTPStatus
 import urllib
 
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, ITIS, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, TST_VALUES)
-from lmtrex.fileop.logtools import (log_info, log_error)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+    ITIS, ServiceProvider, URL_ESCAPES, TST_VALUES)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
+from lmtrex.fileop.logtools import log_info
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import get_traceback, add_errinfo
 
 
 # .............................................................................
@@ -16,7 +17,7 @@ class ItisAPI(APIQuery):
         https://www.itis.gov/web_service.html
     """
     PROVIDER = ServiceProvider.ITISSolr
-    NAME_MAP = S2N_SCHEMA.get_itis_name_map()
+    NAME_MAP = S2nSchema.get_itis_name_map()
     
     # ...............................................
     def __init__(
@@ -172,91 +173,101 @@ class ItisAPI(APIQuery):
             
     # ...............................................
     @classmethod
-    def _parse_value_to_dict(cls, val):
-        items = {}
-        lst = val.split('$')
-        for elt in lst:
-            parts = elt.split(':')
-            key = parts[0]
-            try:
-                val = parts[1]
-            except:
-                pass
-            else:
-                try:
-                    tsn = int(key)
-                    items['tsn'] = tsn
-                except:
-                    rnk = key.lower()
-                    items[rnk] = val
-        return items
+    def _parse_hierarchy_to_dicts(cls, val):
+        hierarchy_lst = []
+        if val:
+            for hier_str in val:
+                temp_hierarchy = {}
+                hier_lst = hier_str.split('$')
+                for elt in hier_lst:
+                    parts = elt.split(':')
+                    key = parts[0]
+                    try:
+                        name = parts[1]
+                    except:
+                        pass
+                    else:
+                        try:
+                            rnk = key.lower()
+                        except:
+                            pass
+                        else:
+                            temp_hierarchy[rnk] = name
+                # Reorder and filter to desired ranks
+                hierarchy = OrderedDict()
+                for rnk in S2nSchema.RANKS:
+                    try:
+                        hierarchy[rnk] = temp_hierarchy[rnk]
+                    except:
+                        hierarchy[rnk] = None
+                hierarchy_lst.append(hierarchy)
+        return hierarchy_lst
 
     # ...............................................
     @classmethod
-    def _parse_value_to_list(cls, val):
-        items = []
-        lst = val.split('$')
-        for elt in lst:
-            parts = elt.split(':')
-            if len(parts) == 1:
-                items.append(parts[0])
-            if len(parts) == 2:
-                try:
-                    tsn = int(parts[0])
-                except:
-                    print('Unexpected 2-part element in $-delimited list {}'.format(elt))
-                else:
-                    items.insert(0, tsn)
-        return items
+    def _parse_synonyms_to_lists(cls, val):
+        synonym_lst = []
+        if val:
+            for syn in val:
+                syn_group = []
+                lst = syn.split('$')
+                for name in lst:
+                    if name and name.find(':') < 0:
+                        syn_group.append(name)
+                synonym_lst.append(syn_group)
+        return synonym_lst
 
     # ...............................................
     @classmethod
     def _standardize_record(cls, rec, is_accepted=False):
         newrec = {}
-        usage = rec['usage'].lower()
-        if (not is_accepted 
-            or (is_accepted and usage in ('accepted', 'valid')) ):
-            for fldname, val in rec.items():
-                # Leave out fields without value
-                if val and fldname in cls.NAME_MAP.keys():
-                    stdfld = cls.NAME_MAP[fldname]
-                    if fldname in ('hierarchySoFarWRanks', 'synonyms'):
-                        val_lst = []
-                        if fldname == 'hierarchySoFarWRanks':
-                            for elt in val:
-                                val_lst.append(cls._parse_value_to_dict(elt))
-                        else:
-                            for elt in val:
-                                val_lst.extend(cls._parse_value_to_list(elt))
-                        newrec[stdfld] =  val_lst
-                    else:
-                        if fldname == ITIS.TSN_KEY:
-                            newrec['{}:view_url'.format(
-                                    COMMUNITY_SCHEMA.S2N['code'])] = ITIS.get_taxon_view(val)
-                            newrec['{}:api_url'.format(
-                                    COMMUNITY_SCHEMA.S2N['code'])] = ITIS.get_taxon_data(val)
-                        newrec[stdfld] =  val
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
+        hierarchy_prov_fld = 'hierarchySoFarWRanks'
+        synonym_prov_fld = 'synonyms'
+        good_statii = ('accepted', 'valid')
+        
+        status = rec['usage'].lower()
+        if (not is_accepted or (is_accepted and status in good_statii)):
+            for stdfld, provfld in cls.NAME_MAP.items():
+                try:
+                    val = rec[provfld]
+                except:
+                    val = None
+
+                if provfld == ITIS.TSN_KEY:
+                    newrec[stdfld] =  val
+                    newrec[view_std_fld] = ITIS.get_taxon_view(val)
+                    newrec[data_std_fld] = ITIS.get_taxon_data(val)
+
+                elif provfld == hierarchy_prov_fld:
+                    hierarchy_lst = cls._parse_hierarchy_to_dicts(val)                   
+                    newrec[stdfld] =  hierarchy_lst
+                
+                elif provfld == synonym_prov_fld:
+                    synonym_lst = cls._parse_synonyms_to_lists(val)
+                    newrec[stdfld] =  synonym_lst                    
+                
+                else:
+                    newrec[stdfld] =  val
         return newrec
     
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, count_key, records_key, query_term, service,
-            query_status=None, query_urls=[], is_accepted=False, err={}):
+            cls, output, count_key, records_key, service,
+            query_status=None, query_urls=[], is_accepted=False, errinfo={}):
         total = 0
         stdrecs = []
-        errmsgs = []
-        if err:
-            errmsgs.append(err)
 
         try:
             total = output[count_key]
         except Exception as e:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
         try:
             docs = output[records_key]
-        except:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
+        except Exception as e:
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
         else:
             for doc in docs:
                 newrec = cls._standardize_record(doc, is_accepted=is_accepted)
@@ -264,7 +275,7 @@ class ItisAPI(APIQuery):
                     stdrecs.append(newrec)
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs)
+            total, service, provider=prov_meta, records=stdrecs, errors=errinfo)
         
         return std_output
     
@@ -289,11 +300,10 @@ class ItisAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
+        errinfo = {}
         q_filters = {ITIS.NAME_KEY: sciname}
-        query_term = 'namestr={}'.format(sciname)
         if kingdom is not None:
             q_filters['kingdom'] = kingdom
-            query_term = '{}&kingdom={}'.format(query_term, kingdom)
         api = ItisAPI(ITIS.SOLR_URL, q_filters=q_filters, logger=logger)
 
         try:
@@ -301,29 +311,27 @@ class ItisAPI(APIQuery):
         except Exception as e:
             tb = get_traceback()
             std_output = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR,
                 errors=[{'error': cls._get_error_message(err=tb)}])
         else:
             try:
                 output = api.output['response']
             except:
                 if api.error is not None:
+                    errinfo['error'] = [cls._get_error_message(err=api.error)]
                     std_output = cls.get_api_failure(
-                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(err=api.error)}])
+                        S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
                 else:
+                    errinfo['error'] = [cls._get_error_message(msg='Missing `response` element')]
                     std_output = cls.get_api_failure(
-                        APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(
-                            msg='Missing `response` element')}])
+                        S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
-                if is_accepted:
-                    query_term = '{}&is_accepted={}'.format(query_term, is_accepted)
+                errinfo = add_errinfo(errinfo, 'error', api.error)
                 # Standardize output from provider response
                 std_output = cls._standardize_output(
-                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
-                    APIService.Name['endpoint'], query_status=api.status_code, 
-                    query_urls=[api.url], is_accepted=is_accepted, err=api.error)
+                    output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, S2nEndpoint.Name, 
+                    query_status=api.status_code, query_urls=[api.url], is_accepted=is_accepted, 
+                    errinfo=errinfo)
         return std_output
 
 # ...............................................
@@ -339,22 +347,23 @@ class ItisAPI(APIQuery):
         Ex: https://services.itis.gov/?q=tsn:566578&wt=json
         """
         output = {}
+        errinfo = {}
         apiq = ItisAPI(
             ITIS.SOLR_URL, q_filters={ITIS.TSN_KEY: tsn}, logger=logger)
         try:
             apiq.query()
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_output = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR,
+                errinfo=errinfo)
         else:
-            query_term = 'tsn={}&is_accepted=True'.format(tsn)
+            errinfo = add_errinfo(errinfo, 'error', apiq.error)
             # Standardize output from provider response
             std_output = cls._standardize_output(
-                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, query_term, 
-                APIService.Name['endpoint'], apiq.status_code, query_urls=[apiq.url], 
-                is_accepted=True, err=apiq.error)
+                output, ITIS.COUNT_KEY, ITIS.RECORDS_KEY, S2nEndpoint.Name, 
+                apiq.status_code, query_urls=[apiq.url], is_accepted=True, errinfo=errinfo)
 
         return std_output
 

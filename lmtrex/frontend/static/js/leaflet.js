@@ -1,150 +1,273 @@
-window.addEventListener('load', () => {
-  Array.from(document.getElementsByClassName('leaflet-map-container')).forEach(
-    (mapContainer) => {
-      const pre = mapContainer.getElementsByTagName('pre')[0];
-      const response = JSON.parse(pre.innerText);
-      pre.remove();
-      const map = mapContainer.getElementsByClassName('leaflet-map')[0];
-      const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
-      drawMap(response, map, mapDetails);
-    }
-  );
-});
+function initializeMaps() {
+  const mapContainer = document.getElementById('map');
+  if (!mapContainer) return;
+  const pre = mapContainer.getElementsByTagName('pre')[0];
+  const response = JSON.parse(pre.innerText);
+  pre.remove();
+  const map = mapContainer.getElementsByClassName('leaflet-map')[0];
+  const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
+  drawMap(response, map, mapDetails);
 
-const lifemapperLayerVariations = {
-  raster: {
-    layerLabel: 'Projection',
-    transparent: true,
-  },
-  vector: {
-    layerLabel: 'Occurrence Points',
-    transparent: true,
-  },
-};
+  const statsPageParameters = [
+    {
+      name: 'institution_code',
+      key: 'dwc:institutionCode',
+      providers: ['idb', 'gbif'],
+    },
+    {
+      name: 'collection_code',
+      key: 'dwc:collectionCode',
+      providers: ['idb', 'gbif'],
+    },
+    {
+      name: 'publishing_org_key',
+      key: 'gbif:publishingOrgKey',
+      providers: ['gbif'],
+    },
+  ]
+    .map(({ name, key, providers }) => [
+      name,
+      providers
+        .map((provider) =>
+          extractField(response.occurrence_info, provider, key)
+        )
+        .find((value) => value),
+    ])
+    .filter(([_key, value]) => value);
+  const statsQueryString = statsPageParameters
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+  const statsContainer = document.getElementById('stats');
+  if (statsQueryString.length === 0) statsContainer.remove();
+  else {
+    const parameters = Object.fromEntries(statsPageParameters);
+    const paragraph = statsContainer.getElementsByTagName('p')[0];
+    paragraph.innerText = ['Distribution maps of all species in the ',
+      `${parameters['collection_code']} collection and`,
+      `${parameters['institution_code']} institution are available `].join('');
+    paragraph.innerHTML += `<a
+      href="/api/v1/stats/?${statsQueryString}"
+    >here</a>.`;
+  }
+}
 
-const coMapTileServers = [
-  {
-    transparent: false,
-    layerLabel: 'Satellite Map (ESRI)',
-  },
-  {
-    transparent: true,
-    layerLabel: 'Labels and boundaries',
-  },
-];
+const extractField = (responses, aggregator, field) =>
+  responses.find(
+    (response) => response['internal:provider']['code'] === aggregator
+  )?.[field];
 
-const leafletTileServers = {
-  baseMaps: {
-    'Satellite Map (ESRI)': L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-      }
-    ),
-  },
-  overlays: {
-    'Labels and boundaries': L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Esri, HERE, Garmin, (c) OpenStreetMap contributors, and the GIS user community\n',
-      }
-    ),
-  },
-};
-
-const lifemapperMessagesMeta = {
-  errorDetails: {
-    className: 'error-details',
-    title: 'The following errors were reported by Lifemapper:',
-  },
-  infoSection: {
-    className: 'info-section',
-    title: 'Projection Details:',
-  },
-};
-
-function drawMap(response, map, mapDetails) {
+async function drawMap(response, map, mapDetails) {
   const messages = {
     errorDetails: [],
     infoSection: [],
   };
 
   const layerCounts = {};
-  const layers = response.records[0].records
-    .filter(record=>
-      typeof record['s2n:sdm_projection_scenario_code'] !== 'string' ||
-      record['s2n:sdm_projection_scenario_code'] === 'worldclim-curr'
-    )
-    .sort(
-      (
-        { 's2n:layer_type': layerTypeLeft },
-        { 's2n:layer_type': layerTypeRight }
-      ) =>
-        layerTypeLeft === layerTypeRight
-          ? 0
-          : layerTypeLeft > layerTypeRight
-          ? 1
-          : -1
-    )
-    .map((record) => {
-      const layerType = record['s2n:layer_type'];
-      layerCounts[layerType] ??= 0;
-      layerCounts[layerType] += 1;
+  let layers = [];
+  try {
+    layers = response.records[0].records
+      .filter(
+        (record) =>
+          record['s2n:sdm_projection_scenario_code'] === 'worldclim-curr'
+      )
+      .map((record) => {
+        const layerType = record['s2n:layer_type'];
+        layerCounts[layerType] ??= 0;
+        layerCounts[layerType] += 1;
 
-      if(layerCounts[layerType] > 10)
-        return undefined;
+        if (layerCounts[layerType] > 10) return undefined;
 
-      const showLayerNumber = response.records[0].records.filter(record=>
-        record['s2n:layer_type'] === layerType
-      ).length !== 1;
+        const showLayerNumber =
+          response.records[0].records.filter(
+            (record) => record['s2n:layer_type'] === layerType
+          ).length !== 1;
 
-      return {
-        ...lifemapperLayerVariations[layerType],
-        layerLabel:
-          `${
-            lifemapperLayerVariations[layerType].layerLabel
-          }${showLayerNumber ? ` (${layerCounts[layerType]})`:''}`,
-        isDefault: layerCounts[layerType] === 1,
-        tileLayer: {
-          mapUrl: record['s2n:endpoint'],
-          options: {
-            layers: record['s2n:layer_name'],
-            opacity: 0.7,
-            service: 'wms',
-            version: '1.0',
-            height: '400',
-            format: 'image/png',
-            request: 'getmap',
-            srs: 'epsg:3857',
-            width: '800',
-            ...lifemapperLayerVariations[layerType],
+        return {
+          ...lifemapperLayerVariations[layerType],
+          layerLabel: `${lifemapperLayerVariations[layerType].layerLabel}${
+            showLayerNumber ? ` (${layerCounts[layerType]})` : ''
+          }`,
+          isDefault: layerCounts[layerType] === 1,
+          tileLayer: {
+            mapUrl: record['s2n:endpoint'],
+            options: {
+              layers: record['s2n:layer_name'],
+              opacity: 0.7,
+              service: 'wms',
+              version: '1.0',
+              height: '400',
+              format: 'image/png',
+              request: 'getmap',
+              srs: 'epsg:3857',
+              width: '800',
+              ...lifemapperLayerVariations[layerType],
+            },
           },
-        },
-      };
-    }).filter(record=>record);
+        };
+      })
+      .filter((record) => record);
 
-  const modificationTime = response.records[0].records[0]['s2n:modtime'];
-  messages.infoSection.push(`Model Creation date: ${modificationTime}`);
+    const modificationTime = response.records[0].records[0]['s2n:modtime'];
+    const dateObject = new Date(modificationTime);
+    const formattedModificationTime = `<time
+      datetime="${dateObject.toISOString()}"
+    >${dateObject.toDateString()}</time>`;
+    messages.infoSection.push(`
+      It also displays a predicted distribution model from Lifemapper. The
+      Lifemapper distribution model is a probability surface computed by
+      Maxent that ranges from black to bright red, where the latter represents
+      higher probability. Model computed: ${formattedModificationTime}`);
+  } catch {
+    console.warn('Failed to find Lifemapper projection map for this species');
+  }
 
   mapDetails.innerHTML = Object.entries(messages)
-    .filter(([,messages]) => messages.length > 0)
+    .filter(([, messages]) => messages.length > 0)
     .map(
       ([name, messages]) => `<span
     class="lifemapper-message-section ${lifemapperMessagesMeta[name].className}"
   >
-    <i>${lifemapperMessagesMeta[name].title}</i><br>
+    ${
+      'title' in lifemapperMessagesMeta[name]
+        ? `<h4>${lifemapperMessagesMeta[name].title}</h4><br>`
+        : ''
+    }
     ${messages.join('<br>')}
   </span>`
     )
     .join('');
 
-  void showCOMap(map, layers);
+  const idbScientificName = extractField(
+    response['occurrence_info'],
+    'idb',
+    'dwc:scientificName'
+  );
+  const idbCollectionCode = extractField(
+    response['occurrence_info'],
+    'idb',
+    'dwc:collectionCode'
+  );
+  const gbifTaxonKey = extractField(
+    response['name_info'],
+    'gbif',
+    's2n:gbif_taxon_key'
+  );
+
+  const mapPromise = showCOMap(map, layers);
+  const idbLayersPromise = getIdbLayers(idbScientificName, idbCollectionCode);
+  const [leafletMap, layerGroup] = await mapPromise;
+
+  let hasLayers = false;
+  const addAggregatorOverlays = (layers) =>
+    layers.forEach(([options, layer]) => {
+      hasLayers = true;
+      layerGroup.addOverlay(layer, options.label);
+      if (options.default) layer.addTo(leafletMap);
+    });
+
+  addAggregatorOverlays(getGbifLayers(gbifTaxonKey));
+
+  addAggregatorOverlays(await idbLayersPromise);
+
+  if (!hasLayers) {
+    leafletMap.off();
+    leafletMap.remove();
+    map.parentElement.innerText =
+      'Unable to find any information for this record';
+  }
 }
 
-const DEFAULT_CENTER = [0,0];
-const DEFAULT_ZOOM = 2;
+async function getIdbLayer(scientificName, collectionCode, options) {
+  const request = await fetch('https://search.idigbio.org/v2/mapping/', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      rq: {
+        scientificname: scientificName,
+        ...(collectionCode
+          ? {
+              collectioncode: collectionCode,
+            }
+          : {}),
+      },
+      type: 'auto',
+      threshold: 100000,
+    }),
+  });
+  const response = await request.json();
+  const pointCount = response.itemCount;
+  if (pointCount === 0) return undefined;
+
+  const serverUrl = response.tiles;
+  return [
+    options,
+    L.tileLayer(serverUrl, {
+      attribution: 'iDigBio and the user community',
+      classname: 'saturated',
+      ...options,
+    }),
+  ];
+}
+
+async function getIdbLayers(scientificName, collectionCode) {
+  if (!scientificName) return [];
+
+  const layers = await Promise.all([
+    getIdbLayer(scientificName, undefined, {
+      label: `iDigBio ${legendPoint('#197')}`,
+      default: true,
+    }),
+    getIdbLayer(scientificName, collectionCode, {
+      label: `iDigBio (${collectionCode} points only) ${legendPoint('#e68')}`,
+      default: true,
+      className: 'hue-rotate',
+    }),
+  ]);
+
+  return layers.filter((data) => data);
+}
+
+const legendPoint = (color) => `<span
+  aria-hidden="true"
+  style="--color: ${color}"
+  class="leaflet-legend-point"
+></span>`;
+
+const legendGradient = (leftColor, rightColor) => `<span
+  aria-hidden="true"
+  style="--left-color: ${leftColor}; --right-color: ${rightColor}"
+  class="leaflet-legend-gradient"
+></span>`;
+
+function getGbifLayers(taxonKey) {
+  if (!taxonKey) return [];
+  return [
+    [
+      { default: true, label: `GBIF ${legendGradient('#ee0', '#d11')}` },
+      L.tileLayer(
+        'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
+        {
+          attribution: '',
+          source: 'density',
+          format: '@1x.png',
+          className: 'saturated',
+          params: Object.entries({
+            srs: 'EPSG:3857',
+            style: 'classic.poly',
+            bin: 'hex',
+            hexPerTile: 20,
+            taxonKey,
+          })
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&'),
+        }
+      ),
+    ],
+  ];
+}
+
 async function showCOMap(mapContainer, listOfLayersRaw) {
   const listOfLayers = [
     ...coMapTileServers.map(({ transparent, layerLabel }) => ({
@@ -152,10 +275,15 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
       layerLabel,
       isDefault: true,
       tileLayer:
-        leafletTileServers[transparent ? 'overlays' : 'baseMaps'][layerLabel],
+        leafletTileServers[transparent ? 'overlays' : 'baseMaps'][layerLabel](),
     })),
     ...listOfLayersRaw.map(
-      ({ transparent, layerLabel, isDefault, tileLayer: { mapUrl, options } }) => ({
+      ({
+        transparent,
+        layerLabel,
+        isDefault,
+        tileLayer: { mapUrl, options },
+      }) => ({
         transparent,
         layerLabel,
         isDefault: isDefault,
@@ -169,27 +297,24 @@ async function showCOMap(mapContainer, listOfLayersRaw) {
       listOfLayers.map(({ layerLabel, tileLayer }) => [layerLabel, tileLayer])
     );
 
-  const enabledLayers = Object.values(formatLayersDict(
-    listOfLayers.filter(({isDefault})=>
-      isDefault
-    )
-  ));
+  const enabledLayers = Object.values(
+    formatLayersDict(listOfLayers.filter(({ isDefault }) => isDefault))
+  );
   const overlayLayers = formatLayersDict(
-    listOfLayers.filter(({ transparent }) =>
-      transparent
-    )
+    listOfLayers.filter(({ transparent }) => transparent)
   );
 
   const map = L.map(mapContainer, {
     maxZoom: 23,
     layers: enabledLayers,
-  }).setView(
-    DEFAULT_CENTER,
-    DEFAULT_ZOOM
-  );
+    gestureHandling: true,
+  }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
   const layerGroup = L.control.layers({}, overlayLayers);
   layerGroup.addTo(map);
+
+  addFullScreenButton(map);
+  addPrintMapButton(map);
 
   return [map, layerGroup];
 }

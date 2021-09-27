@@ -3,12 +3,13 @@ from http import HTTPStatus
 import os
 
 from lmtrex.common.lmconstants import (
-    BrokerParameters, IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
+    IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
+from lmtrex.common.s2n_type import S2nKey
 
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import S2nKey
+
 
 # .............................................................................
 @cherrypy.expose
@@ -35,6 +36,9 @@ class BadgeSvc(_S2nService):
         # Specify
         elif provider == ServiceProvider.Specify[S2nKey.PARAM]:
             fname = ServiceProvider.Specify['icon'][icon_status]
+        # WoRMS
+        elif provider == ServiceProvider.WoRMS[S2nKey.PARAM]:
+            fname = ServiceProvider.WoRMS['icon'][icon_status]
         # Not yet defined
         else:
             return None
@@ -46,14 +50,15 @@ class BadgeSvc(_S2nService):
         icon_fname = None
         error_description = None
         http_status = int(HTTPStatus.OK)
-        # prov_meta = self._get_s2n_provider_response_elt()
         try:
-            good_params, option_errors, fatal_errors = self._standardize_params(
+            good_params, errinfo = self._standardize_params(
                 provider=provider, icon_status=icon_status)
             # Bad parameters
-            if fatal_errors:
-                error_description = '; '.join(fatal_errors)                            
+            try:
+                error_description = '; '.join(errinfo['error'])                            
                 http_status = int(HTTPStatus.BAD_REQUEST)
+            except:
+                pass
                 
         except Exception as e:
             # Unknown error

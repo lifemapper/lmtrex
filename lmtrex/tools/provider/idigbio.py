@@ -4,20 +4,20 @@ import os
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
-    APIService, GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, S2N_SCHEMA,
-    DATA_DUMP_DELIMITER, COMMUNITY_SCHEMA)
+    GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, DATA_DUMP_DELIMITER)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nSchema
 from lmtrex.fileop.logtools import (log_info)
 from lmtrex.fileop.ready_file import ready_filename
 
-from lmtrex.services.api.v1.s2n_type import S2nKey
 from lmtrex.tools.provider.api import APIQuery
+from lmtrex.tools.utils import add_errinfo
 
 # .............................................................................
 class IdigbioAPI(APIQuery):
     """Class to query iDigBio APIs and return results"""
     
     PROVIDER = ServiceProvider.iDigBio
-    OCCURRENCE_MAP = S2N_SCHEMA.get_idb_occurrence_map()
+    OCCURRENCE_MAP = S2nSchema.get_idb_occurrence_map()
 
     # ...............................................
     def __init__(self, q_filters=None, other_filters=None, filter_string=None,
@@ -64,65 +64,72 @@ class IdigbioAPI(APIQuery):
 
     # ...............................................
     @classmethod
-    def _standardize_ref_list(cls, value):
-        if value:
-            lst = '|'.split(value)
-            elts = [l.strip() for l in lst]
-
-    # ...............................................
-    @classmethod
-    def _standardize_record(cls, rec):
+    def _standardize_record(cls, big_rec):
         newrec = {}
-        issue_map = ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]]
-        # Should contain 'uuid' field
+        to_list_fields = ('dwc:associatedSequences', 'dwc:associatedReferences')
+        issue_fld = 's2n:issues'
+        cc_std_fld = 'dwc:countryCode'
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
+
+        # Outer record must contain 'data' and may contain 'indexTerms' elements
         try:
-            uuid = rec[Idigbio.ID_FIELD]
-        except Exception as e:
-            print('Record missing uuid field')
-        else:
-            newrec['{}:view_url'.format(
-                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_view(uuid)
-            newrec['{}:api_url'.format(
-                COMMUNITY_SCHEMA.S2N['code'])] = Idigbio.get_occurrence_data(uuid)
-            stdname = cls.OCCURRENCE_MAP[Idigbio.ID_FIELD]
-            newrec[stdname] = uuid
-        # Must contain 'data' field
-        try:
-            stripped_rec = rec['data']
+            data_elt = big_rec['data']
         except Exception as e:
             pass
         else:
-            for fldname, val in stripped_rec.items():
-                # Leave out fields without value, except 'issues', handled below
-                if val and fldname in cls.OCCURRENCE_MAP.keys():
-                    if fldname in ('dwc:associatedSequences', 'dwc:associatedReferences'):
-                        lst = val.split('|')
-                        elts = [l.strip() for l in lst]
-                        newrec[fldname] = elts
-                    # elif fldname in ('dwc:year', 'dwc:month', 'dwc:day'):
-                    #     # Modify string date elements to int like GBIF and Specify?
-                    else:
-                        newrec[fldname] =  val
-            # Include 'issues' for providers/aggregators that report them, even if not in provider response
-            issue_dict = {}
+            # Pull uuid from outer record
             try:
-                # Pull optional 'flags' element from 'indexTerms' field
-                issue_codes = rec['indexTerms']['flags']
-            except Exception:
+                uuid = big_rec[Idigbio.ID_FIELD]
+            except:
+                print('Record missing uuid field')
+                uuid = None
+
+            # Pull indexTerms from outer record
+            try:
+                idx_elt = big_rec['indexTerms']
+            except Exception as e:
                 pass
             else:
-                if issue_codes:
-                    # Fieldname modification
-                    stdname = cls.OCCURRENCE_MAP['s2n:issues']
-                    issue_dict = {}
-                    for tmp in issue_codes:
-                        code = tmp.strip()
-                        # return a dictionary with code: description
-                        try:
-                            issue_dict[code] = issue_map[code]
-                        except:
-                            issue_dict[code] = 'TBD'
-            newrec[stdname] = issue_dict
+                # Pull optional 'flags' element from 'indexTerms'
+                try:
+                    issue_codes = idx_elt['flags']
+                except Exception:
+                    issue_codes = None
+                try:
+                    ctry_code = idx_elt['countrycode']
+                except Exception:
+                    ctry_code = None
+
+                    
+            # Iterate over desired output fields
+            for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+                # Include ID fields and issues even if empty
+                if provfld == Idigbio.ID_FIELD:
+                    newrec[stdfld] = uuid                    
+                    newrec[view_std_fld] = Idigbio.get_occurrence_view(uuid)
+                    newrec[data_std_fld] = Idigbio.get_occurrence_data(uuid)
+                    
+                elif provfld == issue_fld:
+                    newrec[stdfld] = cls._get_code2description_dict(
+                        issue_codes, ISSUE_DEFINITIONS[ServiceProvider.iDigBio[S2nKey.PARAM]])
+                
+                elif stdfld == cc_std_fld:
+                    newrec[stdfld] = ctry_code
+                    
+                else:
+                    # all other fields are pulled from data element
+                    try:
+                        val = data_elt[provfld]
+                    except:
+                        val = None
+                    
+                    if val and provfld in to_list_fields:
+                        lst = val.split('|')
+                        elts = [l.strip() for l in lst]
+                        newrec[stdfld] = elts                            
+                    else:
+                        newrec[stdfld] =  val
         return newrec
 
     # ...............................................
@@ -153,6 +160,7 @@ class IdigbioAPI(APIQuery):
         
         Todo: enable paging
         """
+        errinfo = {}
         qf = {Idigbio.QKEY: 
               '{"' + Idigbio.OCCURRENCEID_FIELD + '":"' + occid + '"}'}
         api = IdigbioAPI(other_filters=qf, logger=logger)
@@ -160,18 +168,16 @@ class IdigbioAPI(APIQuery):
         try:
             api.query()
         except Exception as e:
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e)) 
             std_out = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=e)}])
+                S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR,
+                errinfo=errinfo)
         else:
-            api_err = None
-            if api.error:
-                api_err = {'error': api.error}
-            query_term = 'occid={}&count_only={}'.format(occid, count_only)
+            errinfo = add_errinfo(errinfo, 'error', api.error)
             std_out = cls._standardize_output(
                 api.output, Idigbio.COUNT_KEY, Idigbio.RECORDS_KEY, Idigbio.RECORD_FORMAT, 
-                query_term, APIService.Occurrence['endpoint'], query_status=api.status_code, 
-                query_urls=[api.url], count_only=count_only, err=api_err)
+                S2nEndpoint.Occurrence, query_status=api.status_code, 
+                query_urls=[api.url], count_only=count_only, errinfo=errinfo)
         
         return std_out
 

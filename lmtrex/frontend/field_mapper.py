@@ -2,7 +2,11 @@
 
 import re
 
+from lmtrex.frontend.format_value import format_value
+
 # Replace a word with a mapped variant
+from lmtrex.frontend.templates import template
+
 field_part_mapper = {
     'gbif': 'GBIF',
     'idigbio': 'iDigBio',
@@ -10,28 +14,76 @@ field_part_mapper = {
     'id': 'ID',
     'uuid': 'UUID',
     'url': 'URL',
+    'tsn': 'TSN',
+    'lsid': 'LSID',
+    'worms': 'WoRMS',
 }
 
 # Replace field name with a label
 label_mapper = {
-    'idigbio:uuid': 'iDigBio UUID'
+    'idigbio:uuid': 'iDigBio Record UUID',
+    'mopho:specimen.specimen_id': 'MorphoSource ID',
+    'dwc:stateProvince': 'State/Province',
+    'gbif:gbifID': 'GBIF Record ID',
+    'gbif:publishingOrgKey': 'GBIF Publisher ID',
+    's2n:specify_identifier': 'Specify Record ID',
+    'dcterms:modified': 'Modified by Host',
+    'dwc:decimalLongitude': 'Longitude',
+    'dwc:decimalLatitude': 'Latitude',
+    's2n:worms_match_type': 'WoRMS Match Type',
+    's2n:hierarchy': 'Classification',
 }
 
-# Replace field name and field value with label and a transformed value
-field_mapper = {
-    # 's2n:idigbio_flags': lambda value:
-    #     ('iDigBio Flags', value)
+def extract_morphosource_id(link):
+    if not link or not link.startswith('https://www'):
+        return False
+    match = re.search(r'/[^/]+$', link)
+    return match.group()[1:] if match else False
+
+
+linkify = lambda link: lambda key: template(
+    'link',
+    dict(
+        href=f'{link}{key}',
+        label=key
+    )
+) if key else ''
+
+# Replace field value with a transformed value
+value_mapper = {
+    'gbif:publishingOrgKey': linkify('https://www.gbif.org/publisher/'),
+    'gbif:gbifID': linkify('https://www.gbif.org/occurrence/'),
+    'idigbio:uuid': linkify('https://www.idigbio.org/portal/records/'),
+    'mopho:specimen.specimen_id': lambda specimen_view_url:
+        template(
+            'link',
+            dict(
+                href=specimen_view_url,
+                label=extract_morphosource_id(specimen_view_url)
+            )
+        ) if extract_morphosource_id(specimen_view_url)
+        else specimen_view_url if specimen_view_url else ''
 }
 
-# Exclude these fields from the output
-fields_to_exclude = [
-    's2n:service',
-    's2n:provider',
-    's2n:view_url',
-    's2n:api_url',
+merge_fields = [
+    {
+        'field_names': ['dwc:year', 'dwc:month', 'dwc:day'],
+        'label': 'Collection Date',
+        'title': 'dwc:month / dwc:day / dwc:year',
+        'merge_function': lambda year, month, day:
+            '' if None in [year, month, day]
+            else template(
+                'date',
+                dict(
+                    value=f'{year}-{month.zfill(2)}-{day.zfill(2)}',
+                    label='Collection Date'
+                )
+            )
+    }
 ]
 
-def default_field_mapper(field_name, value):
+
+def label_from_field_name(field_name: str) -> str:
 
     striped_field_name = re.sub(r'^\w+:','',field_name)
     formatted_field_name = re.sub(
@@ -57,27 +109,81 @@ def default_field_mapper(field_name, value):
     capitalized_field_name = \
         joined_field_name[0].upper() + joined_field_name[1:]
 
-    return capitalized_field_name, value
+    return capitalized_field_name
 
 
-def map_fields(response):
-    result = {}
-    for field_name, value in response.items():
-        if field_name in fields_to_exclude:
+regex_link = r"^((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w\-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)$"
+def is_link(value):
+    return re.search(regex_link, value)
+
+
+def default_value_formatter(value):
+    if value is None:
+        return ''
+    elif type(value) == str and is_link(value):
+        return template(
+            'link',
+            dict(
+                href=value,
+                label=value
+            )
+        )
+    elif type(value) in [str, int, float]:
+        return value
+    else:
+        return format_value(value)
+
+def transpose(target_list):
+    return list(zip(*target_list))
+
+def map_fields(dictionary):
+    mapped_table = []
+    merged_fields = []
+    for field_name, values in dictionary.items():
+
+        if field_name in merged_fields:
             continue
 
-        elif field_name in label_mapper:
-            final_field_name, final_field_value = \
-                label_mapper[field_name], value
+        label = \
+            label_mapper[field_name] \
+            if field_name in label_mapper \
+            else label_from_field_name(field_name)
 
-        elif field_name in field_mapper:
-            final_field_name, final_field_value = \
-                field_mapper[field_name](value)
+        resolved_value_mapper = None
+        mapped_values = None
 
+        if field_name in value_mapper:
+            resolved_value_mapper = value_mapper[field_name]
         else:
-            final_field_name, final_field_value = \
-                default_field_mapper(field_name, value)
+            for mapping in merge_fields:
+                if field_name in mapping['field_names']:
+                    label = mapping['label']
+                    field_values = transpose([
+                        dictionary[field_name]
+                        if field_name in dictionary
+                        else None
+                        for field_name in mapping['field_names']
+                    ])
+                    mapped_values = [
+                        mapping['merge_function'](*values)
+                        for values in field_values
+                    ]
+                    field_name = mapping['title']
+                    merged_fields.extend(mapping['field_names'])
+                    break
 
-        result[final_field_name] = final_field_value
+        if resolved_value_mapper is None:
+            resolved_value_mapper = default_value_formatter
 
-    return result
+        if not mapped_values:
+            mapped_values = [
+                resolved_value_mapper(value) for value in values
+            ]
+
+        mapped_table.append([
+            field_name,
+            label,
+            *mapped_values
+        ])
+
+    return mapped_table

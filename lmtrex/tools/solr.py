@@ -2,8 +2,8 @@ import requests
 import subprocess
 
 from lmtrex.common.lmconstants import SPECIFY, TST_VALUES
+from lmtrex.common.s2n_type import S2nKey, S2nOutput
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 
 SOLR_POST_COMMAND = '/opt/solr/bin/post'
 SOLR_COMMAND = '/opt/solr/bin/solr'
@@ -147,7 +147,7 @@ def query(collection, solr_location, filters={'*': '*'}, query_term='*'):
     service = provider = ''
     record_format = _get_record_format(collection)    
     std_output = S2nOutput(
-        count, query_term, service, provider, provider_query=[api.url], 
+        count, service, provider, provider_query=[api.url], 
             record_format=record_format, records=recs, errors=errmsgs)
     
     return std_output

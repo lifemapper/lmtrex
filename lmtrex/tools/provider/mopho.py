@@ -1,17 +1,16 @@
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, MorphoSource, ServiceProvider, TST_VALUES, S2N_SCHEMA)
-from lmtrex.fileop.logtools import (log_error, log_info)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+from lmtrex.common.lmconstants import (MorphoSource, ServiceProvider, TST_VALUES)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nSchema
+from lmtrex.fileop.logtools import (log_info)
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import add_errinfo, get_traceback
 
 # .............................................................................
 class MorphoSourceAPI(APIQuery):
     """Class to query Specify portal APIs and return results"""
     PROVIDER = ServiceProvider.MorphoSource
-    OCCURRENCE_MAP = S2N_SCHEMA.get_mopho_occurrence_map()
+    OCCURRENCE_MAP = S2nSchema.get_mopho_occurrence_map()
     
     # ...............................................
     def __init__(
@@ -28,20 +27,25 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        # Add provider stuff
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if fldname in cls.OCCURRENCE_MAP.keys():
-                # Use DWC field to also construct api URL
-                if fldname == MorphoSource.DWC_ID_FIELD:
-                    url_stdfld = cls.OCCURRENCE_MAP['api_url']
-                    newrec[url_stdfld] = MorphoSource.get_occurrence_data(val)
-                # Use local ID field to also construct webpage url
-                elif fldname == MorphoSource.LOCAL_ID_FIELD:
-                    url_stdfld = cls.OCCURRENCE_MAP['view_url']
-                    newrec[url_stdfld] = MorphoSource.get_occurrence_view(val)
-                    
-                stdfld = cls.OCCURRENCE_MAP[fldname]
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
+        for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+
+            # Save ID field, plus use to construct URLs
+            if provfld == MorphoSource.DWC_ID_FIELD:
+                newrec[stdfld] =  val
+                newrec[data_std_fld] = MorphoSource.get_occurrence_data(val)
+                
+            # Use local ID field to also construct webpage url
+            elif provfld == MorphoSource.LOCAL_ID_FIELD:
+                newrec[view_std_fld] = MorphoSource.get_occurrence_view(val)
+                
+            # all others
+            else:
                 newrec[stdfld] =  val
         return newrec
     
@@ -49,6 +53,7 @@ class MorphoSourceAPI(APIQuery):
     @classmethod
     def get_occurrences_by_occid_page1(cls, occid, count_only=False, logger=None):
         start = 0
+        errinfo = {}
         api = MorphoSourceAPI(
             resource=MorphoSource.OCC_RESOURCE, 
             q_filters={MorphoSource.OCCURRENCEID_KEY: occid},
@@ -61,17 +66,19 @@ class MorphoSourceAPI(APIQuery):
             api.query_by_get(verify=verify)
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_out = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             # Standardize output from provider response
-            query_term = 'occid={}&count_only={}'.format(occid, count_only)
+            if api.error:
+                errinfo['error'] =  [api.error]
+
             std_out = cls._standardize_output(
                 api.output, MorphoSource.TOTAL_KEY, MorphoSource.RECORDS_KEY, 
-                MorphoSource.RECORD_FORMAT, query_term, APIService.Occurrence['endpoint'], 
+                MorphoSource.RECORD_FORMAT, S2nEndpoint.Occurrence, 
                 query_status=api.status_code, query_urls=[api.url], count_only=count_only, 
-                err=api.error)
+                errinfo=errinfo)
         
         return std_out
 

@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from http import HTTPStatus
 import os
 import requests
@@ -5,20 +6,20 @@ import urllib
 
 from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, GBIF, S2N_SCHEMA, ServiceProvider, URL_ESCAPES, ENCODING)
+    APIService, GBIF, ServiceProvider, URL_ESCAPES, ENCODING)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput, S2nSchema
 from lmtrex.fileop.logtools import (log_info, log_error)
 
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
 
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils  import get_traceback
+from lmtrex.tools.utils  import get_traceback, add_errinfo
 
 # .............................................................................
 class GbifAPI(APIQuery):
     """Class to query GBIF APIs and return results"""
     PROVIDER = ServiceProvider.GBIF
-    OCCURRENCE_MAP = S2N_SCHEMA.get_gbif_occurrence_map()
-    NAME_MAP = S2N_SCHEMA.get_gbif_name_map()
+    OCCURRENCE_MAP = S2nSchema.get_gbif_occurrence_map()
+    NAME_MAP = S2nSchema.get_gbif_name_map()
     
     # ...............................................
     def __init__(self, service=GBIF.SPECIES_SERVICE, key=None,
@@ -119,6 +120,7 @@ class GbifAPI(APIQuery):
                 
         Todo: enable paging
         """
+        errinfo = {}
         api = GbifAPI(
             service=GBIF.OCCURRENCE_SERVICE, key=GBIF.SEARCH_COMMAND,
             other_filters={'occurrenceID': occid}, logger=logger)
@@ -126,15 +128,17 @@ class GbifAPI(APIQuery):
             api.query()
         except Exception as e:
             tb = get_traceback()
+            errinfo['error'] = [cls._get_error_message(err=tb)]
             std_output = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
-            query_term = 'occid={}&count_only={}'.format(occid, count_only)
+            if api.error:
+                errinfo['error'] =  [api.error]
+                
             # Standardize output from provider response
             std_output = cls._standardize_occurrence_output(
-                api.output, query_term, api.status_code, query_urls=[api.url], 
-                count_only=count_only, err=api.error)
+                api.output, api.status_code, query_urls=[api.url], 
+                count_only=count_only, errinfo=errinfo)
         
         return std_output
 
@@ -153,76 +157,78 @@ class GbifAPI(APIQuery):
     @classmethod
     def _standardize_occurrence_record(cls, rec):
         newrec = {}
-        to_list_fields = ['associatedSequences', 'associatedReferences']
-        to_str_fields = ['dwc:year', 'dwc:month', 'dwc:day']
-        # Handle issue field 
-        issue_field = 'issues'
-        issue_newfldname = cls.OCCURRENCE_MAP[issue_field]
-        issue_dict = {}
+        parse_prov_fields = ['associatedSequences', 'associatedReferences']
+        to_str_prov_fields = ['year', 'month', 'day']
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
+        issue_prov_fld = 'issues'        
+        
+        for stdfld, provfld in cls.OCCURRENCE_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
 
-        # Add provider stuff
-        for fldname, val in rec.items():
-            # Leave out fields without value, except 'issues', handled below
-            if val and fldname in cls.OCCURRENCE_MAP.keys():
-                # simple name mapping
-                newfldname = cls.OCCURRENCE_MAP[fldname]
-                # Modify/parse into list
-                if fldname in to_list_fields:
-                    if val:
-                        lst = val.split('|')
-                        elts = [l.strip() for l in lst]
-                        newrec[newfldname] = elts
-                # Modify int date elements to string (to match iDigBio)
-                elif fldname in to_str_fields:
-                    newrec[fldname] = str(val)
-                # Save ID field, plus use to construct URLs
-                elif fldname == GBIF.OCC_ID_FIELD:
-                    newrec[newfldname] =  val
-                    newrec['{}:view_url'.format(
-                            COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_view(val)
-                    newrec['{}:api_url'.format(
-                            COMMUNITY_SCHEMA.S2N['code'])] = GBIF.get_occurrence_data(val)
-                # expand fields to include code and definition
-                elif fldname == issue_field:
-                    # Expand list into dictionary with descriptions if present, fill at the end
-                    issue_map = ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]]
-                    for tmp in val:
-                        code = tmp.strip()
-                        try:
-                            issue_dict[code] = issue_map[code]
-                        except:
-                            issue_dict[code] = 'No description for {} provided'.format(code)
-                else:
-                    newrec[newfldname] =  val
-        # Include 'issues' for providers/aggregators that report them, even if not in provider response
-        newrec[issue_newfldname] =  issue_dict
+            # Save ID field, plus use to construct URLs
+            if provfld == GBIF.OCC_ID_FIELD:
+                newrec[stdfld] =  val
+                newrec[view_std_fld] = GBIF.get_occurrence_view(val)
+                newrec[data_std_fld] = GBIF.get_occurrence_data(val)
+                
+            # expand fields to dictionary, with code and definition
+            elif provfld == issue_prov_fld:
+                newrec[stdfld] = cls._get_code2description_dict(
+                    val, ISSUE_DEFINITIONS[ServiceProvider.GBIF[S2nKey.PARAM]])
+                
+            # Modify/parse into list
+            elif val and provfld in parse_prov_fields:
+                lst = val.split('|')
+                elts = [l.strip() for l in lst]
+                newrec[stdfld] = elts
+                
+            # Modify int date elements to string (to match iDigBio)
+            elif val and provfld in to_str_prov_fields:
+                newrec[stdfld] = str(val)
+                
+            # all others
+            else:
+                newrec[stdfld] =  val
         return newrec
     
     # ...............................................
     @classmethod
     def _standardize_name_record(cls, rec):
         newrec = {}
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val:
-                if fldname in cls.NAME_MAP.keys():
-                    # Also use ID field to construct URLs
-                    if fldname == GBIF.SPECIES_ID_FIELD:
-                        newrec[cls.NAME_MAP['view_url']] = GBIF.get_species_view(val)
-                        newrec[cls.NAME_MAP['api_url']] = GBIF.get_species_data(val)
-                    newfldname = cls.NAME_MAP[fldname]
-                    newrec[newfldname] =  val
-        hierarchy = {}
-        for rnk in ('kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species'):
+        view_std_fld = S2nSchema.get_view_url_fld()
+        data_std_fld = S2nSchema.get_data_url_fld()
+        hierarchy_fld = 'hierarchy'
+        
+        for stdfld, provfld in cls.NAME_MAP.items():
             try:
-                val = rec[rnk]
+                val = rec[provfld]
             except:
-                pass
+                val = None
+            # Also use ID field to construct URLs
+            if provfld == GBIF.SPECIES_ID_FIELD:
+                newrec[stdfld] =  val
+                newrec[view_std_fld] = GBIF.get_species_view(val)
+                newrec[data_std_fld] = GBIF.get_species_data(val)
+                
+            # Assemble from other fields
+            elif provfld == hierarchy_fld:
+                hierarchy = OrderedDict()
+                for rnk in S2nSchema.RANKS:
+                    try:
+                        val = rec[rnk]
+                    except:
+                        pass
+                    else:
+                        hierarchy[rnk] = val
+                newrec[stdfld] = [hierarchy]
+                
+            # all others
             else:
-                hierarchy[rnk] = val
-        if hierarchy:
-            newfldname = cls.NAME_MAP['hierarchy']
-            newrec[newfldname] = [hierarchy]
+                newrec[stdfld] = val
         return newrec
     
     # ...............................................
@@ -246,11 +252,8 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_match_output(
-            cls, output, record_status, query_term, query_status, query_urls=[], err={}):
+            cls, output, record_status, query_status, query_urls=[], errinfo={}):
         stdrecs = []
-        errmsgs = []
-        if err:
-            errmsgs.append(err)
         try:
             alternatives = output.pop('alternatives')
         except:
@@ -261,7 +264,8 @@ class GbifAPI(APIQuery):
             if output['matchType'].lower() == 'none':
                 is_match = False
         except AttributeError:
-            errmsgs.append({'error': cls._get_error_message(msg='No matchType')})
+            msg = cls._get_error_message(msg='No matchType')
+            errinfo['error'].append(msg)
         else:
             goodrecs = []
             # take primary output if matched
@@ -278,8 +282,7 @@ class GbifAPI(APIQuery):
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         # TODO: standardize_record and provide schema link
         std_output = S2nOutput(
-            total, query_term, APIService.Name['endpoint'], provider=prov_meta, 
-            records=stdrecs, errors=errmsgs)
+            total, S2nEndpoint.Name, provider=prov_meta, records=stdrecs, errors=errinfo)
         return std_output
         
     # ...............................................
@@ -295,28 +298,23 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def _standardize_occurrence_output(
-            cls, output, query_term, query_status, query_urls=[], count_only=False, err={}):
+            cls, output, query_status, query_urls=[], count_only=False, errinfo={}):
         # GBIF.COUNT_KEY, GBIF.RECORDS_KEY, GBIF.RECORD_FORMAT_OCCURRENCE, 
         stdrecs = []
         total = 0
-        errmsgs = []
-        if err:
-            errmsgs.append(err)
         # Count
         try:
             total = output[GBIF.COUNT_KEY]
         except:
-            errmsgs.append(
-                {'error': cls._get_error_message(
-                    msg='Missing `{}` element'.format(GBIF.COUNT_KEY))})
+            msg = cls._get_error_message(msg='Missing `{}` element'.format(GBIF.COUNT_KEY))
+            errinfo['error'].append(msg)
         # Records
         if not count_only:
             try:
                 recs = output[GBIF.RECORDS_KEY]
             except:
-                errmsgs.append(
-                    {'error': cls._get_error_message(
-                        msg='Missing `{}` element'.format(GBIF.RECORDS_KEY))})
+                msg = cls._get_error_message(msg='Missing `{}` element'.format(GBIF.RECORDS_KEY))
+                errinfo['error'].append(msg)
             else:
                 stdrecs = []
                 for r in recs:
@@ -324,11 +322,11 @@ class GbifAPI(APIQuery):
                         stdrecs.append(
                             cls._standardize_record(r, GBIF.RECORD_FORMAT_OCCURRENCE))
                     except Exception as e:
-                        errmsgs.append({'error': cls._get_error_message(err=e)})
+                        msg = cls._get_error_message(err=e)
+                        errinfo['error'].append(msg)
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, APIService.Occurrence['endpoint'], provider=prov_meta, 
-            record_format=GBIF.RECORD_FORMAT_OCCURRENCE, records=stdrecs, errors=errmsgs)
+            total, S2nEndpoint.Occurrence, provider=prov_meta, records=stdrecs, errors=errinfo)
 
         return std_output
     
@@ -354,6 +352,7 @@ class GbifAPI(APIQuery):
         Todo: 
             handle large queries asynchronously
         """
+        errinfo = {}
         if count_only is True:
             limit = 1
         else:
@@ -368,18 +367,15 @@ class GbifAPI(APIQuery):
         except Exception as e:
             tb = get_traceback()
             std_out = cls.get_api_failure(
-                APIService.Occurrence['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Occurrence, HTTPStatus.INTERNAL_SERVER_ERROR,
+                errinfo={'error': [cls._get_error_message(err=tb)]})
         else:
-            query_term = 'dataset_key={}&count_only={}'.format(dataset_key, count_only)
             # Standardize output from provider response
-            api_err = None
             if api.error:
-                api_err = {'error': api.error}
+                errinfo['error'] =  [api.error]
                 
             std_out = cls._standardize_occurrence_output(
-                api.output, query_term, api.status_code, query_urls=[api.url], 
-                count_only=count_only, err=api_err)
+                api.output, api.status_code, query_urls=[api.url], count_only=count_only, errinfo=errinfo)
             
         return std_out
 
@@ -408,6 +404,7 @@ class GbifAPI(APIQuery):
 
         """
         status = None
+        errinfo = {}
         if is_accepted:
             status = 'accepted'
         name_clean = namestr.strip()
@@ -424,14 +421,15 @@ class GbifAPI(APIQuery):
             api.query()
         except Exception as e:
             tb = get_traceback()
+            errinfo['error'] =  [cls._get_error_message(err=tb)]
             std_output = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
+            if api.error:
+                errinfo['error'] =  [api.error]
             # Standardize output from provider response
-            query_term = 'namestr={}&is_accepted={}'.format(namestr, is_accepted)
             std_output = cls._standardize_match_output(
-                api.output, status, query_term, api.status_code, query_urls=[api.url], err=api.error)
+                api.output, status, api.status_code, query_urls=[api.url], errinfo=errinfo)
             
         return std_output
 
@@ -448,7 +446,7 @@ class GbifAPI(APIQuery):
             with this accepted taxon, and a URL to retrieve these records.            
         """
         simple_output = {}
-        errmsgs = []
+        errinfo = {}
         total = 0
         # Query GBIF
         api = GbifAPI(
@@ -458,29 +456,24 @@ class GbifAPI(APIQuery):
         try:
             api.query_by_get()
         except Exception as e:
-            errmsgs.append({'error': cls._get_error_message(err=e)})
+            msg = cls._get_error_message(err=e)
+            errinfo = add_errinfo(errinfo, 'error', msg)
         else:
             try:
                 total = api.output['count']
             except Exception as e:
-                errmsgs.append({'error': cls._get_error_message(
-                    msg='Missing `count` element')})
+                msg = cls._get_error_message(msg='Missing `count` element')
+                errinfo = add_errinfo(errinfo, 'error', msg)
             else:
                 if total < 1:
-                    errmsgs.append({'error': cls._get_error_message(msg='No match')})
+                    msg = cls._get_error_message(msg='No match')
+                    errinfo = add_errinfo(errinfo, 'info', msg)
                     simple_output[S2nKey.OCCURRENCE_URL] = None
                 else:
                     simple_output[S2nKey.OCCURRENCE_URL] = api.url
         prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
         std_output = S2nOutput(
-            total, 'count', APIService.Occurrence['endpoint'], provider=prov_meta, errors=errmsgs)
-        # # TODO: standardize_record and provide schema link
-        # simple_output[S2nKey.COUNT] = total
-        # simple_output[S2nKey.QUERY_TERM] = taxon_key
-        # simple_output[S2nKey.RECORD_FORMAT] = None
-        # simple_output[S2nKey.RECORDS] = []
-        # simple_output[S2nKey.PROVIDER] = prov_meta
-        # simple_output[S2nKey.ERRORS] = errmsgs
+            total, S2nEndpoint.Occurrence, provider=prov_meta, errors=errinfo)
         return std_output
 
     # ......................................

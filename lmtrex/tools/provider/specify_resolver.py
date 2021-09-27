@@ -1,19 +1,18 @@
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, SYFTER, ServiceProvider, S2N_SCHEMA)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+from lmtrex.common.lmconstants import (APIService, SYFTER, ServiceProvider)
+from lmtrex.common.s2n_type import COMMUNITY_SCHEMA, S2nEndpoint, S2nKey, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import get_traceback, add_errinfo
 
 # .............................................................................
 class SpecifyResolverAPI(APIQuery):
     """Class to query Lifemapper portal APIs and return results"""
     PROVIDER = ServiceProvider.Specify
-    RES_MAP = S2N_SCHEMA.get_specify_resolver_map()
+    RES_MAP = S2nSchema.get_specify_resolver_map()
     
     # ...............................................
-    def __init__(self, ident=None, resource=SYFTER.RESOLVE_RESOURCE, logger=None, is_dev=True):
+    def __init__(self, ident=None, resource=SYFTER.RESOLVE_RESOURCE, logger=None):
         """Constructor
         
         Args:
@@ -26,8 +25,6 @@ class SpecifyResolverAPI(APIQuery):
                 prints to stdout    
         """
         base_url = SYFTER.REST_URL
-        if is_dev:
-            base_url = SYFTER.REST_URL_DEV
         url = '{}/{}'.format(base_url, resource)
         if ident is not None:
             url = '{}/{}'.format(url, ident)
@@ -37,33 +34,32 @@ class SpecifyResolverAPI(APIQuery):
     @classmethod
     def _standardize_record(cls, rec):
         newrec = {}
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val and fldname in cls.RES_MAP.keys():
-                stdfld = cls.RES_MAP[fldname]
-                newrec[stdfld] =  val
+        for stdfld, provfld in cls.RES_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+            newrec[stdfld] =  val
+            
         return newrec
     
     # ...............................................
     @classmethod
     def _standardize_output(
-            cls, output, query_term, query_status=None, query_urls=[], err={}):
-        errmsgs = []
+            cls, output, query_status=None, query_urls=[], errinfo={}):
         stdrecs = []
         total = 0
-        if err:
-            errmsgs.append(err)
         if output:
             try:
                 stdrecs.append(cls._standardize_record(output))
                 total = 1
             except Exception as e:
-                errmsgs.append({'error': cls._get_error_message(err=e)})
+                errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
                 
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            total, query_term, APIService.Resolve['endpoint'], provider=prov_meta, 
-            records=stdrecs, errors=errmsgs)
+            total, S2nEndpoint.Resolve, provider=prov_meta, 
+            records=stdrecs, errors=errinfo)
 
         return std_output
 
@@ -85,37 +81,30 @@ class SpecifyResolverAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
+        errinfo = {}
         api = SpecifyResolverAPI(logger=logger)
 
         try:
             cls.query_by_get(output_type='json')
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             std_output = cls.get_api_failure(
-                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Resolve, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             try:
                 count = api.output['count']
             except:
-                if api.error is not None:
-                    std_output = cls.get_api_failure(
-                        APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(err=api.error)}])
-                else:
-                    std_output = cls.get_api_failure(
-                        APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                        errors=[{'error': cls._get_error_message(
-                            msg='Missing `response` element')}])
+                errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(msg='Missing `response` element'))
+                std_output = cls.get_api_failure(
+                    S2nEndpoint.Resolve, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
             else:
-                api_err = None
-                if api.error:
-                    api_err = {'error': api.error}
+                errinfo = add_errinfo(errinfo, 'error', api.error)
             
             # Standardize output from provider response
             prov_meta = cls._get_provider_response_elt(query_status=api.status_code, query_urls=[api.url])
             std_output = S2nOutput(
-                count, 'count', APIService.Resolve['endpoint'], provider=prov_meta, errors=api_err)
+                count, S2nEndpoint.Resolve, provider=prov_meta, errors=errinfo)
         return std_output
 
     # ...............................................
@@ -151,28 +140,30 @@ class SpecifyResolverAPI(APIQuery):
         Example URL: 
             http://services.itis.gov/?q=nameWOInd:Spinus\%20tristis&wt=json
         """
+        errinfo = {}
         api = SpecifyResolverAPI(ident=guid, logger=logger)
 
         try:
             api.query_by_get(output_type='json')
         except Exception as e:
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=e))
             std_output = cls.get_api_failure(
-                APIService.Resolve['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=e)}])
+                S2nEndpoint.Resolve, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
-            api_err = None
             if api.error:
-                api_err = {'error': api.error}
+                errinfo['error'] =  [api.error]
             # Standardize output from provider response
-            query_term = 'occid={}'.format(guid)
             std_output = cls._standardize_output(
-                api.output, query_term, query_status=api.status_code, query_urls=[api.url], err=api_err)
+                api.output, query_status=api.status_code, query_urls=[api.url], errinfo=errinfo)
         return std_output
 
     
 # ...............................................
 
 """
+
+curl https://dev.syftorium.org/api/v1/resolve/bffe655b-ea32-4838-8e80-a80e391d5b11
+
 solr query through API: https://dev.syftorium.org/api/v1/resolve/2facc7a2-dd88-44af-b95a-733cc27527d4
 response:
 {"_version_":1701562470690193418,

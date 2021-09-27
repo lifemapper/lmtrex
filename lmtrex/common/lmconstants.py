@@ -1,7 +1,9 @@
+# from collections import OrderedDict
 import os
 
+from lmtrex.common.s2n_type import S2nKey, S2nEndpoint
+
 from lmtrex.config.local_constants import APP_PATH, FQDN
-from lmtrex.services.api.v1.s2n_type import S2nKey
 
 # .............................................................................
 # hierarchySoFarWRanks <class 'list'>: ['41107:$Kingdom:Plantae$Subkingdom:Viridiplantae$Infrakingdom:Streptophyta$Superdivision:Embryophyta$Division:Tracheophyta$Subdivision:Spermatophytina$Class:Magnoliopsida$Superorder:Lilianae$Order:Poales$Family:Poaceae$Genus:Poa$Species:Poa annua$']
@@ -13,11 +15,14 @@ TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
 # Point to production or dev services depending on current location
 if (FQDN.find('notyeti') >= 0 or FQDN.find('broker-dev') >= 0):
-    ICON_API = 'https://broker-dev.spcoco.org/api/v1/badge'
-    SPECIFY_CACHE_API = 'https://dev.syftorium.org/api/v1/sp_cache'
+    BROKER_BASE = 'https://broker-dev.spcoco.org'
+    SYFT_BASE = 'https://dev.syftorium.org'
 else:
-    ICON_API = 'https://broker.spcoco.org/api/v1/badge'
-    SPECIFY_CACHE_API = 'https://syftorium.org/api/v1/sp_cache'
+    BROKER_BASE = 'https://broker.spcoco.org'
+    SYFT_BASE = 'https://syftorium.org'
+    
+ICON_API = '{}/api/v1/badge'.format(BROKER_BASE)
+SPECIFY_CACHE_API = '{}/api/v1/sp_cache'.format(SYFT_BASE)
 
 # For saving Specify7 server URL (used to download individual records)
 SPECIFY7_SERVER_KEY = 'specify7-server'
@@ -132,110 +137,64 @@ class TST_VALUES:
 
 # .............................................................................
 class APIService:
-    Root = {'endpoint': '/api/v1', 'params': None,
+    Root = {'endpoint': S2nEndpoint.Root, 'params': None,
         S2nKey.RECORD_FORMAT: None}
     # Direct access to syftorium upload
-    Address = {'endpoint': 'address', 'params': None,
+    Address = {'endpoint': S2nEndpoint.Address, 'params': None,
         S2nKey.RECORD_FORMAT: 'url string'}
     # Icons for service providers
     Badge = {
-        'endpoint': 'badge', 
+        'endpoint': S2nEndpoint.Badge, 
         'params': ['provider', 'icon_status'],
         S2nKey.RECORD_FORMAT: 'image/png'}
     # Health for service providers
-    Heartbeat = {'endpoint': 'heartbeat', 'params': None,
-        S2nKey.RECORD_FORMAT: 'Broker heartbeat service schema TBD'}
+    Heartbeat = {'endpoint': S2nEndpoint.Heartbeat, 'params': None,
+        S2nKey.RECORD_FORMAT: ''}
     # Metadata for map services
     Map = {
-        'endpoint': 'map', 
+        'endpoint': S2nEndpoint.Map, 
         'params': ['provider', 'namestr', 'gbif_parse', 'is_accepted', 'scenariocode', 'color'],
-        S2nKey.RECORD_FORMAT: 'Broker map service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # Taxonomic Resolution
     Name = {
-        'endpoint': 'name', 
+        'endpoint': S2nEndpoint.Name, 
         'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom'],
-        S2nKey.RECORD_FORMAT: 'Broker name service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # Specimen occurrence records
-    Occurrence = {'endpoint': 'occ', 'params': ['provider', 'occid', 'dataset_key', 'count_only'],
-        S2nKey.RECORD_FORMAT: 'Broker occurrence service schema TBD'}
+    Occurrence = {'endpoint': S2nEndpoint.Occurrence, 'params': ['provider', 'occid', 'dataset_key', 'count_only'],
+        S2nKey.RECORD_FORMAT: ''}
     # Specify guid resolver
     Resolve = {
         'endpoint': 'resolve', 
         'params': ['provider', 'occid'],
-        S2nKey.RECORD_FORMAT: 'Broker GUID resolver service schema TBD'}
+        S2nKey.RECORD_FORMAT: ''}
     # TODO: Consider an Extension service for Digital Object Architecture
-    SpecimenExtension = {'endpoint': 'occext', 'params': None,
-        S2nKey.RECORD_FORMAT: 'Broker specimen extension service schema TBD'}
+    SpecimenExtension = {'endpoint': S2nEndpoint.SpecimenExtension, 'params': None,
+        S2nKey.RECORD_FORMAT: ''}
     Frontend = {
-        'endpoint': 'frontend',
+        'endpoint': S2nEndpoint.Frontend,
         'params': ['occid', 'namestr'],
-        S2nKey.RECORD_FORMAT: 'Broker frontend service schema TBD'}
-    
-    @classmethod
-    def get_other_endpoints(cls, api_svc):
-        if api_svc == APIService.Root:
-            return [
-                APIService.Address['endpoint'], APIService.Badge['endpoint'],
-                APIService.Heartbeat['endpoint'], APIService.Map['endpoint'],
-                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.Address: 
-            return [
-                APIService.Root['endpoint'], APIService.Badge['endpoint'],
-                APIService.Heartbeat['endpoint'], APIService.Map['endpoint'],
-                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.Badge: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'],
-                APIService.Heartbeat['endpoint'], APIService.Map['endpoint'],
-                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.Heartbeat: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'],
-                APIService.Badge['endpoint'], APIService.Map['endpoint'],
-                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.Map: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'],
-                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
-                APIService.Name['endpoint'], APIService.Occurrence['endpoint'],  
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.Name: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'], 
-                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
-                APIService.Map['endpoint'], APIService.Occurrence['endpoint'],  
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.Occurrence: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'], 
-                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
-                APIService.Map['endpoint'], APIService.Name['endpoint'],   
-                APIService.Resolve['endpoint'], APIService.SpecimenExtension['endpoint']]
-        elif api_svc == APIService.SpecimenExtension: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'], 
-                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
-                APIService.Map['endpoint'], APIService.Name['endpoint'], 
-                APIService.Occurrence['endpoint'],  APIService.Resolve['endpoint']]
-        elif api_svc == APIService.Resolve: 
-            return [
-                APIService.Root['endpoint'], APIService.Address['endpoint'], 
-                APIService.Badge['endpoint'], APIService.Heartbeat['endpoint'], 
-                APIService.Map['endpoint'], APIService.Name['endpoint'], 
-                APIService.Occurrence['endpoint'], APIService.SpecimenExtension['endpoint']]
-            
+        S2nKey.RECORD_FORMAT: ''}
+    Stats = {
+        'endpoint': S2nEndpoint.Stats,
+        'params': [],
+        S2nKey.RECORD_FORMAT: ''}
+
 
 # .............................................................................
 class ServiceProvider:
+    Broker = {
+        S2nKey.NAME: 'Specify Network', 
+        S2nKey.PARAM: 'specifynetwork', 
+        S2nKey.SERVICES: [S2nEndpoint.Badge],
+        # 'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
+        #          'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
+        #          'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}
+        }
     GBIF = {
         S2nKey.NAME: 'GBIF', 
         S2nKey.PARAM: 'gbif', 
-        S2nKey.SERVICES: [
-            APIService.Occurrence['endpoint'], APIService.Name['endpoint'], APIService.Badge['endpoint']],
+        S2nKey.SERVICES: [S2nEndpoint.Occurrence, S2nEndpoint.Name, S2nEndpoint.Badge],
         'icon': {'active': '{}/gbif_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/gbif_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/gbif_hover-01-01.png'.format(ICON_DIR)}
@@ -243,17 +202,20 @@ class ServiceProvider:
     iDigBio = {
         S2nKey.NAME: 'iDigBio', 
         S2nKey.PARAM: 'idb', 
-        S2nKey.SERVICES: [
-            APIService.Occurrence['endpoint'], APIService.Badge['endpoint']],
+        S2nKey.SERVICES: [S2nEndpoint.Occurrence, S2nEndpoint.Badge],
         'icon': {'active': '{}/idigbio_colors_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/idigbio_colors_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/idigbio_colors_hover-01.png'.format(ICON_DIR)}
         }
-    # TODO: need an ITIS badge
+    IPNI = {
+        S2nKey.NAME: 'IPNI', 
+        S2nKey.PARAM: 'ipni', 
+        S2nKey.SERVICES: []
+        }
     ITISSolr = {
         S2nKey.NAME: 'ITIS', 
         S2nKey.PARAM: 'itis', 
-        S2nKey.SERVICES: [APIService.Badge['endpoint'], APIService.Name['endpoint']],
+        S2nKey.SERVICES: [S2nEndpoint.Badge, S2nEndpoint.Name],
         'icon': {'active': '{}/itis_active.png'.format(ICON_DIR),
                  'inactive': '{}/itis_inactive.png'.format(ICON_DIR),
                  'hover': '{}/itis_hover.png'.format(ICON_DIR)}
@@ -261,8 +223,7 @@ class ServiceProvider:
     Lifemapper = {
         S2nKey.NAME: 'Lifemapper', 
         S2nKey.PARAM: 'lm', 
-        S2nKey.SERVICES: [
-            APIService.Map['endpoint'], APIService.Badge['endpoint']],
+        S2nKey.SERVICES: [S2nEndpoint.Map, S2nEndpoint.Badge],
         'icon': {'active': '{}/lm_active.png'.format(ICON_DIR),
                  'inactive': '{}/lm_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/lm_hover-01.png'.format(ICON_DIR)}
@@ -271,8 +232,7 @@ class ServiceProvider:
         S2nKey.NAME: 'MorphoSource', 
         S2nKey.PARAM: 'mopho', 
         S2nKey.SERVICES: [
-            APIService.Badge['endpoint'], APIService.Occurrence['endpoint'], 
-            APIService.SpecimenExtension['endpoint']],
+            S2nEndpoint.Badge, S2nEndpoint.Occurrence, S2nEndpoint.SpecimenExtension],
         'icon': {'active': '{}/morpho_active-01.png'.format(ICON_DIR),
                  'inactive': '{}/morpho_inactive-01.png'.format(ICON_DIR),
                  'hover': '{}/morpho_hover-01.png'.format(ICON_DIR)}
@@ -281,21 +241,17 @@ class ServiceProvider:
         S2nKey.NAME: 'Specify', 
         S2nKey.PARAM: 'specify', 
         S2nKey.SERVICES: [
-            APIService.Badge['endpoint'], APIService.Occurrence['endpoint'], 
-            APIService.Resolve['endpoint']],
-        'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
-                 'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
-                 'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}}
-    # TODO: need a Broker badge
-    Broker = {
-        S2nKey.NAME: 'Spcoco Broker', 
-        S2nKey.PARAM: 'broker', 
-        S2nKey.SERVICES: [
-            #APIService.Badge['endpoint'], 
-            APIService.Map['endpoint'], APIService.Name['endpoint'], 
-            APIService.Occurrence['endpoint'], APIService.Resolve['endpoint']]}
-    # Syfter = {
-    #     }
+            S2nEndpoint.Badge, S2nEndpoint.Occurrence, S2nEndpoint.Resolve],
+        'icon': {'active': '{}/specify_network_active.png'.format(ICON_DIR),}}
+    # TODO: need an WoRMS badge
+    WoRMS = {
+        S2nKey.NAME: 'WoRMS',
+        S2nKey.PARAM: 'worms', 
+        S2nKey.SERVICES: [S2nEndpoint.Badge, S2nEndpoint.Name],
+        'icon': {
+            'active': '{}/worms_active.png'.format(ICON_DIR),
+        }
+    }
     
 # ....................
     @classmethod
@@ -306,6 +262,9 @@ class ServiceProvider:
         elif param_or_name in (
             ServiceProvider.iDigBio[S2nKey.NAME], ServiceProvider.iDigBio[S2nKey.PARAM]):
             return ServiceProvider.iDigBio
+        elif param_or_name in (
+            ServiceProvider.IPNI[S2nKey.NAME], ServiceProvider.IPNI[S2nKey.PARAM]):
+            return ServiceProvider.IPNI
         elif param_or_name in (
             ServiceProvider.ITISSolr[S2nKey.NAME], ServiceProvider.ITISSolr[S2nKey.PARAM]):
             return ServiceProvider.ITISSolr
@@ -318,6 +277,9 @@ class ServiceProvider:
         elif param_or_name in (
             ServiceProvider.Specify[S2nKey.NAME], ServiceProvider.Specify[S2nKey.PARAM]):
             return ServiceProvider.Specify
+        elif param_or_name in (
+            ServiceProvider.WoRMS[S2nKey.NAME], ServiceProvider.WoRMS[S2nKey.PARAM]):
+            return ServiceProvider.WoRMS
         elif param_or_name in (
             ServiceProvider.Broker[S2nKey.NAME], ServiceProvider.Broker[S2nKey.PARAM]):
             return ServiceProvider.Broker
@@ -352,9 +314,9 @@ class ServiceProvider:
     @classmethod
     def all(cls):
         return [
-            ServiceProvider.GBIF, ServiceProvider.iDigBio, ServiceProvider.ITISSolr, 
-            ServiceProvider.Lifemapper, ServiceProvider.MorphoSource, 
-            ServiceProvider.Specify, ServiceProvider.Broker]
+            ServiceProvider.GBIF, ServiceProvider.iDigBio, ServiceProvider.IPNI, 
+            ServiceProvider.ITISSolr, ServiceProvider.Lifemapper, ServiceProvider.MorphoSource, 
+            ServiceProvider.Specify, ServiceProvider.WoRMS, ServiceProvider.Broker]
 
  # .............................................................................
 
@@ -396,7 +358,8 @@ SPCOCO_FIELDS = [
 
 # ......................................................
 class Lifemapper:
-    URL = 'http://client.lifemapper.org/api/v2'
+    URL = 'http://joe-124.lifemapper.org/api/v2'
+    # URL = 'http://client.lifemapper.org/api/v2'
     OCC_RESOURCE = 'sdmproject'
     PROJ_RESOURCE = 'sdmproject'
     MAP_RESOURCE = 'ogc' 
@@ -508,12 +471,25 @@ class MorphoSource:
 
     @classmethod
     def get_occurrence_view(cls, local_id):
-        return '{}/000S{}'.format(MorphoSource.VIEW_URL, local_id)
+        """
+        Example:
+            https://www.morphosource.org/concern/biological_specimens/000S27385
+        """
+        url = None
+        if local_id:
+            idtail = 'S{}'.format(local_id)
+            leading_zero_count = (9 - len(idtail))
+            prefix = '0' * leading_zero_count
+            url ='{}/{}{}'.format(MorphoSource.VIEW_URL, prefix, idtail)
+        return url
 
     @classmethod
     def get_occurrence_data(cls, occurrence_id):
-        return '{}/find/specimens?start=0&limit=1000&q=occurrence_id%3A{}'.format(
-            MorphoSource.REST_URL, occurrence_id)
+        url = None
+        if occurrence_id:
+            url = '{}/find/specimens?start=0&limit=1000&q=occurrence_id%3A{}'.format(
+                MorphoSource.REST_URL, occurrence_id)
+        return url
     
 # ......................................................
 class SPECIFY:
@@ -526,8 +502,7 @@ class SPECIFY:
     
 # ......................................................
 class SYFTER:
-    REST_URL = 'https://syftorium.org/api/v1'
-    REST_URL_DEV = 'https://dev.syftorium.org/api/v1'
+    REST_URL = '{}/api/v1'.format(SYFT_BASE)
     RESOLVE_RESOURCE = 'resolve'
     
     
@@ -601,354 +576,55 @@ class GBIF:
     
     @classmethod
     def get_occurrence_view(cls, key):
-        return '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.OCCURRENCE_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.OCCURRENCE_SERVICE, key)
+        return url
 
     @classmethod
     def get_occurrence_data(cls, key):
-        return '{}/{}/{}'.format(GBIF.REST_URL, GBIF.OCCURRENCE_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.REST_URL, GBIF.OCCURRENCE_SERVICE, key)
+        return url
 
     @classmethod
     def get_species_view(cls, key):
-        return '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.SPECIES_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.VIEW_URL, GBIF.SPECIES_SERVICE, key)
+        return url
 
     @classmethod
     def get_species_data(cls, key):
-        return '{}/{}/{}'.format(GBIF.REST_URL, GBIF.SPECIES_SERVICE, key)
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(GBIF.REST_URL, GBIF.SPECIES_SERVICE, key)
+        return url
 
 
-# .............................................................................
-class COMMUNITY_SCHEMA:
-    DWC = {'code': 'dwc', 'url': 'http://rs.tdwg.org/dwc/terms'}
-    GBIF = {'code': 'gbif', 'url': 'https://gbif.github.io/dwc-api/apidocs/org/gbif/dwc/terms/GbifTerm.html'}
-    DCT = {'code': 'dcterms', 'url': 'http://purl.org/dc/terms'}
-    IDB = {'code': 'idigbio', 'url': ''}
-    MS = {'code': 'mopho', 'url': 'https://www.morphosource.org/About/API'}
-    S2N = {'code': 's2n', 'url': ''}
 
 # .............................................................................
-class S2N_SCHEMA:
+class WORMS:
+    """World Register of Marine Species, WoRMS, constants enumeration
+    http://www.marinespecies.org/rest/AphiaRecordsByMatchNames?scientificnames[]=Plagioecia%20patina&marine_only=false
     """
-    Note: 
-        All field values are strings unless otherwise indicated
-    """
-    NAME = {
-        # Provider's URLs to this record
-        'view_url': COMMUNITY_SCHEMA.S2N,
-        'api_url': COMMUNITY_SCHEMA.S2N,
-        # S2n standardization of common elements
-        'status': COMMUNITY_SCHEMA.S2N,
-        'scientific_name': COMMUNITY_SCHEMA.S2N,
-        'canonical_name': COMMUNITY_SCHEMA.S2N,
-        'common_names': COMMUNITY_SCHEMA.S2N,
-        'kingdom': COMMUNITY_SCHEMA.S2N,
-        'rank': COMMUNITY_SCHEMA.S2N,
-        'synonyms': COMMUNITY_SCHEMA.S2N,           # list of strings
-        'hierarchy': COMMUNITY_SCHEMA.S2N,     # list of (one) dictionary containing rank: name
-        
-        # GBIF-specific fields
-        'gbif_confidence': COMMUNITY_SCHEMA.S2N,
-        'gbif_taxon_key': COMMUNITY_SCHEMA.S2N,
-        S2nKey.OCCURRENCE_COUNT: COMMUNITY_SCHEMA.S2N,
-        S2nKey.OCCURRENCE_URL: COMMUNITY_SCHEMA.S2N,
-
-        # ITIS-specific fields
-        'itis_tsn': COMMUNITY_SCHEMA.S2N,
-        'itis_credibility': COMMUNITY_SCHEMA.S2N,
-        }
-    MAP = {
-        # Provider's URLs to this record
-        'view_url': COMMUNITY_SCHEMA.S2N,
-        'api_url': COMMUNITY_SCHEMA.S2N,
-
-        'endpoint': COMMUNITY_SCHEMA.S2N,
-        'data_link': COMMUNITY_SCHEMA.S2N,
-        'sdm_projection_scenario_code': COMMUNITY_SCHEMA.S2N,
-        'sdm_projection_scenario_link': COMMUNITY_SCHEMA.S2N,
-        'layer_type': COMMUNITY_SCHEMA.S2N,
-        'layer_name': COMMUNITY_SCHEMA.S2N,
-        'point_count': COMMUNITY_SCHEMA.S2N,        # integer
-        'point_bbox': COMMUNITY_SCHEMA.S2N,         # list of 4 float values: minX, minY, maxX, maxY
-        'species_name': COMMUNITY_SCHEMA.S2N,
-        'status': COMMUNITY_SCHEMA.S2N,             # integer
-        'modtime': COMMUNITY_SCHEMA.S2N,
-        # Lifemapper allows query_parameter 'color' with options:
-        #    for Vector: RGB values as hexidecimal string #RRGGBB
-        #    for Raster: gray, red, green, blue, yellow, fuschia, aqua, bluered, bluegreen, greenred
-        'vendor_specific_parameters': COMMUNITY_SCHEMA.S2N,     # dictionary with queryparameter/value
-        }
-    OCCURRENCE = {
-        # Provider's URLs to this record
-        'view_url': COMMUNITY_SCHEMA.S2N,
-        'api_url': COMMUNITY_SCHEMA.S2N,
-        # S2n resolution of non-standard contents
-        'issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
-
-        # GBIF-specific field
-        'gbifID': COMMUNITY_SCHEMA.GBIF,
-        'acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
-
-        # iDigBio-specific field
-        'uuid': COMMUNITY_SCHEMA.IDB,
-        
-        # MorphoSource-specific field
-        'specimen.specimen_id': COMMUNITY_SCHEMA.MS,
-
-        # Specify7-specific field
-        'specify_identifier': COMMUNITY_SCHEMA.S2N,
-
-        'accessRights': COMMUNITY_SCHEMA.DCT,
-        'language': COMMUNITY_SCHEMA.DCT,
-        'license': COMMUNITY_SCHEMA.DCT,
-        'modified': COMMUNITY_SCHEMA.DCT,
-        'type': COMMUNITY_SCHEMA.DCT,
-        
-        'taxonRank': COMMUNITY_SCHEMA.DWC,
-        'kingdom': COMMUNITY_SCHEMA.DWC,
-        'phylum': COMMUNITY_SCHEMA.DWC,
-        'class': COMMUNITY_SCHEMA.DWC,
-        'order': COMMUNITY_SCHEMA.DWC,
-        'family': COMMUNITY_SCHEMA.DWC,
-        'genus': COMMUNITY_SCHEMA.DWC,
-        'scientificName': COMMUNITY_SCHEMA.DWC,
-        'specificEpithet': COMMUNITY_SCHEMA.DWC, 
-        'scientificNameAuthorship': COMMUNITY_SCHEMA.DWC,
-    
-        'recordedBy': COMMUNITY_SCHEMA.DWC,
-        'fieldNumber': COMMUNITY_SCHEMA.DWC,
-        'occurrenceID': COMMUNITY_SCHEMA.DWC, 
-        'institutionCode': COMMUNITY_SCHEMA.DWC,
-        'collectionCode': COMMUNITY_SCHEMA.DWC,
-        'catalogNumber': COMMUNITY_SCHEMA.DWC,
-        'basisOfRecord': COMMUNITY_SCHEMA.DWC,
-        'preparations': COMMUNITY_SCHEMA.DWC,
-        'datasetName': COMMUNITY_SCHEMA.DWC,
-    
-        'associatedReferences': COMMUNITY_SCHEMA.DWC,       # list of strings 
-        'associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
-        'otherCatalogNumbers': COMMUNITY_SCHEMA.DWC,        # list of strings
-        
-        'locality': COMMUNITY_SCHEMA.DWC,
-        'decimalLongitude': COMMUNITY_SCHEMA.DWC,
-        'decimalLatitude': COMMUNITY_SCHEMA.DWC,
-        'geodeticDatum': COMMUNITY_SCHEMA.DWC,
-        'year': COMMUNITY_SCHEMA.DWC,
-        'month': COMMUNITY_SCHEMA.DWC,
-        'day': COMMUNITY_SCHEMA.DWC,
-    }
-    RESOLVED = {
-        'ident': COMMUNITY_SCHEMA.S2N,
-        'dataset_guid': COMMUNITY_SCHEMA.S2N,
-        'institutionCode': COMMUNITY_SCHEMA.DWC,
-        'basisOfRecord': COMMUNITY_SCHEMA.DWC,
-        'date': COMMUNITY_SCHEMA.S2N,
-        'ark': COMMUNITY_SCHEMA.S2N,
-        'api_url': COMMUNITY_SCHEMA.S2N
-    }
+    REST_URL = 'http://www.marinespecies.org/rest'
+    NAME_MATCH_SERVICE = 'AphiaRecordsByMatchNames'
+    NAME_SERVICE = 'AphiaNameByAphiaID'
+    MATCH_PARAM = 'scientificnames[]='
+    ID_FLDNAME = 'valid_AphiaID'
     
     @classmethod
-    def get_s2n_fields(cls, svc):
-        if svc == APIService.Map['endpoint']:
-            schema = S2N_SCHEMA.MAP
-        elif svc == APIService.Name['endpoint']:
-            schema = S2N_SCHEMA.NAME
-        elif svc == APIService.Occurrence['endpoint']:
-            schema = S2N_SCHEMA.OCCURRENCE
-        elif svc == APIService.Resolve['endpoint']:
-            schema = S2N_SCHEMA.RESOLVED
-        else:
-            schema = None
-            
-        flds = []
-        try:
-            for fname, ns in schema.items():
-                flds.append('{}:{}'.format(ns, fname))
-        except:
-            pass
-        return flds
+    def get_species_data(cls, key):
+        url = None
+        if key:
+            url = '{}/{}/{}'.format(WORMS.REST_URL, WORMS.NAME_SERVICE, key)
+        return url
 
-    @classmethod
-    def get_gbif_taxonkey_fld(cls):
-        return '{}:gbif_taxon_key'.format(COMMUNITY_SCHEMA.S2N['code'])
+class IPNI:
+    base_url = 'http://beta.ipni.org/api/1'
     
-    @classmethod
-    def get_gbif_occcount_fld(cls):
-        return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_COUNT)
-    
-    @classmethod
-    def get_gbif_occurl_fld(cls):
-        return '{}:{}'.format(COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
-    
-    @classmethod
-    def get_s2n_occurrence_fields(cls):
-        stdnames = []
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            stdnames.append('{}:{}'.format(comschem['code'], fn))
-        return stdnames
-
-    @classmethod
-    def get_gbif_occurrence_map(cls):
-        gname_stdname = {}
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            std_name = '{}:{}'.format(comschem['code'], fn)
-            gname_stdname[fn] = std_name
-        return gname_stdname
-
-    @classmethod
-    def get_idb_occurrence_map(cls):
-        iname_stdname = {}
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            stdname = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'uuid':
-                iname_stdname[fn] = stdname
-            else:
-                iname_stdname[stdname] = stdname
-        return iname_stdname
-
-    @classmethod
-    def get_specify_occurrence_map(cls):
-        sname_stdname = {}
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            spfldname = '{}/{}'.format(comschem['url'], fn)
-            newfldname = '{}:{}'.format(comschem['code'], fn)
-            sname_stdname[spfldname] = newfldname
-        return sname_stdname
-    
-    @classmethod
-    def get_specifycache_occurrence_map(cls):
-        # sp_cache_names_outside_of_stdnames = [
-        #     'collection_id','continent','country','county','eventDate','id','institutionID',
-        #     'modified','preparations','rights']
-        names_in_spcache = [
-            'accessRights','basisOfRecord','catalogNumber','class','collectionCode', 
-            'datasetName', 'family','genus','geodeticDatum','identifier','institutionCode',
-            'kingdom','locality','occurrenceID','order','phylum','recordedBy','scientificName']
-        # Add urls
-        names_in_spcache.extend(['api_url', 'view_url'])
-        occschem = S2N_SCHEMA.OCCURRENCE
-        sname_stdname = {}
-        for fn in names_in_spcache:
-            if fn == 'identifier':
-                newfn = 'specify_identifier'
-                ns = occschem[newfn]['code']
-                stdname = '{}:{}'.format(ns, newfn)
-            else:
-                ns = occschem[fn]['code']
-                stdname = '{}:{}'.format(ns, fn)
-            sname_stdname[fn] = stdname
-        return sname_stdname
-
-    @classmethod
-    def get_mopho_occurrence_map(cls):
-        mopho_stdname = {}
-        for fn, comschem in S2N_SCHEMA.OCCURRENCE.items():
-            std_name = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'catalogNumber':
-                mopho_stdname['specimen.catalog_number'] = std_name
-            elif fn == 'institutionCode':
-                mopho_stdname['specimen.institution_code'] = std_name
-            elif fn == 'occurrenceID':
-                mopho_stdname['specimen.occurrence_id'] = std_name
-            elif fn == 'uuid':
-                mopho_stdname['specimen.uuid'] = std_name
-            elif fn in ['specimen.specimen_id', 'view_url', 'api_url']:
-                mopho_stdname[fn] = std_name
-        return mopho_stdname
-    
-    @classmethod
-    def get_gbif_name_map(cls):
-        s2n = COMMUNITY_SCHEMA.S2N['code']
-        mapping = {
-            'view_url': '{}:view_url'.format(s2n),
-            'api_url': '{}:api_url'.format(s2n),
-            'status': '{}:status'.format(s2n),
-            'scientificName': '{}:scientific_name'.format(s2n),
-            'canonicalName': '{}:canonical_name'.format(s2n), 
-            'kingdom': '{}:kingdom'.format(s2n),
-            'rank': '{}:rank'.format(s2n),
-            # parsed into lists
-            'synonyms': '{}:synonyms'.format(s2n),
-            'hierarchy': '{}:hierarchy'.format(s2n),
-            # GBIF-specific
-            'confidence': '{}:gbif_confidence'.format(s2n),
-            'usageKey': '{}:gbif_taxon_key'.format(s2n),
-            S2nKey.OCCURRENCE_COUNT: '{}:{}'.format(
-                COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_COUNT),
-            S2nKey.OCCURRENCE_URL: '{}:{}'.format(
-                COMMUNITY_SCHEMA.S2N['code'], S2nKey.OCCURRENCE_URL)
-            }
-        return mapping
-
-    @classmethod
-    def get_itis_name_map(cls):
-        s2n = COMMUNITY_SCHEMA.S2N['code']
-        mapping = {
-            'view_url': '{}:view_url'.format(s2n),
-            'api_url': '{}:api_url'.format(s2n),
-            'usage': '{}:status'.format(s2n),
-            'nameWTaxonAuthor': '{}:scientific_name'.format(s2n),
-            'nameWOInd': '{}:canonical_name'.format(s2n), 
-            'kingdom': '{}:kingdom'.format(s2n),
-            'rank': '{}:rank'.format(s2n),
-            # parsed into list
-            'synonyms': '{}:synonyms'.format(s2n),
-            # parsed into dict
-            'hierarchySoFarWRanks': '{}:hierarchy'.format(s2n),
-            # ITIS-specific
-            'tsn': '{}:itis_tsn'.format(s2n),
-            'credibilityRating': '{}:itis_credibility'.format(s2n),            
-            }
-        return mapping
-    
-    @classmethod
-    def get_lifemapper_map_map(cls):
-        # s2n = COMMUNITY_SCHEMA.S2N['code']
-        # mapping = {
-        # 'endpoint': '{}:endpoint'.format(s2n),
-        # 'data_link': '{}:data_link'.format(s2n),
-        # 'sdm_projection_scenario_code': '{}:sdm_projection_scenario_code'.format(s2n),
-        # 'sdm_projection_scenario_link': '{}:sdm_projection_scenario_link'.format(s2n),
-        # 'layer_type': '{}:layer_type'.format(s2n),
-        # 'layer_name': '{}:layer_name'.format(s2n),
-        # 'point_count': '{}:point_count'.format(s2n),
-        # 'point_bbox': '{}:point_bbox'.format(s2n),
-        # 'speciesName': '{}:species_name'.format(s2n),
-        # 'status': '{}:lm_status_code'.format(s2n),
-        # 'statusModTime': '{}:modtime'.format(s2n),
-        #     }
-        lm_stdname = {}
-        for fn, comschem in S2N_SCHEMA.MAP.items():
-            std_name = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'species_name':
-                lm_stdname['speciesName'] = std_name
-            elif fn == 'lm_status_code':
-                lm_stdname['status'] = std_name
-            elif fn == 'modtime':
-                lm_stdname['statusModTime'] = std_name
-            else:
-                lm_stdname[fn] = std_name
-        return lm_stdname
-
-    @classmethod
-    def get_specify_resolver_map(cls):
-        spres_stdname = {}
-        for fn, comschem in S2N_SCHEMA.RESOLVED.items():
-            std_name = '{}:{}'.format(comschem['code'], fn)
-            if fn == 'ident':
-                spres_stdname['id'] = std_name
-            elif fn == 'institutionCode':
-                spres_stdname['who'] = std_name
-            elif fn == 'basisOfRecord':
-                spres_stdname['what'] = std_name
-            elif fn == 'date':
-                spres_stdname['when'] = std_name
-            elif fn == 'ark':
-                spres_stdname['where'] = std_name
-            elif fn == 'api_url':
-                spres_stdname['url'] = std_name
-            else:
-                spres_stdname[fn] = std_name
-        return spres_stdname
-        
 # .............................................................................
 class ITIS:
     """ITIS constants enumeration
@@ -1034,10 +710,16 @@ class Idigbio:
     
     @classmethod
     def get_occurrence_view(cls, uuid):
-        return '{}/{}'.format(Idigbio.VIEW_URL, uuid)
+        url = None
+        if uuid:
+            url = '{}/{}'.format(Idigbio.VIEW_URL, uuid)
+        return url
 
     @classmethod
     def get_occurrence_data(cls, uuid):
-        return '{}/{}'.format(Idigbio.REST_URL, uuid)
+        url = None
+        if uuid:
+            url = '{}/{}'.format(Idigbio.REST_URL, uuid)
+        return url
     
 

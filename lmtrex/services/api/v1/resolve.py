@@ -1,9 +1,9 @@
 import cherrypy
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (APIService, ServiceProvider, SPECIFY)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider)
+from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, print_s2n_output)
 from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
 
@@ -16,6 +16,7 @@ solr_location = 'notyeti-192.lifemapper.org'
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
+    ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Resolve['endpoint'])
 
     # ...............................................
     @staticmethod
@@ -41,11 +42,12 @@ class ResolveSvc(_S2nService):
     def resolve_specify_guid(self, occid):
         try:
             output = SpecifyResolverAPI.query_for_guid(occid)
+            output.format_records(self.ORDERED_FIELDNAMES)
         except Exception as e:
             traceback = get_traceback()
             output = SpecifyResolverAPI.get_api_failure(
                 self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
-                errors=[{'error': traceback}])
+                errinfo={'error': [traceback]})
         return output.response
 
     # ...............................................
@@ -67,7 +69,7 @@ class ResolveSvc(_S2nService):
         # Assemble
         provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), None, self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
             record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
         return full_out
 
@@ -75,17 +77,18 @@ class ResolveSvc(_S2nService):
     def get_records(self, occid, req_providers):
         allrecs = []
         # for response metadata
-        query_term = occid
+        provstr = ','.join(req_providers)
+        query_term = 'occid={}&provider={}'.format(occid, provstr)
         for pr in req_providers:
             # Address single record
             if pr == ServiceProvider.Specify[S2nKey.PARAM]:
                 sp_output = self.resolve_specify_guid(occid)
                 allrecs.append(sp_output)
         # Assemble
-        prov_meta = self._get_s2n_provider_response_elt()
+        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
         full_out = S2nOutput(
-            len(allrecs), query_term, self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
-            records=allrecs)
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            records=allrecs, errors={})
         return full_out
 
         
@@ -114,18 +117,19 @@ class ResolveSvc(_S2nService):
         valid_providers = self.get_valid_providers()
         if occid is None:
             output = self._show_online(valid_providers)
-        elif occid.lower() in APIService.get_other_endpoints(self.SERVICE_TYPE):
-            output = self._show_online(valid_providers)
         elif occid.lower() == 'count':
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, option_errors, fatal_errors = self._standardize_params(
+                good_params, errinfo = self._standardize_params(
                     occid=occid, provider=provider)
                 # Bad parameters
-                if fatal_errors:
-                    error_description = '; '.join(fatal_errors)                            
+                try:
+                    error_description = '; '.join(errinfo['error'])                            
                     http_status = int(HTTPStatus.BAD_REQUEST)
+                except:
+                    pass
+
             except Exception as e:
                 error_description = get_traceback()
                 http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -135,8 +139,12 @@ class ResolveSvc(_S2nService):
                         output = self.get_records(good_params['occid'], good_params['provider'])
     
                         # Add message on invalid parameters to output
-                        for err in option_errors:
-                            output.append_value(S2nKey.ERRORS, err)
+                        try:
+                            for err in errinfo['warning']:
+                                output.append_error('warning', err)
+                        except:
+                            pass
+
                     except Exception as e:
                         error_description = get_traceback()
                         http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -157,4 +165,4 @@ if __name__ == '__main__':
         # Specify ARK Record
         svc = ResolveSvc()
         std_output = svc.GET(occid)
-        print_s2n_output(std_output)
+        print_s2n_output(std_output, do_print_rec=True)

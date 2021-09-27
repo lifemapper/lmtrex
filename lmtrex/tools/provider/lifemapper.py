@@ -1,16 +1,15 @@
 from http import HTTPStatus
 
-from lmtrex.common.lmconstants import (
-    APIService, COMMUNITY_SCHEMA, Lifemapper, ServiceProvider, S2N_SCHEMA)
-from lmtrex.services.api.v1.s2n_type import S2nKey, S2nOutput
+from lmtrex.common.lmconstants import (Lifemapper, ServiceProvider)
+from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.utils import get_traceback, add_errinfo
 
 # .............................................................................
 class LifemapperAPI(APIQuery):
     """Class to query Lifemapper portal APIs and return results"""
     PROVIDER = ServiceProvider.Lifemapper
-    MAP_MAP = S2N_SCHEMA.get_lifemapper_map_map()
+    MAP_MAP = S2nSchema.get_lifemapper_map_map()
     
     # ...............................................
     def __init__(
@@ -35,103 +34,145 @@ class LifemapperAPI(APIQuery):
         elif command in Lifemapper.COMMANDS:
             url = '{}/{}'.format(url, command)
         APIQuery.__init__(self, url, other_filters=other_filters, logger=logger)
-
+        
     # ...............................................
     @classmethod
     def _standardize_layer_record(cls, rec, prjscenariocodes=[], color=None):
         newrec = {}
-        # Discard incomplete records
-        try:
-            stat = rec['status']
-        except:
-            return newrec
-        else:
-            if stat != Lifemapper.COMPLETE_STAT_VAL:
-                return newrec
-        # Discard records without map info
-        try:
-            melt = rec['map']
-        except Exception:
-            return newrec        
-        try:
-            mapname = melt['mapName']
-            map_url = melt['endpoint']
-            layer_name = melt['layerName']
-        except Exception as e:
-            return newrec
-
-        # Success
-        newrec[cls.MAP_MAP['endpoint']] = '{}/{}'.format(map_url, mapname)
-        newrec[cls.MAP_MAP['layer_name']] = layer_name
-        newrec[cls.MAP_MAP['status']] = stat
+        lyr_elt = scen_code = scen_link = num_points = pt_bbox = None
         
-        for fldname, val in rec.items():
-            # Leave out fields without value
-            if val:
-                if fldname == 'projectionScenario':
+        link_fld = 'data_link'
+        map_fld = 'map'
+        endpt_fld = 'endpoint'
+        sp_fld = 'species_name'
+        type_fld = 'layer_type'
+        name_fld = 'layer_name'
+        status_fld = 'status'
+        pt_count_fld = 'point_count'
+        pt_bbox_fld = 'point_bbox'
+        scencode_fld = 'sdm_projection_scenario_code'
+        scenlink_fld = 'sdm_projection_scenario_link'
+        
+        # Required top level elements
+        try:
+            status = rec[status_fld]
+            melt = rec[map_fld]
+        except Exception:
+            return {}
+        else:
+            # Required value
+            if status != Lifemapper.COMPLETE_STAT_VAL:
+                return {}
+            # Required map level elements
+            try:
+                mapname = melt['mapName']
+                map_url = melt[endpt_fld]
+                layer_name = melt['layerName']
+                endpoint = '{}/{}'.format(map_url, mapname)
+            except Exception as e:
+                return {}
+            
+            # Required value if present
+            try:
+                scen_code = rec['projection_scenario']['code']
+                scen_link = rec['projection_scenario']['metadata_url']
+            except:
+                pass
+            else:
+                # Discard records that do not pass filter
+                if prjscenariocodes and scen_code not in prjscenariocodes:
+                    return {}
+                
+            # Handle different field names between Occ and Proj
+            try:
+                species_name = rec[sp_fld]
+            except:
+                try:
+                    species_name = rec['speciesName']
+                except: 
+                    species_name = None
+              
+            # Must be spatialRaster or spatialVector
+            try:
+                lyr_elt = rec['spatialRaster']
+                lyrtype = 'raster'
+            except:
+                try:
+                    lyr_elt = rec['spatialVector']
+                    lyrtype = 'vector'
+                except:
+                    pass
+                else:
                     try:
-                        scen_code = val['code']
-                    except Exception:
-                        pass
-                    else:
-                        # Discard records that do not pass filter
-                        if prjscenariocodes and scen_code not in prjscenariocodes:
-                            return {}
-                        # Success
-                        newrec[cls.MAP_MAP['sdm_projection_scenario_code']] = scen_code          
-                        try:
-                            newrec[cls.MAP_MAP['sdm_projection_scenario_link']] = val['metadataUrl']
-                        except:
-                            pass
-                    
-                elif fldname == 'spatialRaster':
-                    newrec[cls.MAP_MAP['layer_type']] = 'raster'
-                    try:
-                        data_url = val['dataUrl']
+                        num_points = lyr_elt['num_features']
+                        pt_bbox = lyr_elt['bbox']
                     except:
                         pass
-                    else:
-                        newrec[cls.MAP_MAP['data_link']] = data_url.rstrip('/gtiff')  
-                                              
-                elif fldname == 'spatialVector':
-                    newrec[cls.MAP_MAP['layer_type']] = 'vector'
-                    try:
-                        newrec[cls.MAP_MAP['point_bbox']] = val['bbox']
-                    except:
-                        pass
-                    
-                    try:
-                        newrec[cls.MAP_MAP['point_count']] = val['numFeatures']
-                    except:
-                        pass
+            
+            if lyr_elt:
+                data_link = lyr_elt['data_url']
 
-                elif fldname in ('speciesName', 'statusModTime'):
-                    newfldname = cls.MAP_MAP[fldname]
-                    newrec[newfldname] =  val                    
+        for stdfld, provfld in cls.MAP_MAP.items():
+            try:
+                val = rec[provfld]
+            except:
+                val = None
+
+            if provfld == sp_fld:
+                newrec[stdfld] = species_name
+                
+            elif provfld == endpt_fld:
+                newrec[stdfld] = endpoint
+                
+            elif provfld == type_fld:
+                newrec[stdfld] = lyrtype
+                
+            elif provfld == name_fld:
+                newrec[stdfld] = layer_name
+                
+            elif provfld == pt_count_fld:
+                newrec[stdfld] = num_points
+                
+            elif provfld == pt_bbox_fld:
+                newrec[stdfld] = pt_bbox
+                
+            elif provfld == pt_count_fld:
+                newrec[stdfld] = num_points
+
+            elif provfld == status_fld:
+                newrec[stdfld] = status
+            
+            elif provfld == link_fld:
+                newrec[stdfld] = data_link
+            
+            elif provfld == scencode_fld:
+                newrec[stdfld] = scen_code
+                                
+            elif provfld == scenlink_fld:
+                newrec[stdfld] = scen_link
+                                
+            else:
+                newrec[stdfld] =  val
 
         if color is not None:
-            newrec['vendor-specific-parameters'] = {'color': color}
+            newrec['vendor_specific_parameters'] = {'color': color}
         return newrec
 
     # ...............................................
     @classmethod
     def _standardize_map_output(
-            cls, output, query_term, service, query_status=None, prjscenariocodes=None, color=None, count_only=False, 
-            query_urls=[], err={}):
+            cls, output, service, query_status=None, prjscenariocodes=None, color=None, count_only=False, 
+            query_urls=[], errinfo={}):
         occ_layer_rec = None
         stdrecs = []
-        errmsgs = []
-        if err:
-            errmsgs.append(err)
+            
         # Records
-        if len(output) == 0:
-            errmsgs.append({'error': cls._get_error_message(
-                'Failed to return any map layers for {}'.format(query_term))})
-        else:
+        if len(output) > 0:
             try:
-                occ_url = output[0]['occurrenceSet']['metadataUrl']
+                occ_url = output[0]['occurrence_set']['metadata_url']
             except Exception as e:
-                errmsgs.append({'error': cls._get_error_message('Failed to return occurrence URL')})
+                msg = cls._get_error_message('Failed to return occurrence URL')
+                errinfo = add_errinfo(errinfo, 'error', msg)
             else:
                 occ_rec = cls._get_occurrenceset_record(occ_url)
                 occ_layer_rec = cls._standardize_layer_record(occ_rec)
@@ -145,37 +186,36 @@ class LifemapperAPI(APIQuery):
                     if r2:
                         stdrecs.append(r2)
                 except Exception as e:
-                    errmsgs.append({'error': cls._get_error_message(err=e)})
+                    msg = cls._get_error_message(err=e)
+                    errinfo = add_errinfo(errinfo, 'error', msg)
         
         # TODO: revisit record format for other map providers
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
-            len(stdrecs), query_term, service, provider=prov_meta, records=stdrecs, errors=errmsgs )
+            len(stdrecs), service, provider=prov_meta, records=stdrecs, errors=errinfo)
 
         return std_output
     
     # ...............................................
     @classmethod
     def _standardize_occ_output(
-            cls, output, query_status=None, query_urls=[], color=None, count_only=False, err={}):
+            cls, output, query_status=None, query_urls=[], color=None, count_only=False, errinfo={}):
         stdrecs = []
-        errmsgs = {}
         total = len(output)
-        if err:
-            errmsgs.append(err)
         # Records]
         if not count_only:
             for r in output:
                 try:
                     stdrecs.append(cls._standardize_occ_record(r, color=color))
                 except Exception as e:
-                    errmsgs.append({'error': cls._get_error_message(err=e)})
+                    msg = cls._get_error_message(err=e)
+                    errinfo = add_errinfo(errinfo, 'error', msg)
         
         # TODO: revisit record format for other map providers
         prov_meta = cls._get_provider_response_elt(query_status=query_status, query_urls=query_urls)
         std_output = S2nOutput(
             count=total, record_format=Lifemapper.RECORD_FORMAT_OCC, records=stdrecs, 
-            provider=prov_meta, errors=errmsgs)
+            provider=prov_meta, errors=errinfo)
 
         return std_output
 
@@ -204,6 +244,7 @@ class LifemapperAPI(APIQuery):
             Lifemapper contains only 'Accepted' name froms the GBIF Backbone 
             Taxonomy and this method requires them for success.
         """
+        errinfo = {}
         other_filters[Lifemapper.NAME_KEY] = name
         other_filters[Lifemapper.ATOM_KEY] = 0
         api = LifemapperAPI(
@@ -213,18 +254,17 @@ class LifemapperAPI(APIQuery):
             api.query_by_get()
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
+            
             std_output = cls.get_api_failure(
-                APIService.Map['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[cls._get_error_message(err=tb)])
+                S2nEndpoint.Map, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
-            api_err = None
-            if api.error:
-                api_err = {'error': api.error}
+            errinfo = add_errinfo(errinfo, 'error', api.error)
             
             std_output = cls._standardize_map_output(
-                api.output, name, APIService.Map['endpoint'], query_status=api.status_code, 
+                api.output, S2nEndpoint.Map, query_status=api.status_code, 
                 query_urls=[api.url], prjscenariocodes=prjscenariocodes, color=color, 
-                count_only=False, err=api_err)
+                count_only=False, errinfo=errinfo)
 
         return std_output
    
@@ -240,14 +280,15 @@ class LifemapperAPI(APIQuery):
                 prints to stdout    
         """
         rec = None
+        errinfo = {}
         api = APIQuery(url)            
         try:
             api.query_by_get()
         except Exception as e:
             tb = get_traceback()
+            errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
             out = cls.get_api_failure(
-                APIService.Name['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR,
-                errors=[{'error': cls._get_error_message(err=tb)}])
+                S2nEndpoint.Name, HTTPStatus.INTERNAL_SERVER_ERROR, errinfo=errinfo)
         else:
             try:
                 rec = api.output
