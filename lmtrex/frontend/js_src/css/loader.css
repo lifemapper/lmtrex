@@ -52,7 +52,7 @@ body.loading main {
   text-align: center;
 }
 
-#loader svg {
+#loader img {
   z-index: 10;
   width: calc(var(--double-size) * 6);
 }

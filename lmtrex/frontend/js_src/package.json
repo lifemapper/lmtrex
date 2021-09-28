@@ -12,7 +12,8 @@
   "homepage": "https://broker.spcoco.org/",
   "scripts": {
     "watch": "npx webpack -w --mode development --color",
-    "build": "npx tsc && npx webpack --mode production --color"
+    "typecheck": "npx tsc",
+    "build": "npx webpack --mode production --color"
   },
   "dependencies": {
     "leaflet": "^1.7.1",

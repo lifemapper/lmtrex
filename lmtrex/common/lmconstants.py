@@ -33,9 +33,8 @@ GBIF_MISSING_KEY = 'unmatched_gbif_ids'
 # VALID broker parameter options, must be list
 VALID_MAP_REQUESTS = ['getmap', 'getlegendgraphic']
 VALID_ICON_OPTIONS = ['active', 'inactive', 'hover']
-ICON_DIR='lmtrex/static/img'
+ICON_DIR='./lmtrex/static/img'
 
-IMG_PATH = '/var/www'
 ICON_CONTENT = 'image/png'
     
 # .............................................................................

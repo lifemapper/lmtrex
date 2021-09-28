@@ -50,26 +50,11 @@ def get_loading_tagline():
 def get_bundle_location(name):
     manifest = json.loads(inline_static('js_src/dist/manifest.json'))
     file_name = os.path.basename(manifest[name])
-    return f'js_src/dist/{file_name}'
+    return f'/static/js/{file_name}'
 
 def frontend_template():
-    global frontend_static_files
-    if not frontend_static_files or is_development:
-        frontend_static_files = {
-            key: inline_static(file_path)
-            for key, file_path in [
-                [
-                    'specify_network_square',
-                    'js_src/static/img/specify_network_square.svg'
-                ],
-                [
-                    'bundle',
-                    get_bundle_location('frontend.js')
-                ]
-            ]
-        }
     return template('index', {
-        **frontend_static_files,
+        'bundle': get_bundle_location('frontend.js'),
         'tagline': get_loading_tagline(),
         'description': (
             'This page compares the information contained in a specimen record '
@@ -81,26 +66,9 @@ def frontend_template():
         'body': '',
     })
 
-stats_static_files = None
-
 def stats_template(body):
-    global stats_static_files
-    if not stats_static_files or is_development:
-        stats_static_files = {
-            key: inline_static(file_path)
-            for key, file_path in [
-                [
-                    'specify_network_square',
-                    'js_src/static/img/specify_network_square.svg'
-                ],
-                [
-                    'bundle',
-                    get_bundle_location('stats.js')
-                ]
-            ]
-        }
     return template('index', {
-        **stats_static_files,
+        'bundle': get_bundle_location('stats.js'),
         'tagline': get_loading_tagline(),
         'description': (
             'The maps on this page visualize the geographic locality of the '

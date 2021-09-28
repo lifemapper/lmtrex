@@ -1,7 +1,7 @@
-import '../../static/css/main.css';
-import '../../static/css/frontend.css';
-import '../../static/css/response.css';
-import '../../static/css/table.css';
+import '../../css/main.css';
+import '../../css/frontend.css';
+import '../../css/response.css';
+import '../../css/table.css';
 
 import { getQueryParameter, inversePromise, loader } from '../utils';
 import { initializeMap } from './leaflet';

@@ -1,5 +1,5 @@
-import '../../static/css/main.css';
-import '../../static/css/stats.css';
+import '../../css/main.css';
+import '../../css/stats.css';
 
 import type { IR, RA } from '../config';
 import type L from '../leaflet';

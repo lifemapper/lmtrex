@@ -1,4 +1,4 @@
-import '../../static/css/slider.css';
+import '../../css/slider.css';
 
 import type { IR, RA } from '../config';
 import { leafletTileServers } from '../config';

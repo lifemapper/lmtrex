@@ -1,4 +1,4 @@
-import '../static/css/loader.css';
+import '../css/loader.css';
 
 import type { RA } from './config';
 
@@ -13,16 +13,18 @@ export const getQueryParameter = (
 export const splitJoinedMappingPath = (string: string): RA<string> =>
   string.split('.');
 
-export const loader = async (
+export async function loader(
   task: () => Promise<string | unknown>,
   callback?: () => void
-): Promise<void> =>
-  task()
+): Promise<void> {
+  const loader = document.getElementById('loader');
+  if (loader) loader.style.opacity = '';
+  return task()
     .then((innerHtml) => {
       if (typeof innerHtml === 'string')
         document.getElementsByTagName('main')[0].innerHTML = innerHtml;
       document.body.classList.remove('loading');
-      document.getElementById('loader')?.remove();
+      loader?.remove();
       callback?.();
     })
     .catch((error) => {
@@ -32,6 +34,7 @@ export const loader = async (
         ${error.toString()}
       `;
     });
+}
 
 /*
  * A generator of promises that can be resolved even before they are created

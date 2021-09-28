@@ -9,11 +9,12 @@
 }
 
 .leaflet-full-screen-toggle {
+  border: none;
   padding: var(--half-size);
   height: calc(var(--double-size) * 1.5);
 }
 
-.leaflet-full-screen-toggle svg {
+.leaflet-full-screen-toggle img {
   width: var(--double-size);
   height: var(--double-size);
 }

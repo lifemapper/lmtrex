@@ -6,7 +6,7 @@
 import L from 'leaflet';
 
 import 'leaflet/dist/leaflet.css';
-import '../static/css/leaflet.css';
+import '../css/leaflet.css';
 // Marker Clustering
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -34,15 +34,14 @@ L.Map.addInitHook('addHandler', 'gestureHandling', GestureHandling);
 // @ts-expect-error
 L.Control.FullScreen = L.Control.extend({
   onAdd(map: Readonly<L.Map>) {
-    const control = L.DomUtil.create('span');
+    const control = L.DomUtil.create('button');
     control.classList.add('leaflet-full-screen-toggle');
-    control.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white">
-        <path d="M0 0H7V2H2V7H0Z"/>
-        <path d="M13 0H20V7H18V2H13Z"/>
-        <path d="M20 20H13V18H18V13H20Z"/>
-        <path d="M0 13H2V18H7V20H0Z"/>
-      </svg>`;
+    control.setAttribute('type', 'button');
+    control.setAttribute('aria-pressed', 'false');
+    control.innerHTML = `<img
+      src="/static/img/full-screen.svg"
+      alt="Toggle full-screen"
+    >`;
 
     let scrollTop = 0;
     L.DomEvent.on(control, 'click', (event) => {
@@ -56,6 +55,7 @@ L.Control.FullScreen = L.Control.extend({
       );
       if (isFullScreen) {
         container.classList.remove('leaflet-map-full-screen');
+        control.setAttribute('aria-pressed', 'false');
         document.body.classList.remove('full-screen');
         window.scrollTo({
           left: 0,
@@ -67,6 +67,7 @@ L.Control.FullScreen = L.Control.extend({
       } else {
         scrollTop = window.scrollY;
         container.classList.add('leaflet-map-full-screen');
+        control.setAttribute('aria-pressed', 'true');
         document.body.classList.add('full-screen');
         // @ts-expect-error GestureHandling plugin has no type definitions
         map.gestureHandling.disable();

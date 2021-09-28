@@ -16,7 +16,7 @@ header {
   }
 }
 
-header svg {
+header img {
   height: var(--double-size);
 }
 

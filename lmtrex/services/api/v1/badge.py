@@ -3,7 +3,7 @@ from http import HTTPStatus
 import os
 
 from lmtrex.common.lmconstants import (
-    IMG_PATH, ServiceProvider, APIService, ICON_CONTENT)
+    ServiceProvider, APIService, ICON_CONTENT)
 from lmtrex.common.s2n_type import S2nKey
 
 from lmtrex.tools.utils import get_traceback
@@ -43,7 +43,7 @@ class BadgeSvc(_S2nService):
         else:
             return None
             
-        return os.path.join(IMG_PATH, fname)
+        return fname
 
     # ...............................................
     def get_error_or_iconfile(self, provider, icon_status):

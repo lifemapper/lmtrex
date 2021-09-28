@@ -1,6 +1,7 @@
 """This module provides REST services for service objects.  It should be installed into
 """
 import cherrypy
+import os
 
 from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.services.api.v1.name import NameSvc
@@ -17,16 +18,20 @@ def start_cherrypy_services():
         }
 
     scratch_path = '/scratch-files/'
+    development = os.environ['DEVELOPMENT'] == 'true'
     cherrypy.config.update(
         {'server.socket_port': 80,
          'server.socket_host': '0.0.0.0',
          'log.error_file': '{}/log/cherrypyErrors.log'.format(scratch_path),
          'log.access_file': '{}/log/cherrypyAccess.log'.format(scratch_path),
          'response.timeout': 1000000,
+         'environment':
+             None if development else 'production',
          'tools.encode.encoding': 'utf-8',
          'tools.encode.on': True,
          'tools.etags.autotags': True,
          'tools.sessions.on': True,
+         'engine.autoreload.on': development,
          'tools.sessions.storage_class': cherrypy.lib.sessions.FileSession,
          'tools.sessions.storage_path': '{}/sessions'.format(scratch_path),
          '/static': {

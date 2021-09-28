@@ -243,8 +243,6 @@ class FrontendSvc(_S2nService):
             dict(
                 title=scientific_name,
                 sections=sections,
-                specify_network_long=\
-                    inline_static(f'js_src/static/img/specify_network_long.svg')
             )
         )
 

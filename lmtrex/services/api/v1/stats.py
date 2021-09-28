@@ -19,7 +19,6 @@ class StatsSvc(_S2nService):
             HTML page that fetches and formats stats
         """
 
-        print(cherrypy.serving.request.base)
 
         return stats_template([
             template(
