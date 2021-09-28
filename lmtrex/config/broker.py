@@ -1,9 +1,7 @@
 """This module provides REST services for service objects.  It should be installed into
 """
 import cherrypy
-# import cherrypy_cors
 
-from lmtrex.config.local_constants import SCRATCH_PATH
 from lmtrex.services.api.v1.map import MapSvc
 from lmtrex.services.api.v1.name import NameSvc
 from lmtrex.services.api.v1.occ import OccurrenceSvc
@@ -12,51 +10,27 @@ from lmtrex.services.api.v1.frontend import FrontendSvc
 from lmtrex.services.api.v1.stats import StatsSvc
 from lmtrex.services.api.v1.address import AddressSvc
 
-from lmtrex.common.lmconstants import (CHERRYPY_CONFIG_FILE)
-
-# .............................................................................
-def CORS():
-    """This function enables Cross-Origin Resource Sharing (CORS)
-    for a web request.
-
-    Function to be called before processing a request.  This will add response
-    headers required for CORS (Cross-Origin Resource Sharing) requests.  This
-    is needed for browsers running JavaScript code from a different domain.
-    """
-    cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
-    cherrypy.response.headers[
-        'Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
-    cherrypy.response.headers['Access-Control-Allow-Headers'] = '*'
-    cherrypy.response.headers['Access-Control-Allow-Credentials'] = 'true'
-    if cherrypy.request.method.lower() == 'options':
-        cherrypy.response.headers['Content-Type'] = 'text/plain'
-        return 'OK'
-    
 # .............................................................................
 def start_cherrypy_services():
     conf = {
         '/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher()} 
         }
-    # .............................................................................
-    # Tell CherryPy to add headers needed for CORS
-#     cherrypy_cors.install()
-#     cherrypy.config.update(CHERRYPY_CONFIG_FILE)
-    cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS)
+
+    scratch_path = '/scratch-files/'
     cherrypy.config.update(
-        {'server.socket_port': 8080,
-         'log.error_file': '/Users/maxxxxxdlp/.Trash/log/cherrypyErrors.log'.format(SCRATCH_PATH),
-         'log.access_file': '/Users/maxxxxxdlp/.Trash/log/cherrypyAccess.log'.format(SCRATCH_PATH),
+        {'server.socket_port': 80,
+         'server.socket_host': '0.0.0.0',
+         'log.error_file': '{}/log/cherrypyErrors.log'.format(scratch_path),
+         'log.access_file': '{}/log/cherrypyAccess.log'.format(scratch_path),
          'response.timeout': 1000000,
-         'tools.CORS.on': True,
          'tools.encode.encoding': 'utf-8',
          'tools.encode.on': True,
          'tools.etags.autotags': True,
          'tools.sessions.on': True,
          'tools.sessions.storage_class': cherrypy.lib.sessions.FileSession,
-         'tools.sessions.storage_path': '/Users/maxxxxxdlp/.Trash/sessions'.format(SCRATCH_PATH),
+         'tools.sessions.storage_path': '{}/sessions'.format(scratch_path),
          '/static': {
              'tools.staticdir.on': True,
-             'cors.expose.on': True
              }
          })
     cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'

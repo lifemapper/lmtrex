@@ -136,6 +136,10 @@ src/web/.DS_Store
 # Node.js
 node_modules
 
+# Let's Encrypt
+privkey.pem
+fullchain.pem
+
 # Testing-generated directories
 src/LmRex/automated_testing
 

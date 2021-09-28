@@ -6,7 +6,7 @@ module.exports = (_environment, argv) => ({
     rules: [
       {
         test: /\.(png|jpg|jpeg|svg)$/,
-        type: 'asset/inline',
+        type: 'asset',
       },
       {
         test: /\.css$/,
