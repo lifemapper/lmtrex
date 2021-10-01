@@ -1,7 +1,6 @@
+import json
 import os
 from string import Template
-import random
-import json
 
 base_dir = os.path.dirname(os.path.realpath(__file__))
 templates_dir = os.path.join(base_dir, 'templates/')
@@ -29,24 +28,6 @@ def inline_static(file_path):
     with open(os.path.join(base_dir,file_path), 'r', encoding='utf-8') as file:
         return f'{signature}{file.read()}'
 
-frontend_static_files = None
-
-def get_loading_tagline():
-    return f"""{random.choice([
-        'Searching',
-        'Running',
-        'Exploring',
-        'Hustling',
-        'Gathering',
-        'Hacking',
-        'Pursuing',
-        'Going after',
-        'Assembling',
-        'Fetching',
-        'Grabbing',
-        'Loading'
-    ])}..."""
-
 def get_bundle_location(name):
     manifest = json.loads(inline_static('js_src/dist/manifest.json'))
     file_name = os.path.basename(manifest[name])
@@ -55,7 +36,6 @@ def get_bundle_location(name):
 def frontend_template():
     return template('index', {
         'bundle': get_bundle_location('frontend.js'),
-        'tagline': get_loading_tagline(),
         'description': (
             'This page compares the information contained in a specimen record '
             'in a Specify database with that held by biodiversity aggregators '
@@ -63,13 +43,11 @@ def frontend_template():
             'providers on the occurrence, taxonomy and geographic distribution '
             'of the species.'
         ),
-        'body': '',
     })
 
 def stats_template(body):
     return template('index', {
         'bundle': get_bundle_location('stats.js'),
-        'tagline': get_loading_tagline(),
         'description': (
             'The maps on this page visualize the geographic locality of the '
             'digitized biological specimens held in museums and herbaria as '
@@ -79,5 +57,4 @@ def stats_template(body):
             'specimens, for all species, across all disciplines within an '
             'institution.'
         ),
-        'body': body,
     })
