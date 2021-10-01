@@ -13,7 +13,7 @@ module.exports = (_environment, argv) => ({
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.[jt]s$/,
+        test: /\.[jt]sx?$/,
         exclude: /(node_modules)/,
         use: [
           {
@@ -29,6 +29,7 @@ module.exports = (_environment, argv) => ({
                     browserslistEnv: argv.mode,
                   },
                 ],
+                ['@babel/preset-react'],
                 ['@babel/preset-typescript'],
               ],
             },
@@ -38,7 +39,7 @@ module.exports = (_environment, argv) => ({
     ],
   },
   resolve: {
-    extensions: ['.js', '.ts'],
+    extensions: ['.ts', '.tsx'],
     symlinks: false,
   },
   plugins: [
@@ -48,7 +49,7 @@ module.exports = (_environment, argv) => ({
   ],
   devtool: argv.mode === 'development' ? 'eval-source-map' : 'source-map',
   entry: {
-    frontend: './lib/frontend/entry.ts',
+    frontend: './lib/frontend/entry.tsx',
     stats: './lib/stats/entry.ts',
   },
   output: {
