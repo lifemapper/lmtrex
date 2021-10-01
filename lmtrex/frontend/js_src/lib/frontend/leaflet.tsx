@@ -1,4 +1,6 @@
-import type { IR, R, RA, RR } from '../config';
+import React from 'react';
+
+import type { Component, IR, R, RA, RR } from '../config';
 import L from '../leaflet';
 import type { AggregatorLayer } from '../leafletUtils';
 import {
@@ -8,112 +10,225 @@ import {
   legendPoint,
   showMap,
 } from '../leafletUtils';
+import frontEndText from '../localization/frontend';
+import { getQueryParameter, inversePromise } from '../utils';
 import type { LifemapperLayerTypes } from './config';
-import { lifemapperLayerVariations, lifemapperMessagesMeta } from './config';
-import { resolveMap } from './entry';
+import {
+  lifemapperLayerVariations,
+  lifemapperMessagesMeta,
+  VERSION,
+} from './config';
+import type { BrokerRecord } from './entry';
+import { reducer } from './leafletReducer';
+import { stateReducer } from './leafletState';
+import type {
+  IncomingMessage,
+  JsonLeafletLayers,
+  LocalityData,
+  OccurrenceData,
+  OutgoingMessage,
+} from './occurrence';
+import { extractField } from './utils';
 
-export function initializeMap(): void {
-  const mapContainer = document.getElementById('map');
-  if (!mapContainer) return;
-  const pre = mapContainer.getElementsByTagName('pre')[0];
-  const response: LifemapperMapResponse = JSON.parse(pre.textContent ?? '');
-  pre.remove();
-  const map = mapContainer.getElementsByClassName('leaflet-map')[0];
-  const mapDetails = mapContainer.getElementsByClassName('map-details')[0];
+export const [resolveMap, getMap] =
+  inversePromise<Readonly<[L.Map, L.Control.Layers, HTMLElement]>>();
 
-  if (!map) return;
-  drawMap(response, map as HTMLElement, mapDetails as HTMLElement).catch(
-    console.error
-  );
+export function LeafletContainer({
+  occurrence,
+  scientificName,
+}: {
+  occurrence: RA<BrokerRecord> | undefined;
+  scientificName: string | undefined;
+}): Component {
+  const [state, dispatch] = React.useReducer(reducer, {
+    type: 'MainState',
+    customLeafletLayers: undefined,
+    occurrencePoints: undefined,
+    extendedOccurrencePoints: {},
+  });
 
-  const statsPageParameters = [
-    {
-      name: 'institution_code',
-      key: 'dwc:institutionCode',
-      providers: ['idb', 'gbif'],
-    },
-    {
-      name: 'collection_code',
-      key: 'dwc:collectionCode',
-      providers: ['idb', 'gbif'],
-    },
-    {
-      name: 'publishing_org_key',
-      key: 'gbif:publishingOrgKey',
-      providers: ['gbif'],
-    },
-  ]
-    .map(({ name, key, providers }) => [
-      name,
-      providers
-        .map((provider) =>
-          extractField(response.occurrence_info, provider, key)
-        )
-        .find((value) => value),
-    ])
-    .filter(
-      (entry): entry is [string, string] =>
-        typeof entry[0] !== 'undefined' && typeof entry[1] !== 'undefined'
+  const sendMessage = (action: OutgoingMessage): void =>
+    window.opener?.postMessage(action, origin);
+
+  React.useEffect(() => {
+    const origin = getQueryParameter('origin', (origin) =>
+      origin.startsWith('http')
     );
-  const statsQueryString = statsPageParameters
-    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-    .join('&');
-  const statsContainer = document.getElementById('stats');
-  if (!statsContainer) throw new Error('Unable to find the stats container');
-  if (statsQueryString.length === 0) statsContainer.remove();
-  else {
-    const parameters = Object.fromEntries(statsPageParameters);
-    const paragraph = statsContainer.getElementsByTagName('p')[0];
-    paragraph.textContent = [
-      'Distribution maps of all species in the ',
-      `${parameters.collection_code} collection and`,
-      `${parameters.institution_code} institution are available `,
-    ].join('');
-    paragraph.innerHTML += `<a
-      href="/api/v1/stats/?${statsQueryString}"
-      target="_blank"
-    >here</a>.`;
-  }
+
+    if (!origin || !window.opener) return undefined;
+
+    sendMessage({ type: 'LoadedAction', version: VERSION });
+    const eventHandler = (event: MessageEvent<IncomingMessage>) => {
+      if (
+        event.source !== window.opener ||
+        event.origin !== origin ||
+        typeof event.data?.type !== 'string'
+      )
+        return;
+      dispatch(event.data);
+    };
+    window.addEventListener('message', eventHandler);
+
+    return (): void => window.removeEventListener('message', eventHandler);
+  });
+
+  const [projectionLayers, projectionDetails] =
+    useProjectionLayers(scientificName);
+  const [idbLayers, idbDetails] = useIdbLayers(occurrence, scientificName);
+  const [gbifLayers, gbifDetails] = useGbifLayers(occurrence);
+
+  return (
+    stateReducer(undefined, {
+      ...state,
+      options: {
+        dispatch,
+        overlays: {
+          ...projectionLayers,
+          ...idbLayers,
+          ...gbifLayers,
+        },
+        layerDetails: [
+          frontEndText('mapDescription'),
+          ...projectionDetails,
+          ...idbDetails,
+          ...gbifDetails,
+        ],
+      },
+    }) ?? <i />
+  );
 }
 
-type LifemapperResponse = IR<
-  {
-    'internal:provider': { readonly code: string };
-  } & IR<string>
->;
+function useProjectionLayers(
+  scientificName: string | undefined
+): Readonly<[JsonLeafletLayers, RA<Component>]> {
+  const [response, setResponse] = React.useState<
+    | undefined
+    | {
+        readonly errors: IR<IR<string> | string>;
+        readonly records: [
+          {
+            readonly records: {
+              readonly 's2n:endpoint': string;
+              readonly 's2n:modtime': string;
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              readonly 's2n:layer_name': string;
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              readonly 's2n:layer_type': LifemapperLayerTypes;
+              readonly 's2n:sdm_projection_scenario_code'?: string;
+            }[];
+          }
+        ];
+      }
+  >(undefined);
 
-const extractField = (
-  responses: RA<LifemapperResponse>,
-  aggregator: string,
-  field: string
-): string | undefined =>
-  responses.find(
-    (response) => response['internal:provider']?.code === aggregator
-  )?.[field] as string | undefined;
+  React.useEffect(() => {
+    if (typeof scientificName === 'undefined') return;
+    fetch(
+      `/api/v1/map/?namestr=${scientificName}&scenariocode=worldclim-curr&provider=lm`
+    )
+      .then(async (response) => response.json())
+      .then(setResponse)
+      .catch(console.error);
+  }, [scientificName]);
 
-type LifemapperMapResponse = {
-  readonly errors: IR<IR<string> | string>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  readonly occurrence_info: RA<LifemapperResponse>;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  readonly name_info: RA<LifemapperResponse>;
-  readonly records: [
-    {
-      readonly records: {
-        readonly 's2n:endpoint': string;
-        readonly 's2n:modtime': string;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        readonly 's2n:layer_name': string;
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        readonly 's2n:layer_type': LifemapperLayerTypes;
-        readonly 's2n:sdm_projection_scenario_code'?: string;
-      }[];
-    }
+  if (typeof scientificName === 'undefined') return [{}, []];
+
+  return [{}, []];
+}
+
+function useIdbLayers(
+  occurrence: RA<BrokerRecord> | undefined,
+  scientificName: string | undefined
+): Readonly<[JsonLeafletLayers, RA<string>]> {
+  if (
+    typeof occurrence === 'undefined' ||
+    typeof scientificName === 'undefined'
+  )
+    return [{}, []];
+
+  return [{}, [frontEndText('iDigBioDescription')]];
+}
+
+function getGbifLayers(taxonKey: string | undefined): RA<AggregatorLayer> {
+  if (typeof taxonKey === 'undefined') return [];
+  return [
+    [
+      {
+        default: isOverlayDefault('gbif', true),
+        label: '',
+      },
+      L.tileLayer(
+        'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
+        {
+          attribution: '',
+          // @ts-expect-error
+          source: 'density',
+          format: '@1x.png',
+          className: 'saturated',
+          params: Object.entries({
+            srs: 'EPSG:3857',
+            style: 'classic.poly',
+            bin: 'hex',
+            hexPerTile: 20,
+            taxonKey,
+          })
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&'),
+        }
+      ),
+    ],
   ];
-};
+}
+
+function useGbifLayers(
+  occurrence: RA<BrokerRecord> | undefined
+): Readonly<[JsonLeafletLayers, RA<string>]> {
+  const taxonKey =
+    typeof occurrence === 'undefined'
+      ? undefined
+      : extractField(occurrence, 'gbif', 'responses');
+  if (typeof taxonKey === 'undefined') return [{}, []];
+
+  return [
+    {
+      [`GBIF ${legendGradient('#ee0', '#d11')}`]: {},
+    },
+    [frontEndText('gbifDescription')],
+  ];
+}
+
+export function LeafletMap({
+  customLeafletLayers,
+  occurrencePoints,
+  extendedOccurrencePoints,
+  overlays,
+}: {
+  customLeafletLayers: JsonLeafletLayers | undefined;
+  occurrencePoints: RA<OccurrenceData> | undefined;
+  extendedOccurrencePoints: IR<LocalityData>;
+  overlays: JsonLeafletLayers;
+}): Component {
+  const leafletMap = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {}, []);
+
+  React.useEffect(() => {}, [customLeafletLayers]);
+
+  React.useEffect(() => {}, [occurrencePoints]);
+
+  React.useEffect(() => {}, [extendedOccurrencePoints]);
+
+  const availableOverlays = Object.keys(overlays);
+  React.useEffect(() => {}, [availableOverlays]);
+
+  return (
+    <div className="leaflet-map-container">
+      <div className="leaflet-map" ref={leafletMap} />
+    </div>
+  );
+}
 
 async function drawMap(
-  response: LifemapperMapResponse,
   mapContainer: HTMLElement,
   mapDetails: HTMLElement
 ): Promise<void> {
@@ -232,6 +347,7 @@ async function drawMap(
     parent.textContent = 'Unable to find any information for this record';
   }
 }
+
 async function getIdbLayer(
   scientificName: string,
   collectionCode: string | undefined,
@@ -302,35 +418,4 @@ async function getIdbLayers(
   return layers.filter(
     (data): data is AggregatorLayer => typeof data !== 'undefined'
   );
-}
-
-function getGbifLayers(taxonKey: string | undefined): RA<AggregatorLayer> {
-  if (typeof taxonKey === 'undefined') return [];
-  return [
-    [
-      {
-        default: isOverlayDefault('gbif', true),
-        label: `GBIF ${legendGradient('#ee0', '#d11')}`,
-      },
-      L.tileLayer(
-        'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
-        {
-          attribution: '',
-          // @ts-expect-error
-          source: 'density',
-          format: '@1x.png',
-          className: 'saturated',
-          params: Object.entries({
-            srs: 'EPSG:3857',
-            style: 'classic.poly',
-            bin: 'hex',
-            hexPerTile: 20,
-            taxonKey,
-          })
-            .map(([key, value]) => `${key}=${value}`)
-            .join('&'),
-        }
-      ),
-    ],
-  ];
 }

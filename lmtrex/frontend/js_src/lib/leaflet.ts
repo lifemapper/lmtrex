@@ -4,22 +4,20 @@
 
 // eslint-disable-next-line simple-import-sort/imports
 import L from 'leaflet';
-
-import 'leaflet/dist/leaflet.css';
-import '../css/leaflet.css';
+import { GestureHandling } from 'leaflet-gesture-handling';
+import 'leaflet-gesture-handling/dist/leaflet-gesture-handling.css';
+// Create sub-layers to selectively toggle markers in clusters
+import 'leaflet.featuregroup.subgroup';
+import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 // Marker Clustering
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-import 'leaflet.markercluster/dist/leaflet.markercluster.js';
-// Create sub-layers to selectively toggle markers in clusters
-import 'leaflet.featuregroup.subgroup';
-
-import { GestureHandling } from 'leaflet-gesture-handling';
 
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-gesture-handling/dist/leaflet-gesture-handling.css';
+import '../css/leaflet.css';
 
 /* This code is needed to properly load the images in the Leaflet's CSS */
+
 // @ts-expect-error
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({

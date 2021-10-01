@@ -1,9 +1,10 @@
-.leaflet-map {
+.leaflet-map-container {
   height: 50vh;
   width: 100%;
 }
 
-.leaflet-full-screen-toggle, .leaflet-print-map {
+.leaflet-full-screen-toggle,
+.leaflet-print-map {
   cursor: pointer !important;
   background: var(--darken);
 }
@@ -35,7 +36,7 @@
   z-index: 20;
 }
 
-.full-screen .leaflet-map:not(.leaflet-map-full-screen),
+.full-screen .leaflet-map-container:not(.leaflet-map-full-screen),
 .full-screen table,
 .full-screen .alert {
   display: none;
