@@ -1,10 +1,9 @@
-import type { Action, State } from 'typesafe-reducer';
+import type { Action } from 'typesafe-reducer';
 import { generateDispatch } from 'typesafe-reducer';
 
-import type { IR, leafletTileServers, RA, RR } from '../config';
+import type { IR, leafletTileServers, RA } from '../config';
 import { updateLeafletTileServers } from '../config';
 import L from '../leaflet';
-import { getMap } from './entry';
 import type { MarkerGroups } from './leafletOccurrence';
 import {
   addMarkersToMap,
@@ -12,15 +11,15 @@ import {
   getMarkersFromLocalityData,
 } from './leafletOccurrence';
 
-const parseLayersFromJson = (
-  json: IR<
-    IR<{
-      readonly endpoint: string;
-      readonly serverType: 'wms' | 'tileServer';
-      readonly layerOptions: IR<unknown>;
-    }>
-  >
-) =>
+export type JsonLeafletLayers = IR<
+  IR<{
+    readonly endpoint: string;
+    readonly serverType: 'wms' | 'tileServer';
+    readonly layerOptions: IR<unknown>;
+  }>
+>;
+
+const parseLayersFromJson = (json: JsonLeafletLayers) =>
   Object.fromEntries(
     Object.entries(json).map(([layerGroup, layers]) => [
       layerGroup,
@@ -105,46 +104,4 @@ export type OccurrenceData = {
   readonly collectingEventId: number;
   readonly localityId: number;
   readonly localityData: LocalityData;
-};
-
-type BasicInformationAction = State<
-  'BasicInformationAction',
-  {
-    systemInfo: IR<unknown>;
-    leafletLayers: RR<
-      'baseMaps' | 'overlays',
-      IR<{
-        endpoint: string;
-        serverType: 'tileServer' | 'wms';
-        layerOptions: IR<unknown>;
-      }>
-    >;
-  }
->;
-
-type LocalOccurrencesAction = State<
-  'LocalOccurrencesAction',
-  {
-    occurrences: RA<OccurrenceData>;
-  }
->;
-
-type PointDataAction = State<
-  'PointDataAction',
-  {
-    index: number;
-    localityData: LocalityData;
-  }
->;
-
-export type IncomingMessage =
-  | BasicInformationAction
-  | LocalOccurrencesAction
-  | PointDataAction;
-
-type IncomingMessageExtended = IncomingMessage & {
-  state: {
-    readonly sendMessage: (message: OutgoingMessage) => void;
-    readonly origin: string;
-  };
 };

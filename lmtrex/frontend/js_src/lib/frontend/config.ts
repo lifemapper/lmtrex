@@ -1,5 +1,10 @@
 import type { RA, RR } from '../config';
 
+export const VERSION = '1.0.0';
+
+export const OCC_PROVIDERS = ['specify', 'gbif', 'idb', 'mopho'];
+export const NAME_PROVIDERS = ['gbif', 'itis'];
+
 export type LifemapperLayerTypes = 'raster';
 
 export const lifemapperLayerVariations: RR<

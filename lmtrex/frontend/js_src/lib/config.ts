@@ -8,6 +8,8 @@ export type IR<V> = Readonly<Record<string, V>>;
 export type RR<K extends string | number | symbol, V> = Readonly<Record<K, V>>;
 // Immutable Array
 export type RA<V> = readonly V[];
+// JSX Element
+export type Component = Readonly<JSX.Element>;
 
 export const DEFAULT_CENTER: [number, number] = [0, 0];
 export const DEFAULT_ZOOM = 2;
