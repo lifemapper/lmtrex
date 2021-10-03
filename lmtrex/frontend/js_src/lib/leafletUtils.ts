@@ -1,21 +1,19 @@
 import type { LayersControlEventHandlerFn } from 'leaflet';
 
 import * as cache from './cache';
-import type { RA } from './config';
-import {
-  DEFAULT_CENTER,
-  DEFAULT_ZOOM,
-  leafletTileServers,
-  preferredBaseLayer,
-} from './config';
+import type { leafletTileServers } from './config';
+import { DEFAULT_CENTER, DEFAULT_ZOOM, preferredBaseLayer } from './config';
+import type { LeafletOverlays } from './frontend/occurrence';
+import { parseLayerFromJson } from './frontend/occurrence';
 import L, { addFullScreenButton, addPrintMapButton } from './leaflet';
 
 export function rememberSelectedBaseLayers(
   map: L.Map,
   layerGroup: L.Control.Layers,
-  cacheName: string
+  cacheName: string,
+  tileLayers: typeof leafletTileServers
 ): void {
-  const layers = leafletTileServers.baseMaps;
+  const layers = tileLayers.baseMaps;
   const currentLayer = cache.get('leafletBaseLayer', cacheName);
   let layerLabel =
     currentLayer !== false && currentLayer in layers
@@ -55,11 +53,13 @@ export function rememberSelectedOverlays(map: L.Map): void {
 
 export const addAggregatorOverlays =
   (leafletMap: L.Map, layerGroup: L.Control.Layers, callback?: () => void) =>
-  (layers: RA<AggregatorLayer>) =>
-    layers.forEach(([options, layer]) => {
+  (layers: LeafletOverlays) =>
+    Object.entries(layers).forEach(([label, { isDefault, ...options }]) => {
       callback?.();
-      layerGroup.addOverlay(layer, options.label);
-      if (options.default) layer.addTo(leafletMap);
+      const layer = parseLayerFromJson(options, false)();
+      console.log(layer, options, label);
+      layerGroup.addOverlay(layer, label);
+      if (isDefault) layer.addTo(leafletMap);
     });
 
 export const legendPoint = (color: string): string => `<span
@@ -77,22 +77,11 @@ export const legendGradient = (
   class="leaflet-legend-gradient"
 ></span>`;
 
-export type AggregatorLayer = Readonly<
-  [
-    {
-      default?: boolean;
-      label: string;
-    },
-    L.TileLayer | L.TileLayer.WMS | L.FeatureGroup
-  ]
->;
-
 export function showMap(
   mapContainer: HTMLElement,
-  cacheName: string
+  cacheName: string,
+  tileLayers: typeof leafletTileServers
 ): Readonly<[L.Map, L.Control.Layers]> {
-  mapContainer.style.display = '';
-
   const map = L.map(mapContainer, {
     maxZoom: 23,
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
@@ -105,16 +94,14 @@ export function showMap(
 
   addFullScreenButton(map);
   addPrintMapButton(map);
-  rememberSelectedBaseLayers(map, layerGroup, cacheName);
+  rememberSelectedBaseLayers(map, layerGroup, cacheName, tileLayers);
   rememberSelectedOverlays(map);
 
-  const addOverlays = addAggregatorOverlays(map, layerGroup);
-  addOverlays(
-    Object.entries(leafletTileServers.overlays).map(([label, layer]) => [
-      { label, default: isOverlayDefault(label, true) },
-      layer(),
-    ])
-  );
+  Object.entries(tileLayers.overlays).forEach(([label, getLayer]) => {
+    const layer = getLayer(false);
+    layerGroup.addOverlay(layer, label);
+    if (isOverlayDefault(label, true)) layer.addTo(map);
+  });
 
   return [map, layerGroup];
 }

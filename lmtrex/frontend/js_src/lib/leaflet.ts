@@ -47,7 +47,7 @@ L.Control.FullScreen = L.Control.extend({
       L.DomEvent.preventDefault(event);
 
       // @ts-expect-error
-      const container = map._container as HTMLElement;
+      const container = (map._container as HTMLElement).parentElement!;
       const isFullScreen = container.classList.contains(
         'leaflet-map-full-screen'
       );

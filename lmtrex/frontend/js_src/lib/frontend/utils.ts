@@ -3,14 +3,14 @@ import { NAME_PROVIDERS, OCC_PROVIDERS } from './config';
 import type { BrokerRecord, RawBrokerResponse } from './entry';
 import type { LoadedNameAction, LoadedOccurrenceAction } from './reducer';
 
-function validateBrokerResponse(response: {
+export function validateBrokerResponse(response: {
   readonly errors: IR<unknown>;
   readonly records: RA<unknown>;
 }): boolean {
   if (Object.keys(response.errors).length === 0)
     return response.records.length > 0;
   else {
-    console.error(response.errors);
+    console.error(response);
     return false;
   }
 }
@@ -49,17 +49,19 @@ const fetchFromEndpoint = async (
     providers.map(async (provider) =>
       fetchFromBroker(`${url}&provider=${provider}`)
     )
-  ).then((responses) =>
-    responses
-      .filter(
-        (response): response is BrokerRecord => typeof response === 'object'
-      )
-      .sort(
-        (left, right) =>
-          providers.indexOf(left.provider.code) -
-          providers.indexOf(right.provider.code)
-      )
-  );
+  )
+    .then((responses) =>
+      responses
+        .filter(
+          (response): response is BrokerRecord => typeof response === 'object'
+        )
+        .sort(
+          (left, right) =>
+            providers.indexOf(left.provider.code) -
+            providers.indexOf(right.provider.code)
+        )
+    )
+    .then((responses) => (responses.length === 0 ? undefined : responses));
 
 export const fetchOccurrence = async (
   occId: string
@@ -79,11 +81,13 @@ export const fetchName = async (
   ).then((name) => ({ type: 'LoadedNameAction', name: name ?? defaultValue }));
 
 export function extractField<T = string>(
-  responses: RA<BrokerRecord>,
+  responses: RA<BrokerRecord> | undefined | string,
   aggregator: string,
   field: string,
   resolveUndefined = true
 ): T | undefined {
+  if (typeof responses !== 'object') return undefined;
+
   const fields = Object.fromEntries<T | undefined>(
     responses
       .map(

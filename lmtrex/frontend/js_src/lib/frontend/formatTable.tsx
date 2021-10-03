@@ -11,8 +11,8 @@ export function Response({
   responses,
 }: {
   responses: RA<BrokerRecord>;
-}): Component {
-  return (
+}): Component | null {
+  return responses.length === 0 ? null : (
     <Table
       className="data"
       header={

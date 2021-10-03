@@ -9,10 +9,9 @@ export function Section({
 }: {
   readonly anchor: string;
   readonly label: string;
-  readonly children: Component | undefined;
+  readonly children: React.ReactNode;
 }): Component | null {
-  // eslint-disable-next-line unicorn/no-null
-  return typeof children === 'undefined' ? null : (
+  return (
     <section id={anchor}>
       <h3>{label}</h3>
       {children}
