@@ -1,4 +1,5 @@
 import type { RA, RR } from '../config';
+import frontEndText from '../localization/frontend';
 
 export const VERSION = '1.0.0';
 
@@ -7,12 +8,15 @@ export const NAME_PROVIDERS = ['gbif', 'itis'];
 
 export type LifemapperLayerTypes = 'raster';
 
+export const layersResolveTimeout = 250;
+export const maxProjectionLayers = 10;
+
 export const lifemapperLayerVariations: RR<
   LifemapperLayerTypes,
   { layerLabel: string; transparent: boolean; opacity?: number }
 > = {
   raster: {
-    layerLabel: 'Lifemapper Distribution Model',
+    layerLabel: frontEndText('projectionLayerLabel'),
     transparent: true,
   },
 };
@@ -30,13 +34,3 @@ export const mappingLocalityColumns: RA<string> = [
   'locality.latlongtype',
   'locality.latlongaccuracy',
 ];
-
-export const lifemapperMessagesMeta = {
-  errorDetails: {
-    className: 'error-details',
-    title: 'The following errors were reported by Lifemapper:',
-  },
-  infoSection: {
-    className: 'info-section',
-  },
-};

@@ -1,61 +1,65 @@
 import React from 'react';
 
-import type { Component, IR, R, RA, RR } from '../config';
-import L from '../leaflet';
-import type { AggregatorLayer } from '../leafletUtils';
-import {
-  addAggregatorOverlays,
-  isOverlayDefault,
-  legendGradient,
-  legendPoint,
-  showMap,
-} from '../leafletUtils';
+import { Section } from '../components/common';
+import type { Component, RA, RR } from '../config';
+import { leafletTileServers } from '../config';
+import type L from '../leaflet';
+import { addAggregatorOverlays, showMap } from '../leafletUtils';
 import frontEndText from '../localization/frontend';
-import { getQueryParameter, inversePromise } from '../utils';
-import type { LifemapperLayerTypes } from './config';
-import {
-  lifemapperLayerVariations,
-  lifemapperMessagesMeta,
-  VERSION,
-} from './config';
+import { getQueryParameter } from '../utils';
+import { layersResolveTimeout, VERSION } from './config';
 import type { BrokerRecord } from './entry';
+import type { MarkerGroups } from './leafletOccurrence';
+import {
+  addMarkersToMap,
+  formatLocalityData,
+  getMarkersFromLocalityData,
+} from './leafletOccurrence';
+import { useGbifLayers, useIdbLayers } from './leafletOverlays';
+import { useProjectionLayers } from './leafletProjection';
+import type { IncomingMessage } from './leafletReducer';
 import { reducer } from './leafletReducer';
-import { stateReducer } from './leafletState';
 import type {
-  IncomingMessage,
-  JsonLeafletLayers,
+  LeafletOverlays,
   LocalityData,
   OccurrenceData,
   OutgoingMessage,
 } from './occurrence';
-import { extractField } from './utils';
-
-export const [resolveMap, getMap] =
-  inversePromise<Readonly<[L.Map, L.Control.Layers, HTMLElement]>>();
 
 export function LeafletContainer({
   occurrence,
+  name,
   scientificName,
 }: {
   occurrence: RA<BrokerRecord> | undefined;
+  name: RA<BrokerRecord> | string | undefined;
   scientificName: string | undefined;
-}): Component {
+}): Component | null {
   const [state, dispatch] = React.useReducer(reducer, {
     type: 'MainState',
-    customLeafletLayers: undefined,
+    tileLayers: undefined,
     occurrencePoints: undefined,
     extendedOccurrencePoints: {},
   });
 
+  const origin = getQueryParameter('origin', (origin) =>
+    origin.startsWith('http')
+  );
+
   const sendMessage = (action: OutgoingMessage): void =>
-    window.opener?.postMessage(action, origin);
+    origin ? window.opener?.postMessage(action, origin) : undefined;
 
   React.useEffect(() => {
-    const origin = getQueryParameter('origin', (origin) =>
-      origin.startsWith('http')
-    );
-
-    if (!origin || !window.opener) return undefined;
+    const resolveTileLayers = (): void =>
+      dispatch({
+        type: 'ResolveLeafletLayersAction',
+        tileLayers: leafletTileServers,
+      });
+    if (!origin || !window.opener) {
+      resolveTileLayers();
+      return undefined;
+    }
+    setTimeout(resolveTileLayers, layersResolveTimeout);
 
     sendMessage({ type: 'LoadedAction', version: VERSION });
     const eventHandler = (event: MessageEvent<IncomingMessage>) => {
@@ -70,352 +74,168 @@ export function LeafletContainer({
     window.addEventListener('message', eventHandler);
 
     return (): void => window.removeEventListener('message', eventHandler);
-  });
+  }, []);
 
   const [projectionLayers, projectionDetails] =
     useProjectionLayers(scientificName);
   const [idbLayers, idbDetails] = useIdbLayers(occurrence, scientificName);
-  const [gbifLayers, gbifDetails] = useGbifLayers(occurrence);
+  const [gbifLayers, gbifDetails] = useGbifLayers(
+    Array.isArray(name) ? name : undefined
+  );
 
-  return (
-    stateReducer(undefined, {
-      ...state,
-      options: {
-        dispatch,
-        overlays: {
-          ...projectionLayers,
-          ...idbLayers,
-          ...gbifLayers,
-        },
-        layerDetails: [
-          frontEndText('mapDescription'),
-          ...projectionDetails,
-          ...idbDetails,
-          ...gbifDetails,
-        ],
-      },
-    }) ?? <i />
+  const overlays = {
+    ...projectionLayers,
+    ...idbLayers,
+    ...gbifLayers,
+  };
+  const layerDetails = [
+    frontEndText('mapDescription'),
+    ...projectionDetails,
+    ...idbDetails,
+    ...gbifDetails,
+  ];
+
+  return typeof state.tileLayers === 'undefined' ||
+    (Object.keys(overlays).length === 0 &&
+      (typeof state.occurrencePoints === 'undefined' ||
+        // eslint-disable-next-line unicorn/no-null
+        state.occurrencePoints.length === 0)) ? null : (
+    <Section key="map" anchor="map" label={frontEndText('distribution')}>
+      {layerDetails.map((value, index) => (
+        <p key={index}>{value}</p>
+      ))}
+      <LeafletMap
+        tileLayers={state.tileLayers}
+        occurrencePoints={state.occurrencePoints}
+        extendedOccurrencePoints={state.extendedOccurrencePoints}
+        overlays={overlays}
+        origin={origin}
+        onMarkerClick={(index): void =>
+          sendMessage({
+            type: 'GetPinInfoAction',
+            index,
+          })
+        }
+      />
+    </Section>
   );
 }
 
-function useProjectionLayers(
-  scientificName: string | undefined
-): Readonly<[JsonLeafletLayers, RA<Component>]> {
-  const [response, setResponse] = React.useState<
-    | undefined
-    | {
-        readonly errors: IR<IR<string> | string>;
-        readonly records: [
-          {
-            readonly records: {
-              readonly 's2n:endpoint': string;
-              readonly 's2n:modtime': string;
-              // eslint-disable-next-line @typescript-eslint/naming-convention
-              readonly 's2n:layer_name': string;
-              // eslint-disable-next-line @typescript-eslint/naming-convention
-              readonly 's2n:layer_type': LifemapperLayerTypes;
-              readonly 's2n:sdm_projection_scenario_code'?: string;
-            }[];
-          }
-        ];
-      }
-  >(undefined);
-
-  React.useEffect(() => {
-    if (typeof scientificName === 'undefined') return;
-    fetch(
-      `/api/v1/map/?namestr=${scientificName}&scenariocode=worldclim-curr&provider=lm`
-    )
-      .then(async (response) => response.json())
-      .then(setResponse)
-      .catch(console.error);
-  }, [scientificName]);
-
-  if (typeof scientificName === 'undefined') return [{}, []];
-
-  return [{}, []];
-}
-
-function useIdbLayers(
-  occurrence: RA<BrokerRecord> | undefined,
-  scientificName: string | undefined
-): Readonly<[JsonLeafletLayers, RA<string>]> {
-  if (
-    typeof occurrence === 'undefined' ||
-    typeof scientificName === 'undefined'
-  )
-    return [{}, []];
-
-  return [{}, [frontEndText('iDigBioDescription')]];
-}
-
-function getGbifLayers(taxonKey: string | undefined): RA<AggregatorLayer> {
-  if (typeof taxonKey === 'undefined') return [];
-  return [
-    [
-      {
-        default: isOverlayDefault('gbif', true),
-        label: '',
-      },
-      L.tileLayer(
-        'https://api.gbif.org/v2/map/occurrence/{source}/{z}/{x}/{y}{format}?{params}',
-        {
-          attribution: '',
-          // @ts-expect-error
-          source: 'density',
-          format: '@1x.png',
-          className: 'saturated',
-          params: Object.entries({
-            srs: 'EPSG:3857',
-            style: 'classic.poly',
-            bin: 'hex',
-            hexPerTile: 20,
-            taxonKey,
-          })
-            .map(([key, value]) => `${key}=${value}`)
-            .join('&'),
-        }
-      ),
-    ],
-  ];
-}
-
-function useGbifLayers(
-  occurrence: RA<BrokerRecord> | undefined
-): Readonly<[JsonLeafletLayers, RA<string>]> {
-  const taxonKey =
-    typeof occurrence === 'undefined'
-      ? undefined
-      : extractField(occurrence, 'gbif', 'responses');
-  if (typeof taxonKey === 'undefined') return [{}, []];
-
-  return [
-    {
-      [`GBIF ${legendGradient('#ee0', '#d11')}`]: {},
-    },
-    [frontEndText('gbifDescription')],
-  ];
-}
-
 export function LeafletMap({
-  customLeafletLayers,
+  tileLayers,
   occurrencePoints,
   extendedOccurrencePoints,
   overlays,
+  onMarkerClick: handleMarkerClick,
+  origin,
 }: {
-  customLeafletLayers: JsonLeafletLayers | undefined;
+  tileLayers: typeof leafletTileServers;
   occurrencePoints: RA<OccurrenceData> | undefined;
-  extendedOccurrencePoints: IR<LocalityData>;
-  overlays: JsonLeafletLayers;
+  extendedOccurrencePoints: RR<number, LocalityData>;
+  overlays: LeafletOverlays;
+  onMarkerClick: (index: number) => void;
+  origin: string | undefined;
 }): Component {
-  const leafletMap = React.useRef<HTMLDivElement>(null);
+  const mapContainer = React.useRef<HTMLDivElement>(null);
+  const [leafletMap, setLeafletMap] = React.useState<L.Map | undefined>(
+    undefined
+  );
+  const [layerGroup, setLayerGroup] = React.useState<
+    L.Control.Layers | undefined
+  >(undefined);
 
-  React.useEffect(() => {}, []);
+  React.useEffect(() => {
+    if (mapContainer.current === null) return undefined;
 
-  React.useEffect(() => {}, [customLeafletLayers]);
+    const [leafletMap, layerGroup] = showMap(
+      mapContainer.current,
+      'occurrence',
+      tileLayers
+    );
+    setLeafletMap(leafletMap);
+    setLayerGroup(layerGroup);
 
-  React.useEffect(() => {}, [occurrencePoints]);
+    return (): void => {
+      // @ts-expect-error gestureHandling has no type definitions
+      leafletMap.gestureHandling.disable();
+      leafletMap.off();
+      leafletMap.remove();
+    };
+  }, [tileLayers]);
 
-  React.useEffect(() => {}, [extendedOccurrencePoints]);
+  const loadedOverlays = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    if (typeof leafletMap === 'undefined' || typeof layerGroup === 'undefined')
+      return;
+    const addedOverlays = Object.keys(overlays).filter(
+      (label) => !loadedOverlays.current.has(label)
+    );
+    const addLayers = addAggregatorOverlays(leafletMap, layerGroup);
+    addLayers(
+      Object.fromEntries(addedOverlays.map((label) => [label, overlays[label]]))
+    );
+    addedOverlays.forEach((label) => {
+      loadedOverlays.current.add(label);
+    });
+  }, [overlays]);
+
+  const markers = React.useRef<RA<MarkerGroups>>([]);
+  const fetchedMarkers = React.useRef<Set<number>>(new Set());
+  React.useEffect(() => {
+    if (
+      typeof occurrencePoints === 'undefined' ||
+      typeof leafletMap === 'undefined' ||
+      typeof layerGroup === 'undefined' ||
+      typeof origin === 'undefined'
+    )
+      return;
+    markers.current = occurrencePoints.map(
+      ({ localityData, collectionObjectId }, index) =>
+        getMarkersFromLocalityData({
+          localityData,
+          markerClickCallback() {
+            if (fetchedMarkers.current.has(index)) return;
+            handleMarkerClick(index);
+          },
+          viewUrl: `${origin}/specify/view/collectionobject/${collectionObjectId}/`,
+        })
+    );
+    addMarkersToMap(leafletMap, layerGroup, markers.current);
+  }, [occurrencePoints]);
+
+  const loadedExtendedOccurrencePoints = React.useRef<Set<number>>(new Set());
+  React.useEffect(() => {
+    if (
+      typeof markers === 'undefined' ||
+      typeof occurrencePoints === 'undefined' ||
+      typeof origin === 'undefined'
+    )
+      return;
+    const newOccurrencePoints = Object.keys(extendedOccurrencePoints).filter(
+      (index) =>
+        !loadedExtendedOccurrencePoints.current.has(Number.parseInt(index))
+    );
+    newOccurrencePoints.forEach((rawIndex) => {
+      const index = Number.parseInt(rawIndex);
+      loadedExtendedOccurrencePoints.current.add(index);
+      const localityData = extendedOccurrencePoints[index];
+      const formattedLocality = formatLocalityData(
+        localityData,
+        `${origin}/specify/view/collectionobject/${occurrencePoints[index].collectionObjectId}/`,
+        false
+      );
+      Object.values(markers.current[index])
+        .flat()
+        .map((marker) => marker.getPopup()?.setContent(formattedLocality));
+    });
+  }, [extendedOccurrencePoints]);
 
   const availableOverlays = Object.keys(overlays);
   React.useEffect(() => {}, [availableOverlays]);
 
   return (
     <div className="leaflet-map-container">
-      <div className="leaflet-map" ref={leafletMap} />
+      <div className="leaflet-map" ref={mapContainer} />
     </div>
-  );
-}
-
-async function drawMap(
-  mapContainer: HTMLElement,
-  mapDetails: HTMLElement
-): Promise<void> {
-  const messages: RR<'errorDetails' | 'infoSection', string[]> = {
-    errorDetails: [],
-    infoSection: [],
-  };
-
-  const layerCounts: R<number> = {};
-  let lifemapperLayers: RA<AggregatorLayer> = [];
-  try {
-    lifemapperLayers = response.records[0].records
-      .filter(
-        (record) =>
-          record['s2n:sdm_projection_scenario_code'] === 'worldclim-curr' &&
-          record['s2n:layer_type'] === 'raster'
-      )
-      .map<AggregatorLayer | undefined>((record) => {
-        const layerType = record['s2n:layer_type'];
-        layerCounts[layerType] ??= 0;
-        layerCounts[layerType] += 1;
-
-        if (layerCounts[layerType] > 10) return undefined;
-
-        const showLayerNumber =
-          response.records[0].records.filter(
-            (record) => record['s2n:layer_type'] === layerType
-          ).length !== 1;
-
-        const isFirstOfType = layerCounts[layerType] === 1;
-        return [
-          {
-            label: `${lifemapperLayerVariations[layerType].layerLabel}${
-              showLayerNumber ? ` (${layerCounts[layerType]})` : ''
-            }`,
-            default: isOverlayDefault(
-              `layerType${isFirstOfType ? '_first' : ''}`,
-              isFirstOfType
-            ),
-          },
-          L.tileLayer.wms(record['s2n:endpoint'], {
-            layers: record['s2n:layer_name'],
-            opacity: 0.7,
-            transparent: true,
-            // @ts-expect-error
-            service: 'wms',
-            version: '1.0',
-            height: '400',
-            format: 'image/png',
-            request: 'getmap',
-            srs: 'epsg:3857',
-            width: '800',
-          }),
-        ];
-      })
-      .filter(
-        (record): record is AggregatorLayer => typeof record !== 'undefined'
-      );
-
-    const modificationTime = response.records[0].records[0]['s2n:modtime'];
-    const dateObject = new Date(modificationTime);
-    const formattedModificationTime = `<time
-      datetime="${dateObject.toISOString()}"
-    >${dateObject.toDateString()}</time>`;
-    messages.infoSection.push(`
-      It also displays a predicted distribution model from Lifemapper. Model
-      computed with default Maxent parameters: ${formattedModificationTime}`);
-  } catch {
-    console.warn('Failed to find Lifemapper projection map for this species');
-  }
-
-  mapDetails.innerHTML = Object.entries(messages)
-    .filter(([, messages]) => messages.length > 0)
-    .map(([name, messages]) => {
-      const meta =
-        lifemapperMessagesMeta[name as keyof typeof lifemapperMessagesMeta];
-      return `<span
-        class="lifemapper-message-section ${meta.className}"
-      >
-        ${'title' in meta ? `<h4>${meta.title}</h4><br>` : ''}
-        ${messages.join('<br>')}
-      </span>`;
-    })
-    .join('');
-
-  const idbScientificName =
-    extractField(response.occurrence_info, 'idb', 'dwc:scientificName') ??
-    extractField(response.name_info, 'gbif', 's2n:canonical_name');
-  const idbCollectionCode = extractField(
-    response.occurrence_info,
-    'idb',
-    'dwc:collectionCode'
-  );
-  const gbifTaxonKey = extractField(
-    response.name_info,
-    'gbif',
-    's2n:gbif_taxon_key'
-  );
-
-  const [leafletMap, layerGroup] = showMap(mapContainer, 'occurrence');
-  resolveMap?.([leafletMap, layerGroup, mapContainer]);
-
-  let hasLayers = false;
-  const addLayers = addAggregatorOverlays(leafletMap, layerGroup, () => {
-    hasLayers = true;
-  });
-  addLayers(lifemapperLayers);
-  addLayers(getGbifLayers(gbifTaxonKey));
-  addLayers(await getIdbLayers(idbScientificName, idbCollectionCode));
-
-  if (!hasLayers) {
-    leafletMap.off();
-    leafletMap.remove();
-    const parent = mapContainer.parentElement;
-    if (!parent) return;
-    parent.textContent = 'Unable to find any information for this record';
-  }
-}
-
-async function getIdbLayer(
-  scientificName: string,
-  collectionCode: string | undefined,
-  options: AggregatorLayer[0],
-  className?: string
-): Promise<AggregatorLayer | undefined> {
-  let request: Response | undefined;
-  try {
-    request = await fetch('https://search.idigbio.org/v2/mapping/', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        rq: {
-          scientificname: scientificName,
-          ...(typeof collectionCode === 'string'
-            ? {
-                collectioncode: collectionCode,
-              }
-            : {}),
-        },
-        type: 'auto',
-        threshold: 100_000,
-      }),
-    });
-  } catch {
-    return undefined;
-  }
-  const response = await request.json();
-  const pointCount = response.itemCount;
-  if (pointCount === 0) return undefined;
-
-  const serverUrl = response.tiles;
-  return [
-    options,
-    L.tileLayer(serverUrl, {
-      attribution: 'iDigBio and the user community',
-      className: className ?? 'saturated',
-    }),
-  ];
-}
-
-async function getIdbLayers(
-  scientificName: string | undefined,
-  collectionCode: string | undefined
-): Promise<RA<AggregatorLayer>> {
-  if (typeof scientificName === 'undefined') return [];
-
-  const layers = await Promise.all([
-    getIdbLayer(scientificName, undefined, {
-      label: `iDigBio ${legendPoint('#197')}`,
-      default: isOverlayDefault('idb', true),
-    }),
-    getIdbLayer(
-      scientificName,
-      collectionCode,
-      {
-        label: `iDigBio (${
-          collectionCode ?? 'collection'
-        } points only) ${legendPoint('#e68')}`,
-        default: isOverlayDefault('idb_collection', true),
-      },
-      'hue-rotate'
-    ),
-  ]);
-
-  return layers.filter(
-    (data): data is AggregatorLayer => typeof data !== 'undefined'
   );
 }

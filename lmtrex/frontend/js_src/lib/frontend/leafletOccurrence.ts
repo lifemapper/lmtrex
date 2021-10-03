@@ -1,7 +1,8 @@
 import type { RA, RR } from '../config';
 import L from '../leaflet';
-import type { AggregatorLayer } from '../leafletUtils';
-import { addAggregatorOverlays, isOverlayDefault } from '../leafletUtils';
+import { isOverlayDefault } from '../leafletUtils';
+import commonText from '../localization/common';
+import frontEndText from '../localization/frontend';
 import { splitJoinedMappingPath } from '../utils';
 import { mappingLocalityColumns } from './config';
 import type { Field, LocalityData } from './occurrence';
@@ -83,28 +84,23 @@ export function addMarkersToMap(
   );
 
   const layerLabels: RR<MarkerLayerName, string> = {
-    marker: 'Specify 7 Pins',
-    polygon: 'Specify 7 Polygons',
-    polygonBoundary: 'Specify 7 Polygon Boundaries',
-    errorRadius: 'Specify 7 Pin Error Radius',
+    marker: commonText('markerLayerLabel'),
+    polygon: commonText('polygonLayerLabel'),
+    polygonBoundary: commonText('polygonBoundaryLayerLabel'),
+    errorRadius: commonText('errorRadiusLayerLabel'),
   };
 
-  const addLayers = addAggregatorOverlays(map, controlLayers);
   // Add layer groups' checkboxes to the layer control menu
-  addLayers(
-    Object.entries(layerLabels)
-      .filter(([key]) => groupsWithMarkers.has(key))
-      .map<AggregatorLayer>(([key, label]) => [
-        {
-          label,
-          default: isOverlayDefault(
-            key,
-            defaultMarkerGroupsState[key as MarkerLayerName]
-          ),
-        },
-        layerGroups[key as MarkerLayerName],
-      ])
-  );
+  Object.entries(layerLabels)
+    .filter(([key]) => groupsWithMarkers.has(key))
+    .forEach(([key, label]) => {
+      const layer = layerGroups[key as MarkerLayerName];
+      controlLayers.addOverlay(layer, label);
+      if (
+        isOverlayDefault(key, defaultMarkerGroupsState[key as MarkerLayerName])
+      )
+        layer.addTo(map);
+    });
 }
 
 export function isValidAccuracy(
@@ -144,13 +140,13 @@ const createLine = (
 export const formatLocalityData = (
   localityData: LocalityData,
   viewUrl: string,
-  hideRedundant = false
+  isLoading: boolean
 ): string =>
   [
     ...Object.entries(localityData)
       .filter(
         ([fieldName]) =>
-          !hideRedundant || !mappingLocalityColumns.includes(fieldName)
+          isLoading || !mappingLocalityColumns.includes(fieldName)
       )
       .filter(
         (entry): entry is [string, Field<string | number>] =>
@@ -161,11 +157,14 @@ export const formatLocalityData = (
           ? `<b>${field.value}</b>`
           : `<b>${field.headerName}</b>: ${field.value}`
       ),
+    isLoading ? frontEndText('fetchingInformation') : '',
     `<a
         href="${viewUrl}"
         target="_blank"
-      >View Record</a>`,
-  ].join('<br>');
+      >${frontEndText('viewRecord')}</a>`,
+  ]
+    .filter((entry) => entry)
+    .join('<br>');
 
 export function getMarkersFromLocalityData({
   localityData,
@@ -262,7 +261,7 @@ export function getMarkersFromLocalityData({
     .forEach((vector) => {
       if (typeof markerClickCallback === 'function')
         vector.on('click', markerClickCallback);
-      vector.bindPopup(formatLocalityData(localityData, viewUrl, false));
+      vector.bindPopup(formatLocalityData(localityData, viewUrl, true));
     });
 
   return markers;

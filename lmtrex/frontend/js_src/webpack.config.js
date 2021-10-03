@@ -39,7 +39,7 @@ module.exports = (_environment, argv) => ({
     ],
   },
   resolve: {
-    extensions: ['.ts', '.tsx'],
+    extensions: ['.js', '.ts', '.tsx'],
     symlinks: false,
   },
   plugins: [

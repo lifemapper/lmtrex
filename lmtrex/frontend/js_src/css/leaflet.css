@@ -3,6 +3,10 @@
   width: 100%;
 }
 
+.leaflet-map {
+  height: 100%;
+}
+
 .leaflet-full-screen-toggle,
 .leaflet-print-map {
   cursor: pointer !important;
