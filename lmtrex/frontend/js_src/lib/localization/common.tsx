@@ -22,6 +22,10 @@ const commonText = createDictionary({
   ),
   noDataErrorTitle: 'Unable to find any data for this request',
   noDataErrorMessage: 'Please try searching for a different record',
+  markerLayerLabel: 'Specify 7 Pins',
+  polygonLayerLabel: 'Specify 7 Polygons',
+  polygonBoundaryLayerLabel: 'Specify 7 Polygon Boundaries',
+  errorRadiusLayerLabel: 'Specify 7 Pin Error Radius',
 });
 
 export default commonText;

@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { createDictionary } from './utils';
 
 // Refer to "Guidelines for Programmers" in ./utils.tsx before editing this file
@@ -10,13 +12,19 @@ const frontEndText = createDictionary({
   collectionObject: 'Collection Object',
   taxonomy: 'Taxonomy',
   distribution: 'Distribution',
+  projectionLayerLabel: 'Lifemapper Distribution Model',
   syftoriumHeader: 'Institution and Collection Analyses',
   syftoriumMessage: (
     institutionCode: string,
-    collectionCode: string
-  ): string => `
-    Distribution maps of all species in the ${collectionCode} collection and
-    ${institutionCode} institution are available`,
+    collectionCode: string,
+    linkWrapper: (text: string) => JSX.Element
+  ): JSX.Element => (
+    <>
+      Distribution maps of all of the digitized specimens curated in the
+      Collection &quot;{collectionCode}&quot; and in the Institution &quot;
+      {institutionCode}&quot; are available {linkWrapper('here')}.
+    </>
+  ),
   collectionDate: 'Collection Date',
   mapDescription:
     'This map shows all occurrences of this taxon from iDigBio and GBIF.',
@@ -30,6 +38,8 @@ const frontEndText = createDictionary({
     with the dark red hexagons corresponding to densest distributions of
     points.
   `,
+  viewRecord: 'View Record',
+  fetchingInformation: 'Fetching information...',
 });
 
 export default frontEndText;
