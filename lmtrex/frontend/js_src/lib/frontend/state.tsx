@@ -2,7 +2,6 @@ import React from 'react';
 import type { State } from 'typesafe-reducer';
 import { generateReducer } from 'typesafe-reducer';
 
-import { Section } from '../components/common';
 import { ErrorMessage } from '../components/errorBoundary';
 import { Loading } from '../components/loading';
 import type { Component, RA } from '../config';
@@ -54,17 +53,14 @@ export const stateReducer = generateReducer<Component | undefined, States>({
       );
     else if (
       occurrence === 'loading' ||
-      name === 'loading' ||
-      name === 'invalid'
+      (typeof occurrence === 'undefined' && name === 'loading')
     )
       return <Loading />;
 
     const scientificName =
-      typeof name === 'undefined'
-        ? undefined
-        : extractField(name, 'gbif', 'dwc:scientificName');
+      extractField(name, 'gbif', 's2n:scientific_name') ??
+      extractField(occurrence, 'gbif', 'dwc:scientificName');
 
-    // TODO: go over "show ..." statements
     return (
       <main>
         <header>
@@ -75,50 +71,25 @@ export const stateReducer = generateReducer<Component | undefined, States>({
           <h2>{scientificName ?? frontEndText('scientificNameUnknown')}</h2>
         </header>
         <div className="sections">
-          {[
-            <Section
-              key="issues"
-              anchor="issues"
-              label={frontEndText('dataQuality')}
-            >
-              {typeof occurrence === 'object' ? (
-                <IssuesTable occurrence={occurrence} />
-              ) : undefined}
-            </Section>,
-            <Section
-              key="occ"
-              anchor="occ"
-              label={frontEndText('collectionObject')}
-            >
-              {typeof occurrence === 'object' ? (
-                <OccurrenceTable occurrence={occurrence} />
-              ) : undefined}
-            </Section>,
-            <Section key="name" anchor="name" label={frontEndText('taxonomy')}>
-              {typeof name === 'object' ? <NameTable name={name} /> : undefined}
-            </Section>,
-            <Section
-              key="map"
-              anchor="map"
-              label={frontEndText('distribution')}
-            >
+          {typeof occurrence === 'object' ? (
+            <>
+              <IssuesTable occurrence={occurrence} />
+              <OccurrenceTable occurrence={occurrence} />
+            </>
+          ) : undefined}
+          {typeof name === 'object' ? (
+            <>
+              <NameTable name={name} />
               <LeafletContainer
-                scientificName={scientificName}
                 occurrence={occurrence}
+                name={name}
+                scientificName={scientificName}
               />
-            </Section>,
-            <Section
-              key="stats"
-              anchor="stats"
-              label={frontEndText('syftoriumHeader')}
-            >
-              {typeof occurrence === 'object' ? (
-                <SyftoriumLink occurrence={occurrence} />
-              ) : undefined}
-            </Section>,
-          ].filter(
-            (section): section is Component => typeof section === 'object'
-          )}
+            </>
+          ) : undefined}
+          {typeof occurrence === 'object' ? (
+            <SyftoriumLink occurrence={occurrence} />
+          ) : undefined}
         </div>
       </main>
     );

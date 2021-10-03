@@ -2,17 +2,17 @@ import '../../css/table.css';
 
 import React from 'react';
 
+import { Section } from '../components/common';
 import type { Component, IR, RA } from '../config';
 import frontEndText from '../localization/frontend';
 import type { BrokerRecord } from './entry';
-import { mapFields } from './fieldMapper';
 import { Response } from './formatTable';
 import { extractField } from './utils';
 
 export function SyftoriumLink({
   occurrence,
 }: {
-  occurrence: RA<BrokerRecord>;
+  readonly occurrence: RA<BrokerRecord>;
 }): Component | null {
   const fields = [
     {
@@ -51,13 +51,17 @@ export function SyftoriumLink({
     return null;
 
   return (
-    <p>
-      {frontEndText('syftoriumMessage')(
-        hashedFields.institution_code ?? '',
-        hashedFields.collection_code ?? ''
-      )}{' '}
-      <a href={`/stats/?${queryString}`}>here</a>.
-    </p>
+    <Section key="stats" anchor="stats" label={frontEndText('syftoriumHeader')}>
+      <p>
+        {frontEndText('syftoriumMessage')(
+          hashedFields.institution_code ?? '',
+          hashedFields.collection_code ?? '',
+          (text) => (
+            <a href={`/stats/?${queryString}`}>{text}</a>
+          )
+        )}
+      </p>
+    </Section>
   );
 }
 
@@ -66,9 +70,9 @@ export function Table({
   header,
   children,
 }: {
-  className?: string;
-  header?: Component | RA<Component>;
-  children: RA<Component>;
+  readonly className?: string;
+  readonly header?: Component | RA<Component>;
+  readonly children: RA<Component>;
 }): Component {
   return (
     <table className={className}>
@@ -88,11 +92,11 @@ export function Row({
   cells,
   className = '',
 }: {
-  header: string;
-  title?: string;
-  cells: RA<Component | string>;
-  className?: string;
-}) {
+  readonly header: string;
+  readonly title?: string;
+  readonly cells: RA<Component | string>;
+  readonly className?: string;
+}): JSX.Element {
   return (
     <tr className={className}>
       <th scope="row" title={title}>
@@ -108,52 +112,45 @@ export function Row({
 export function IssuesTable({
   occurrence,
 }: {
-  occurrence: RA<BrokerRecord>;
+  readonly occurrence: RA<BrokerRecord>;
 }): Component | null {
   const issues = occurrence.filter(
     ({ record }) => Object.keys(record['s2n:issues'] as IR<string>).length > 0
   );
   // eslint-disable-next-line unicorn/no-null
   return issues.length === 0 ? null : (
-    <Table className="issues">
-      {issues.map(({ provider, record }) => (
-        <Row
-          key={provider.code}
-          header={frontEndText('reportedBy')(provider.label)}
-          cells={[
-            <ul key="list">
-              {Object.entries(record['s2n:issues'] as IR<string>).map(
-                ([key, value]) => (
-                  <li key={key}>
-                    {value} ({key})
-                  </li>
-                )
-              )}
-            </ul>,
-          ]}
-        />
-      ))}
-    </Table>
+    <Section key="issues" anchor="issues" label={frontEndText('dataQuality')}>
+      <Table className="issues">
+        {issues.map(({ provider, record }) => (
+          <Row
+            key={provider.code}
+            header={frontEndText('reportedBy')(provider.label)}
+            cells={[
+              <ul key="list">
+                {Object.entries(record['s2n:issues'] as IR<string>).map(
+                  ([key, value]) => (
+                    <li key={key}>
+                      {value} ({key})
+                    </li>
+                  )
+                )}
+              </ul>,
+            ]}
+          />
+        ))}
+      </Table>
+    </Section>
   );
 }
 
 export function OccurrenceTable({
   occurrence,
 }: {
-  occurrence: RA<BrokerRecord>;
-}): Component {
-  const specimenId = extractField(
-    occurrence,
-    'mopho',
-    'mopho:specimen.specimen_id',
-    false
-  );
+  readonly occurrence: RA<BrokerRecord>;
+}): Component | null {
   const formattedSpecimenId =
-    typeof specimenId === 'undefined'
-      ? extractField(occurrence, 'mopho', 's2n:view_url', false)
-      : mapFields({
-          'mopho:specimen.specimen_id': [specimenId],
-        })[0].cells[0];
+    extractField(occurrence, 'mopho', 'mopho:specimen.specimen_id', false) ??
+    extractField(occurrence, 'mopho', 's2n:view_url', false);
 
   const alteredResponse = occurrence
     .filter((record) => record.provider.code !== 'mopho')
@@ -161,13 +158,28 @@ export function OccurrenceTable({
       ...response,
       record: {
         ...response.record,
-        'mopho:specimen.specimen_id': formattedSpecimenId,
+        'mopho:specimen.specimen_id':
+          response.record['mopho:specimen.specimen_id'] || formattedSpecimenId,
       },
     }));
 
-  return <Response responses={alteredResponse} />;
+  const response = <Response responses={alteredResponse} />;
+  return response === null ? null : (
+    <Section key="occ" anchor="occ" label={frontEndText('collectionObject')}>
+      {response}
+    </Section>
+  );
 }
 
-export function NameTable({ name }: { name: RA<BrokerRecord> }): Component {
-  return <Response responses={name} />;
+export function NameTable({
+  name,
+}: {
+  name: RA<BrokerRecord>;
+}): Component | null {
+  const response = <Response responses={name} />;
+  return response === null ? null : (
+    <Section key="name" anchor="name" label={frontEndText('taxonomy')}>
+      {response}
+    </Section>
+  );
 }

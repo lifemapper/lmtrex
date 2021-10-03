@@ -65,10 +65,17 @@ app(function FrontEnd() {
   const name = state.type === 'MainState' ? state.name : undefined;
 
   React.useEffect(() => {
-    if (name !== 'invalid' || typeof occurrence !== 'object') return;
-    const nameString = extractField(occurrence, 'gbif', 'dwc:scientificName');
-    if (typeof nameString === 'string')
-      fetchName(nameString, undefined).then(dispatch).catch(console.error);
+    if (name !== 'invalid') return;
+    if (typeof occurrence === 'undefined')
+      dispatch({
+        type: 'LoadedNameAction',
+        name: undefined,
+      });
+    else {
+      const nameString = extractField(occurrence, 'gbif', 'dwc:scientificName');
+      if (typeof nameString === 'string')
+        fetchName(nameString, undefined).then(dispatch).catch(console.error);
+    }
   }, [occurrence, name]);
 
   return stateReducer(undefined, state) ?? <i />;
