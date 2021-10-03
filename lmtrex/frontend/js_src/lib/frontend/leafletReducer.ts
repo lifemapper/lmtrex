@@ -1,15 +1,12 @@
-import type { State } from 'typesafe-reducer';
+import type { Action } from 'typesafe-reducer';
 import { generateReducer } from 'typesafe-reducer';
 
-import type { IR, RA, RR } from '../config';
+import type { IR, leafletTileServers, RA, RR } from '../config';
 import type { States } from './leafletState';
-import type {
-  LocalityData,
-  OccurrenceData,
-  OutgoingMessage,
-} from './occurrence';
+import type { LocalityData, OccurrenceData } from './occurrence';
+import { parseLayersFromJson } from './occurrence';
 
-type BasicInformationAction = State<
+type BasicInformationAction = Action<
   'BasicInformationAction',
   {
     systemInfo: IR<unknown>;
@@ -24,14 +21,21 @@ type BasicInformationAction = State<
   }
 >;
 
-type LocalOccurrencesAction = State<
+type ResolveLeafletLayersAction = Action<
+  'ResolveLeafletLayersAction',
+  {
+    tileLayers: typeof leafletTileServers;
+  }
+>;
+
+type LocalOccurrencesAction = Action<
   'LocalOccurrencesAction',
   {
     occurrences: RA<OccurrenceData>;
   }
 >;
 
-type PointDataAction = State<
+type PointDataAction = Action<
   'PointDataAction',
   {
     index: number;
@@ -41,22 +45,20 @@ type PointDataAction = State<
 
 export type IncomingMessage =
   | BasicInformationAction
+  | ResolveLeafletLayersAction
   | LocalOccurrencesAction
   | PointDataAction;
-
-type IncomingMessageExtended = IncomingMessage & {
-  state: {
-    readonly sendMessage: (message: OutgoingMessage) => void;
-    readonly origin: string;
-  };
-};
 
 export type Actions = IncomingMessage;
 
 export const reducer = generateReducer<States, Actions>({
   BasicInformationAction: ({ action: { leafletLayers }, state }) => ({
     ...state,
-    customLeafletLayers: leafletLayers,
+    tileLayers: parseLayersFromJson(leafletLayers),
+  }),
+  ResolveLeafletLayersAction: ({ action: { tileLayers }, state }) => ({
+    ...state,
+    tileLayers: state.tileLayers ?? tileLayers,
   }),
   LocalOccurrencesAction: ({ action: { occurrences }, state }) => ({
     ...state,
