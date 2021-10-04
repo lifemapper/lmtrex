@@ -7,7 +7,6 @@ services:
     networks:
       - cherrypy
     environment:
-      # TODO: enable https in dev composition
       - DEVELOPMENT=true
     restart: unless-stopped
     volumes:
@@ -34,14 +33,14 @@ services:
     networks:
       - cherrypy
     ports:
-      # TODO: revert this back to 80
-      - "8080:80"
+      - "80:80"
     volumes:
       - "./lmtrex/frontend/static:/volumes/static-files:ro"
       - "./lmtrex/config/nginx/common.conf:/etc/nginx/common.conf:ro"
 
-      - "./lmtrex/config/nginx/development.conf:/etc/nginx/conf.d/default.conf:ro"
       - "webpack-output:/volumes/webpack-output:ro"
+
+      - "./lmtrex/config/nginx/http.conf:/etc/nginx/conf.d/default.conf:ro"
 
 volumes:
   scratch-path:
