@@ -5,7 +5,6 @@ import { createDictionary } from './utils';
 // Refer to "Guidelines for Programmers" in ./utils.tsx before editing this file
 
 const frontEndText = createDictionary({
-  specifyNetwork: 'Specify Network',
   scientificNameUnknown: 'Scientific Name Unknown',
   dataQuality: 'Data Quality',
   reportedBy: (provider: string) => `Reported by ${provider}`,

@@ -66,7 +66,7 @@ export const stateReducer = generateReducer<Component | undefined, States>({
         <header>
           <h1>
             <img src="/static/img/specify_network_long.svg" alt="" />
-            <span className="sr-only">{frontEndText('specifyNetwork')}</span>
+            <span className="sr-only">{commonText('specifyNetwork')}</span>
           </h1>
           <h2>{scientificName ?? frontEndText('scientificNameUnknown')}</h2>
         </header>

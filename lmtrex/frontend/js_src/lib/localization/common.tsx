@@ -5,6 +5,7 @@ import { createDictionary } from './utils';
 // Refer to "Guidelines for Programmers" in ./utils.tsx before editing this file
 
 const commonText = createDictionary({
+  specifyNetwork: 'Specify Network',
   errorBoundaryErrorHeader: 'An unexpected error has occurred',
   errorBoundaryErrorMessage: (
     <>
