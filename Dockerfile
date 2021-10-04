@@ -27,7 +27,7 @@ CMD ./venv/bin/python -m lmtrex.config.broker
 
 
 
-FROM node:16.10.0-alpine3.14 as front-end
+FROM node:16.10.0-buster as front-end
 
 LABEL maintainer="Specify Collections Consortium <github.com/specify>"
 
