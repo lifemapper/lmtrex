@@ -57,7 +57,6 @@ export const addAggregatorOverlays =
     Object.entries(layers).forEach(([label, { isDefault, ...options }]) => {
       callback?.();
       const layer = parseLayerFromJson(options, false)();
-      console.log(layer, options, label);
       layerGroup.addOverlay(layer, label);
       if (isDefault) layer.addTo(leafletMap);
     });

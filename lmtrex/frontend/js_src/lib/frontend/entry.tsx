@@ -80,18 +80,3 @@ app(function FrontEnd() {
 
   return stateReducer(undefined, state) ?? <i />;
 });
-
-// TODO: convert this to react:
-document.body.addEventListener('click', (event) => {
-  if (!event.target) return;
-
-  const target = event.target as HTMLElement;
-
-  const dictionaryLabel = target.closest('.dictionary-label');
-  if (dictionaryLabel !== null) {
-    dictionaryLabel.parentElement?.classList.toggle('collapsed');
-    return;
-  }
-  const collapsed = target.closest('.collapsed');
-  if (collapsed !== null) collapsed.classList.toggle('collapsed');
-});

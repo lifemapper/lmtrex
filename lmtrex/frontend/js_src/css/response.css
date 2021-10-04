@@ -3,12 +3,12 @@
 }
 
 .checkbox-with-indicator input:checked ~ span::before {
-  content: "True";
+  content: 'True';
   color: var(--green);
 }
 
 .checkbox-with-indicator input:not(:checked) ~ span::before {
-  content: "False";
+  content: 'False';
   color: var(--red);
 }
 
@@ -17,7 +17,7 @@
 }
 
 .collapsed .value::after {
-  content: "(collapsed)";
+  content: '(collapsed)';
 }
 
 .collapsed:hover > .value::after {
@@ -68,24 +68,7 @@
   flex: 1;
 }
 
-.dictionary-label {
-  cursor: pointer;
-}
-
-.dictionary-label::after {
-  content: "\25BC";
-  padding-left: 0.5rem;
-}
-
-.collapsed > .dictionary-label::after {
-  content: "\25BA";
-}
-
-.dictionary-label:hover::after {
-  color: var(--t1);
-}
-
-input[type="date"] {
+input[type='date'] {
   background: transparent;
   border: none;
   pointer-events: none;

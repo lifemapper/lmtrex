@@ -72,7 +72,6 @@ function Line({
 }): Component {
   return (
     <div className="field">
-      {/* TODO: add "dictionary-label" if value.startswith('<div class="list-of-fields')*/}
       <div className="label">{label}</div>
       <div className="value">{value}</div>
     </div>
