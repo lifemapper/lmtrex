@@ -4,7 +4,7 @@ import frontEndText from '../localization/frontend';
 export const VERSION = '1.0.0';
 
 export const OCC_PROVIDERS = ['specify', 'gbif', 'idb', 'mopho'];
-export const NAME_PROVIDERS = ['gbif', 'itis'];
+export const NAME_PROVIDERS = ['gbif', 'itis', 'worms'];
 
 export type LifemapperLayerTypes = 'raster';
 
