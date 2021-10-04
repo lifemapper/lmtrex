@@ -45,7 +45,7 @@ def frontend_template():
         ),
     })
 
-def stats_template(body):
+def stats_template():
     return template('index', {
         'bundle': get_bundle_location('stats.js'),
         'description': (
