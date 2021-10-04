@@ -33,6 +33,12 @@ export function SyftoriumLink({
       field: 'gbif:publishingOrgKey',
       name: 'publishing_org_key',
     },
+    {
+      source: occurrence,
+      aggregator: 'idb',
+      field: 'gbif:datasetKey',
+      name: 'dataset_key',
+    },
   ].map(
     ({ source, aggregator, field, name }) =>
       [name, extractField(source, aggregator, field)] as const
