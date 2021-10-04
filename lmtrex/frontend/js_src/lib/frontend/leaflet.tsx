@@ -1,10 +1,10 @@
 import React from 'react';
 
 import { Section } from '../components/common';
+import { useLeaflet } from '../components/leaflet';
 import type { Component, RA, RR } from '../config';
 import { leafletTileServers } from '../config';
-import type L from '../leaflet';
-import { addAggregatorOverlays, showMap } from '../leafletUtils';
+import { addAggregatorOverlays } from '../leafletUtils';
 import frontEndText from '../localization/frontend';
 import { getQueryParameter } from '../utils';
 import { layersResolveTimeout, VERSION } from './config';
@@ -129,39 +129,18 @@ export function LeafletMap({
   onMarkerClick: handleMarkerClick,
   origin,
 }: {
-  tileLayers: typeof leafletTileServers;
+  tileLayers: typeof leafletTileServers | undefined;
   occurrencePoints: RA<OccurrenceData> | undefined;
   extendedOccurrencePoints: RR<number, LocalityData>;
   overlays: LeafletOverlays;
   onMarkerClick: (index: number) => void;
   origin: string | undefined;
-}): Component {
-  const mapContainer = React.useRef<HTMLDivElement>(null);
-  const [leafletMap, setLeafletMap] = React.useState<L.Map | undefined>(
-    undefined
-  );
-  const [layerGroup, setLayerGroup] = React.useState<
-    L.Control.Layers | undefined
-  >(undefined);
-
-  React.useEffect(() => {
-    if (mapContainer.current === null) return undefined;
-
-    const [leafletMap, layerGroup] = showMap(
-      mapContainer.current,
-      'occurrence',
-      tileLayers
-    );
-    setLeafletMap(leafletMap);
-    setLayerGroup(layerGroup);
-
-    return (): void => {
-      // @ts-expect-error gestureHandling has no type definitions
-      leafletMap.gestureHandling.disable();
-      leafletMap.off();
-      leafletMap.remove();
-    };
-  }, [tileLayers]);
+}) {
+  const mapContainer = React.useRef<HTMLDivElement | null>(null);
+  const [leafletMap, layerGroup] = useLeaflet({
+    mapContainer: mapContainer.current,
+    tileLayers,
+  });
 
   const loadedOverlays = React.useRef<Set<string>>(new Set());
   React.useEffect(() => {
@@ -189,6 +168,7 @@ export function LeafletMap({
       typeof origin === 'undefined'
     )
       return;
+
     markers.current = occurrencePoints.map(
       ({ localityData, collectionObjectId }, index) =>
         getMarkersFromLocalityData({
