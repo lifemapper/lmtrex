@@ -3,17 +3,21 @@ import * as React from 'react';
 import { useLeaflet } from '../components/leaflet';
 import type { Component, IR } from '../config';
 import { leafletTileServers } from '../config';
+import { throttle } from '../helper';
 import L from '../leaflet';
 import statsText from '../localization/stats';
+import { defaultSliderPosition, yearRangeThrottleRate } from './config';
 import type { GbifMapData } from './utils';
 
 export function GbifMap({
   mapOptions,
+  value,
   getMapData,
 }: {
   mapOptions: IR<unknown>;
-  getMapData: () => Promise<GbifMapData>;
-}): Component {
+  value: string | undefined;
+  getMapData: (value: string) => Promise<GbifMapData>;
+}): Component | null {
   const mapContainer = React.useRef<HTMLDivElement | null>(null);
   const [leafletMap] = useLeaflet({
     mapContainer: mapContainer.current,
@@ -29,28 +33,29 @@ export function GbifMap({
     typeof minValue !== 'undefined' && typeof maxValue !== 'undefined';
 
   React.useEffect(() => {
-    getMapData()
-      .then((mapData) => {
-        setMapData(mapData);
-        if (
-          typeof minValue === 'undefined' ||
-          typeof maxValue === 'undefined'
-        ) {
-          setMinValue(
-            Math.round(
-              (mapData.minYear ?? 0) +
-                ((mapData.maxYear ?? 0) - (mapData.minYear ?? 0)) *
-                  defaultSliderPosition
-            )
-          );
-          setMaxValue(mapData.maxYear);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        setMapData('error');
-      });
-  }, [mapOptions]);
+    if (value)
+      getMapData(value)
+        .then((mapData) => {
+          setMapData(mapData);
+          if (
+            typeof minValue === 'undefined' ||
+            typeof maxValue === 'undefined'
+          ) {
+            setMinValue(
+              Math.round(
+                (mapData.minYear ?? 0) +
+                  ((mapData.maxYear ?? 0) - (mapData.minYear ?? 0)) *
+                    defaultSliderPosition
+              )
+            );
+            setMaxValue(mapData.maxYear);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          setMapData('error');
+        });
+  }, [value]);
 
   const overlay = React.useRef<L.Layer | undefined>(undefined);
   React.useEffect(() => {
@@ -76,7 +81,7 @@ export function GbifMap({
     overlay.current.addTo(leafletMap);
     const labelsLayer = Object.values(leafletTileServers.overlays)[0]();
     labelsLayer.bringToFront();
-  }, [leafletMap, minValue, maxValue]);
+  }, [leafletMap, minValue, maxValue, mapData]);
 
   return typeof mapData === 'object' || mapData === 'loading' ? (
     <>
@@ -84,7 +89,7 @@ export function GbifMap({
         minYear={typeof mapData === 'object' ? mapData.minYear : undefined}
         maxYear={typeof mapData === 'object' ? mapData.maxYear : undefined}
         minValue={minValue ?? 0}
-        maxValue={maxValue ?? 0}
+        maxValue={maxValue ?? new Date().getFullYear()}
         onMinValueChange={setMinValue}
         onMaxValueChange={setMaxValue}
       />
@@ -96,18 +101,16 @@ export function GbifMap({
     <p className="alert alert-error" role="alert">
       {statsText('noMapForInstitution')}
     </p>
-  ) : undefined;
+  ) : null;
 }
-
-const defaultSliderPosition = 0.4;
 
 export function YearSlider({
   minYear,
   maxYear,
   minValue,
   maxValue,
-  onMinValueChange: handleMinValueChange,
-  onMaxValueChange: handleMaxValueChange,
+  onMinValueChange,
+  onMaxValueChange,
 }: {
   minYear: number | undefined;
   maxYear: number | undefined;
@@ -116,6 +119,15 @@ export function YearSlider({
   onMinValueChange: (min: number) => void;
   onMaxValueChange: (max: number) => void;
 }): Component {
+  const handleMinValueChange = React.useCallback(
+    throttle(onMinValueChange, yearRangeThrottleRate),
+    []
+  );
+  const handleMaxValueChange = React.useCallback(
+    throttle(onMaxValueChange, yearRangeThrottleRate),
+    []
+  );
+
   function handleMinChange({
     target,
   }: React.ChangeEvent<HTMLInputElement>): void {
@@ -137,14 +149,16 @@ export function YearSlider({
 
   return (
     <p>
-      Showing occurrences collected between these years:
+      {statsText('yearRangeDescription')}
       <br />
       <span className="slider">
         <input
           type="number"
           className="min"
-          aria-label="Start year"
+          aria-label={statsText('startYear')}
+          placeholder={statsText('startYear')}
           min={minYear}
+          value={minValue}
           max={maxYear}
           disabled={isDisabled}
           onChange={handleMinChange}
@@ -154,6 +168,7 @@ export function YearSlider({
             type="range"
             className="max"
             min={minYear}
+            value={maxValue}
             max={maxYear}
             disabled={isDisabled}
             onChange={handleMaxChange}
@@ -162,6 +177,7 @@ export function YearSlider({
             type="range"
             className="min"
             min={minYear}
+            value={minValue}
             max={maxYear}
             disabled={isDisabled}
             onChange={handleMinChange}
@@ -170,8 +186,10 @@ export function YearSlider({
         <input
           type="number"
           className="max"
-          aria-label="End year"
+          aria-label={statsText('endYear')}
+          placeholder={statsText('endYear')}
           min={minYear}
+          value={maxValue}
           max={maxYear}
           disabled={isDisabled}
           onChange={handleMaxChange}

@@ -1,3 +1,4 @@
+import '../../css/header.css';
 import '../../css/main.css';
 
 import React from 'react';

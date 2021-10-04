@@ -11,7 +11,6 @@ import commonText from '../localization/common';
 import statsText from '../localization/stats';
 import { getQueryParameter } from '../utils';
 import { GbifMap } from './components';
-import type { GbifMapData } from './utils';
 import { getCollectionMapData, getInstitutionMapMeta } from './utils';
 
 const reGuid = /^\w{8}-(\w{4}-){3}\w{12}$/;
@@ -24,13 +23,6 @@ app(function Stats() {
   const [dataSets, setDataSets] = React.useState<
     IR<string> | 'loading' | undefined
   >('loading');
-
-  const [institutionMapData, setInstitutionMapData] = React.useState<
-    GbifMapData | 'error' | 'loading' | undefined
-  >(undefined);
-  const [collectionMapData, setCollectionMapData] = React.useState<
-    GbifMapData | 'error' | 'loading' | undefined
-  >(undefined);
 
   const publishingOrgKey = getQueryParameter('publishing_org_key', isGuid);
   React.useEffect(() => {
@@ -57,28 +49,10 @@ app(function Stats() {
       if (Object.keys(dataSets).length === 0) setDataSets(undefined);
       else {
         if (!(dataSet in dataSets)) setDataSet(Object.keys(dataSets)[0]);
-        setDataSets(undefined);
+        setDataSets(dataSets);
       }
     });
-
-    publishingOrgKey
-      ? getInstitutionMapMeta(publishingOrgKey)
-          .then(setInstitutionMapData)
-          .catch((error) => {
-            console.error(error);
-            setInstitutionMapData('error');
-          })
-      : setInstitutionMapData(undefined);
   }, []);
-
-  React.useEffect(() => {
-    getCollectionMapData(dataSet)
-      .then(setCollectionMapData)
-      .catch((error) => {
-        console.error(error);
-        setCollectionMapData('error');
-      });
-  }, [dataSet]);
 
   const institutionCode = getQueryParameter(
     'institution_code',
@@ -102,30 +76,33 @@ app(function Stats() {
       </header>
       <div className="sections">
         <Section
-          key="switch-collection"
-          anchor="switch-collection"
+          key="change-collection"
+          anchor="change-collection"
           label={statsText('chooseCollection')}
         >
-          <select
-            value={dataSet}
-            onChange={({ target }): void => setDataSet(target.value)}
-          >
-            {Object.entries(dataSets).map(([dataSet, label]) => (
-              <option value={dataSet} key={dataSet}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div>
+            <select
+              value={dataSet}
+              onChange={({ target }): void => setDataSet(target.value)}
+            >
+              {Object.entries(dataSets).map(([dataSet, label]) => (
+                <option value={dataSet} key={dataSet}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
         </Section>
         <Section
           key="collection-map"
           anchor="collection-map"
           label={statsText('collectionMapHeader')}
         >
-          ${statsText('collectionMapDescription')}
+          {statsText('collectionMapDescription')}
           <GbifMap
-            mapOptions={{ dataSetKey: dataSet }}
-            getMapData={async () => getInstitutionMapMeta(dataSet)}
+            mapOptions={{ datasetKey: dataSet }}
+            value={dataSet}
+            getMapData={getCollectionMapData}
           />
         </Section>
         <Section
@@ -133,10 +110,11 @@ app(function Stats() {
           anchor="institution-map"
           label={statsText('institutionMapHeader')(institutionCode)}
         >
-          ${statsText('institutionMapDescription')}
+          {statsText('institutionMapDescription')(institutionCode)}
           <GbifMap
             mapOptions={{ publishingOrg: publishingOrgKey }}
-            getMapData={async () => getInstitutionMapMeta(publishingOrgKey)}
+            value={publishingOrgKey}
+            getMapData={getInstitutionMapMeta}
           />
         </Section>
       </div>

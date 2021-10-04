@@ -1,7 +1,6 @@
 import React from 'react';
 
-import type { IR, RA } from '../config';
-import type { Component } from '../config';
+import type { Component, IR, RA } from '../config';
 import { camelToHuman } from '../helper';
 
 type Value = string | Component;
@@ -11,13 +10,6 @@ function assertExhaustive(key: string): never {
   /*
    * If a .ts or .tsx file tries to access a non-existing key, a
    * build-time error would be thrown.
-   * For .js and .jsx files, some errors may be shown in the editor depending on
-   * the IDE. The rest would be thrown at runtime.
-   * For templates (.html), no errors would be shown, and thus this exception
-   * may be thrown at runtime.
-   * To prevent runtime errors, a ../tests/testlocalization.ts script has been
-   * added. It checks both for invalid key usages, invalid usages and unused
-   * keys
    */
   const errorMessage = `
     Trying to access the value for a non-existent localization key "${key}"`;
@@ -32,12 +24,14 @@ function assertExhaustive(key: string): never {
      * string
      */
     const defaultValue: any = (): string => value;
-    Object.getOwnPropertyNames(Object.getPrototypeOf(value)).map((proto) => {
-      defaultValue[proto] =
-        typeof value[proto] === 'function'
-          ? value[proto].bind(value)
-          : value[proto];
-    });
+    Object.getOwnPropertyNames(Object.getPrototypeOf(value)).forEach(
+      (proto) => {
+        defaultValue[proto] =
+          typeof value[proto] === 'function'
+            ? value[proto].bind(value)
+            : value[proto];
+      }
+    );
     return defaultValue as never;
   } else throw new Error(errorMessage);
 }
