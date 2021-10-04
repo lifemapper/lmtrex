@@ -34,7 +34,7 @@ LABEL maintainer="Specify Collections Consortium <github.com/specify>"
 USER node
 WORKDIR /home/node
 
-COPY --chown=node:node lmtrex/frontend/js_src/package*.json .
+COPY --chown=node:node lmtrex/frontend/js_src/package*.json ./
 RUN npm install
 RUN mkdir dist \
  && chown node:node dist
