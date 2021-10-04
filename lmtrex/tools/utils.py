@@ -2,8 +2,11 @@ import sys
 import traceback
 from uuid import UUID
 
+import cherrypy
+
 from lmtrex.common.lmconstants import ICON_API, ServiceProvider
 from lmtrex.common.s2n_type import S2nEndpoint
+
 
 # ......................................................
 def is_valid_uuid(uuid_to_test, version=4):
@@ -47,7 +50,11 @@ def get_icon_url(provider_code, icon_status=None):
     """Add link to badge service with provider param and optionally icon_status."""
     url = None
     if ServiceProvider.is_valid_service(provider_code, S2nEndpoint.Badge):
-        url = '{}?provider={}'.format(ICON_API, provider_code)
+        url = '{}{}?provider={}'.format(
+            cherrypy.request.headers['Origin'],
+            ICON_API,
+            provider_code
+        )
         if icon_status:
             url = '{}&icon_status={}'.format(url, icon_status)
     return url

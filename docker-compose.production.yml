@@ -7,8 +7,6 @@ services:
     networks:
       - cherrypy
     environment:
-      # TODO: Get rid of the need for this
-      - PUBLIC_URL='https://broker.spcoco.com'
       - DEVELOPMENT=false
     restart: unless-stopped
     volumes:

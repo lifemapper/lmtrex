@@ -1,12 +1,13 @@
-import os
+import cherrypy
 
-from lmtrex.common.lmconstants import (APIService, ServiceProvider, BrokerParameters)
-from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nKey
-
+import lmtrex.tools.utils as lmutil
+from lmtrex.common.lmconstants import (APIService, BrokerParameters,
+                                       ServiceProvider, )
+from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 
-import lmtrex.tools.utils as lmutil
+
 # .............................................................................
 class _S2nService:
     """Base S-to-the-N service, handles parameter names and acceptable values"""
@@ -26,8 +27,8 @@ class _S2nService:
         # Status will be 200 if anyone ever sees this
         provider_element[S2nKey.PROVIDER_STATUS_CODE] = 200
         # Optional URL queries
-        standardized_url = '{}/{}/{}'.format(
-            os.environ['PUBLIC_URL'],
+        standardized_url = '{}{}/{}'.format(
+            cherrypy.request.headers['Origin'],
             S2nEndpoint.Root,
             cls.SERVICE_TYPE['endpoint']
         )

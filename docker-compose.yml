@@ -7,12 +7,11 @@ services:
     networks:
       - cherrypy
     environment:
-      - PUBLIC_URL='http://localhost'
+      # TODO: enable https in dev composition
       - DEVELOPMENT=true
     restart: unless-stopped
     volumes:
       - "scratch-path:/scratch-path"
-      - "static-files:/home/specify/lmtrex/frontend/static"
       - "webpack-output:/home/specify/lmtrex/frontend/js_src/dist"
       - "./lmtrex/:/home/specify/lmtrex/"
 
@@ -35,9 +34,10 @@ services:
     networks:
       - cherrypy
     ports:
-      - "80:80"
+      # TODO: revert this back to 80
+      - "8080:80"
     volumes:
-      - "static-files:/volumes/static-files:ro"
+      - "./lmtrex/frontend/static:/volumes/static-files:ro"
       - "./lmtrex/config/nginx/common.conf:/etc/nginx/common.conf:ro"
 
       - "./lmtrex/config/nginx/development.conf:/etc/nginx/conf.d/default.conf:ro"
@@ -45,7 +45,6 @@ services:
 
 volumes:
   scratch-path:
-  static-files:
   webpack-output:
 
 networks:

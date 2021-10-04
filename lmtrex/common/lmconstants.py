@@ -1,8 +1,7 @@
 # from collections import OrderedDict
 import os
 
-from lmtrex.common.s2n_type import S2nKey, S2nEndpoint
-
+from lmtrex.common.s2n_type import S2nEndpoint, S2nKey
 
 # .............................................................................
 # hierarchySoFarWRanks <class 'list'>: ['41107:$Kingdom:Plantae$Subkingdom:Viridiplantae$Infrakingdom:Streptophyta$Superdivision:Embryophyta$Division:Tracheophyta$Subdivision:Spermatophytina$Class:Magnoliopsida$Superorder:Lilianae$Order:Poales$Family:Poaceae$Genus:Poa$Species:Poa annua$']
@@ -13,13 +12,11 @@ TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
 # Point to production or dev services depending on current location
 if os.environ['DEVELOPMENT'] == 'true':
-    BROKER_BASE = 'https://broker-dev.spcoco.org'
     SYFT_BASE = 'https://dev.syftorium.org'
 else:
-    BROKER_BASE = 'https://broker.spcoco.org'
     SYFT_BASE = 'https://syftorium.org'
     
-ICON_API = '{}/api/v1/badge'.format(BROKER_BASE)
+ICON_API = '/api/v1/badge'
 SPECIFY_CACHE_API = '{}/api/v1/sp_cache'.format(SYFT_BASE)
 
 # For saving Specify7 server URL (used to download individual records)

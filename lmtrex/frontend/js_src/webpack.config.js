@@ -39,7 +39,7 @@ module.exports = (_environment, argv) => ({
     ],
   },
   resolve: {
-    extensions: ['.js', '.ts', '.tsx'],
+    extensions: ['.ts', '.tsx', '.js'],
     symlinks: false,
   },
   plugins: [
@@ -50,7 +50,7 @@ module.exports = (_environment, argv) => ({
   devtool: argv.mode === 'development' ? 'eval-source-map' : 'source-map',
   entry: {
     frontend: './lib/frontend/entry.tsx',
-    stats: './lib/stats/entry.ts',
+    stats: './lib/stats/entry.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
