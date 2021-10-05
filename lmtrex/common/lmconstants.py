@@ -352,7 +352,7 @@ SPCOCO_FIELDS = [
 # ......................................................
 class Lifemapper:
     URL = 'https://data.lifemapper.org/api/v2'
-    OCC_RESOURCE = 'sdmproject'
+    OCC_RESOURCE = 'occurrence'
     PROJ_RESOURCE = 'sdmproject'
     MAP_RESOURCE = 'ogc' 
     OBSERVED_SCENARIO_CODE = 'worldclim-curr'
@@ -360,7 +360,6 @@ class Lifemapper:
     FUTURE_SCENARIO_CODES = [
         'AR5-CCSM4-RCP8.5-2050-10min', 'AR5-CCSM4-RCP4.5-2050-10min', 
         'AR5-CCSM4-RCP4.5-2070-10min', 'AR5-CCSM4-RCP8.5-2070-10min'] 
-    OCC_RESOURCE = 'occurrence'
     OTHER_RESOURCES = ['taxonomy', 'scenario', 'envlayer']
     NAME_KEY = 'displayname'
     ATOM_KEY = 'atom'
