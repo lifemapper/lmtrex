@@ -20,7 +20,7 @@ def start_cherrypy_services():
     scratch_path = '/scratch-files/'
     development = os.environ['DEVELOPMENT'] == 'true'
     cherrypy.config.update(
-        {'server.socket_port': 80,
+        {'server.socket_port': 8080,
          'server.socket_host': '0.0.0.0',
          'log.error_file': '{}/log/cherrypyErrors.log'.format(scratch_path),
          'log.access_file': '{}/log/cherrypyAccess.log'.format(scratch_path),

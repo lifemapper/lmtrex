@@ -40,6 +40,11 @@ const extractMorphosourceId = (link: string): string | undefined =>
     ? /\/[^/]+$/.exec(link)?.[0].slice(1)
     : undefined;
 
+const extractWormsId = (wormsLsid: string): string | undefined =>
+  wormsLsid.startsWith('urn:lsid:marinespecies.org:taxname:')
+    ? /\d+$/.exec(wormsLsid)?.[0]
+    : undefined;
+
 const linkify =
   (link: string) =>
   (key: string): Component | '' =>
@@ -67,9 +72,26 @@ const valueMapper: IR<(value: unknown) => Component | string> = {
   ),
   'mopho:specimen.specimen_id': stringGuard((specimenViewUrl) => {
     return typeof extractMorphosourceId(specimenViewUrl) === 'string' ? (
-      <a href={specimenViewUrl}>{extractMorphosourceId(specimenViewUrl)}</a>
+      <a href={specimenViewUrl} target="_blank" rel="noreferrer">
+        {extractMorphosourceId(specimenViewUrl)}
+      </a>
     ) : (
-      specimenViewUrl || ''
+      specimenViewUrl
+    );
+  }),
+  's2n:worms_lsid': stringGuard((wormsLsid) => {
+    return typeof extractWormsId(wormsLsid) === 'string' ? (
+      <a
+        href={`http://www.marinespecies.org/aphia.php?p=taxdetails&id=${extractWormsId(
+          wormsLsid
+        )}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        {wormsLsid}
+      </a>
+    ) : (
+      wormsLsid
     );
   }),
 };
