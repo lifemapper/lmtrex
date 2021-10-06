@@ -181,7 +181,7 @@ class WormsAPI(APIQuery):
         if is_accepted:
             status = 'accepted'
         name_clean = namestr.strip()
-        api = WormsAPI(name_clean, other_filters={'marine_only': 'false'}, logger=logger)
+        api = WormsAPI(name_clean, other_filters={'marine_only': 'true'}, logger=logger)
         
         try:
             api.query()
