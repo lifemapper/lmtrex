@@ -38,7 +38,7 @@ class SpecifyPortalAPI(APIQuery):
     @classmethod
     def _standardize_sp6_record(cls, rec):
         newrec = {}
-        to_str_prov_fields = ['year', 'month', 'day']
+        to_str_prov_fields = ['year', 'month', 'day', 'decimalLongitude', 'decimalLatitude']
         mapping = S2nSchema.get_specifycache_occurrence_map()
         for stdfld, provfld in mapping.items():
             try:

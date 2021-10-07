@@ -158,7 +158,7 @@ class GbifAPI(APIQuery):
     def _standardize_occurrence_record(cls, rec):
         newrec = {}
         parse_prov_fields = ['associatedSequences', 'associatedReferences']
-        to_str_prov_fields = ['year', 'month', 'day']
+        to_str_prov_fields = ['year', 'month', 'day', 'decimalLongitude', 'decimalLatitude']
         view_std_fld = S2nSchema.get_view_url_fld()
         data_std_fld = S2nSchema.get_data_url_fld()
         issue_prov_fld = 'issues'        

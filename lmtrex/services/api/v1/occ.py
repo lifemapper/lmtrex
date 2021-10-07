@@ -231,6 +231,7 @@ if __name__ == '__main__':
     # This occ has 16 issues in IDB, 0 in GBIF
     occids = ['2facc7a2-dd88-44af-b95a-733cc27527d4', '2c1becd5-e641-4e83-b3f5-76a55206539a']
     occids = ['bffe655b-ea32-4838-8e80-a80e391d5b11']
+    occids = ['db193603-1ed3-11e3-bfac-90b11c41863e']
     
     dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()

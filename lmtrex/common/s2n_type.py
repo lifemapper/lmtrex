@@ -165,8 +165,8 @@ class S2nSchema:
         'stateProvince': COMMUNITY_SCHEMA.DWC,
         'country': COMMUNITY_SCHEMA.DWC,
         'countryCode': COMMUNITY_SCHEMA.DWC,
-        'decimalLongitude': COMMUNITY_SCHEMA.DWC,
-        'decimalLatitude': COMMUNITY_SCHEMA.DWC,
+        'decimalLongitude': COMMUNITY_SCHEMA.DWC,           # string
+        'decimalLatitude': COMMUNITY_SCHEMA.DWC,            # string
         'geodeticDatum': COMMUNITY_SCHEMA.DWC,
 
         'basisOfRecord': COMMUNITY_SCHEMA.DWC,

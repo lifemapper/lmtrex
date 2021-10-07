@@ -18,11 +18,8 @@ try:
 except:
     pass
 
-# Point to production or dev services depending on current location
-if IS_DEVELOPMENT:
-    SYFT_BASE = 'https://dev.syftorium.org'
-else:
-    SYFT_BASE = 'https://syftorium.org'
+# Always point to production Syftorium
+SYFT_BASE = 'https://syftorium.org'
     
 ICON_API = '/api/v1/badge'
 SPECIFY_CACHE_API = '{}/api/v1/sp_cache'.format(SYFT_BASE)
