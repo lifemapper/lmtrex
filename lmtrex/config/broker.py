@@ -17,7 +17,7 @@ def start_cherrypy_services():
         '/': {'request.dispatch': cherrypy.dispatch.MethodDispatcher()} 
         }
 
-    scratch_path = '/scratch-files/'
+    scratch_path = '/scratch-path/'
     development = os.environ['DEVELOPMENT'] == 'true'
     cherrypy.config.update(
         {'server.socket_port': 8080,

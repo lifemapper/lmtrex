@@ -10,9 +10,9 @@ RUN addgroup -S specify -g 888 \
 RUN mkdir -p /home/specify \
  && chown specify.specify /home/specify
 
-RUN mkdir -p /scratch-files/log \
- && mkdir -p /scratch-files/sessions \
- && chown -R specify.specify /scratch-files
+RUN mkdir -p /scratch-path/log \
+ && mkdir -p /scratch-path/sessions \
+ && chown -R specify.specify /scratch-path
 
 WORKDIR /home/specify
 USER specify
