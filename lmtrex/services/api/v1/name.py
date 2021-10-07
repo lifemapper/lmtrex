@@ -221,7 +221,8 @@ if __name__ == '__main__':
     pass
     # test_names = TST_VALUES.NAMES[0:4]
     test_names = [
-        'Mycteroperca microlepis',
+        'Artemisia ludoviciana',
+        # 'Mycteroperca microlepis',
         # 'Plagiloecia patina Lamarck, 1816', 
         # 'Poa annua',
         # 'Gnatholepis cauerensis (Bleeker, 1853)', 

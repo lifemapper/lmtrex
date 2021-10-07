@@ -10,8 +10,16 @@ CONFIG_DIR = 'config'
 TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
 
+# Identify if debugging, without access to Docker environment variables or cherrypy headers
+IS_DEVELOPMENT = True
+try:
+    if os.environ['DEVELOPMENT'] != 'true':
+        IS_DEVELOPMENT = False
+except:
+    pass
+
 # Point to production or dev services depending on current location
-if os.environ['DEVELOPMENT'] == 'true':
+if IS_DEVELOPMENT:
     SYFT_BASE = 'https://dev.syftorium.org'
 else:
     SYFT_BASE = 'https://syftorium.org'
@@ -489,7 +497,7 @@ class SPECIFY:
     DATA_DUMP_DELIMITER = '\t'
     RECORD_FORMAT = 'http://rs.tdwg.org/dwc.json'
     RESOLVER_COLLECTION = 'spcoco'
-    RESOLVER_LOCATION = 'notyeti-192.lifemapper.org'
+    RESOLVER_LOCATION = SYFT_BASE
     
 # ......................................................
 class SYFTER:

@@ -26,9 +26,14 @@ class _S2nService:
             provider_element[S2nKey.PROVIDER_ICON_URL] = icon_url
         # Status will be 200 if anyone ever sees this
         provider_element[S2nKey.PROVIDER_STATUS_CODE] = 200
+        # Handle local debugging
+        try:
+            base_url = cherrypy.request.headers['Origin']
+        except:
+            base_url = 'localhost'
         # Optional URL queries
         standardized_url = '{}{}/{}'.format(
-            cherrypy.request.headers['Origin'],
+            base_url,
             S2nEndpoint.Root,
             cls.SERVICE_TYPE['endpoint']
         )

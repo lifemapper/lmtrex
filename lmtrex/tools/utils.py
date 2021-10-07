@@ -49,9 +49,15 @@ def get_traceback():
 def get_icon_url(provider_code, icon_status=None):
     """Add link to badge service with provider param and optionally icon_status."""
     url = None
+    # for function testing outside of cherrypy
+    try:
+        base_url = cherrypy.request.headers['Origin']
+    except:
+        base_url = 'https://localhost'
+        
     if ServiceProvider.is_valid_service(provider_code, S2nEndpoint.Badge):
         url = '{}{}?provider={}'.format(
-            cherrypy.request.headers['Origin'],
+            base_url,
             ICON_API,
             provider_code
         )
