@@ -78,21 +78,21 @@ export function LeafletContainer({
 
   const [projectionLayers, projectionDetails] =
     useProjectionLayers(scientificName);
-  const [idbLayers, idbDetails] = useIdbLayers(occurrence, scientificName);
   const [gbifLayers, gbifDetails] = useGbifLayers(
     Array.isArray(name) ? name : undefined
   );
+  const [idbLayers, idbDetails] = useIdbLayers(occurrence, scientificName);
 
   const overlays = {
     ...projectionLayers,
-    ...idbLayers,
     ...gbifLayers,
+    ...idbLayers,
   };
   const layerDetails = [
     frontEndText('mapDescription'),
     ...projectionDetails,
-    ...idbDetails,
     ...gbifDetails,
+    ...idbDetails,
   ];
 
   return typeof state.tileLayers === 'undefined' ||
