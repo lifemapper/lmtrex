@@ -149,9 +149,11 @@ export function YearSlider({
 
   return (
     <p>
-      {statsText('yearRangeDescription')}
+      {isDisabled
+        ? statsText('noYearRange')
+        : statsText('yearRangeDescription')}
       <br />
-      <span className="slider">
+      <span className={`slider ${isDisabled ? 'darkened' : ''}`}>
         <input
           type="number"
           className="min"

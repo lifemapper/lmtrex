@@ -24,6 +24,7 @@ const statsText = createDictionary({
   noMapForCollection: 'Unable to find a map for this collection',
   noMapForInstitution: 'Unable to find a map for this institution',
   yearRangeDescription: 'Showing occurrences collected between these years:',
+  noYearRange: 'Year-by-year map is not available.',
   startYear: 'Start Year',
   endYear: 'End Year',
 });
