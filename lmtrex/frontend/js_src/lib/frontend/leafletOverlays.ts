@@ -49,7 +49,7 @@ async function getIdbLayer(
       serverType: 'tileServer',
       layerOptions: {
         attribution: 'iDigBio and the user community',
-        className: className ?? 'saturated',
+        className: className ?? 'hyper-saturated',
       },
       isDefault: isOverlayDefault(layerName, true),
     },

@@ -99,7 +99,7 @@
 }
 
 .hue-rotate {
-  filter: hue-rotate(180deg);
+  filter: hue-rotate(180deg) saturate(1.5) brightness(1.3);
 }
 
 .grayscale {
@@ -112,4 +112,8 @@
 
 .saturated {
   filter: saturate(150%);
+}
+
+.hyper-saturated {
+  filter: saturate(180%) brightness(1.3);
 }
