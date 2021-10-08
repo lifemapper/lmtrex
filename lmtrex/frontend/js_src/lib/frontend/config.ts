@@ -5,6 +5,10 @@ export const VERSION = '1.0.0';
 
 export const OCC_PROVIDERS = ['specify', 'gbif', 'idb', 'mopho'];
 export const NAME_PROVIDERS = ['gbif', 'itis', 'worms'];
+export const MIN_COLUMNS = Math.min(
+  OCC_PROVIDERS.length,
+  NAME_PROVIDERS.length
+);
 
 export type LifemapperLayerTypes = 'raster';
 

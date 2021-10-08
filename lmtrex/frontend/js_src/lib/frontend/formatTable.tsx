@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { Component, RA } from '../config';
 import { Row, Table } from './components';
+import { MIN_COLUMNS } from './config';
 import type { BrokerRecord } from './entry';
 import { mapFields } from './fieldMapper';
 import { reorderFields } from './reorderFields';
@@ -12,6 +13,7 @@ export function Response({
 }: {
   responses: RA<BrokerRecord>;
 }): Component | null {
+  const blankColumns = Math.max(0, MIN_COLUMNS - responses.length);
   return responses.length === 0 ? null : (
     <Table
       className="data"
@@ -38,6 +40,9 @@ export function Response({
                 </span>
               </div>
             </th>
+          ))}
+          {Array.from({ length: blankColumns }, (_, index) => (
+            <th scope="col" key={index} />
           ))}
         </>
       }
@@ -68,7 +73,7 @@ export function Response({
               ? 'identical'
               : ''
           }
-          cells={cells}
+          cells={[...cells, ...Array.from({ length: blankColumns }, () => '')]}
         />
       ))}
     </Table>
