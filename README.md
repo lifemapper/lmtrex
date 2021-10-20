@@ -1,11 +1,11 @@
 # t-rex
 
-The Lifemapper t-rex repository houses objects and common tools used within a
-Lifemapper Broker and Resolver installation that may also be useful for outside
+The Lifemapper trex repository houses objects and common tools used within a
+Lifemapper Broker installation that may also be useful for outside
 contributors and the community as a whole.
 
 Any community contributed tool through the
-[T-Rex Python Repository](https://github.com/lifemapper/t-rex/) should
+[lmtrex repository](https://github.com/lifemapper/lmtrex/) should
 use these objects to ensure that new contributions are compatible with the
 Lifemapper backend.
 
@@ -23,7 +23,7 @@ directory.
 Run the container:
 
 ```zsh
-docker-compose -f docker-compose.production.yml up -d
+docker compose -f docker-compose.production.yml up -d
 ```
 
 Broker is now available at [https://localhost/](https://localhost:443)
@@ -35,7 +35,7 @@ Broker is now available at [https://localhost/](https://localhost:443)
 Run HTTP only version:
 
 ```zsh
-docker-compose up -d
+docker compose up -d
 ```
 
 #### With HTTPs support
@@ -49,10 +49,17 @@ openssl req \
   -out ./lmtrex/config/fullchain.pem
 ```
 
+Go thermo-nuclear on Docker:
+```zsh
+docker compose stop
+# this ignores running container
+docker system prune --all --force --volumes
+```
+
 Run the containers:
 
 ```zsh
-docker-compose -f docker.compose.https.yml up -d
+docker compose -f docker-compose.https.yml up -d
 ```
 
 #### After deployment
@@ -67,3 +74,5 @@ needed.
 
 If any front-end changes were made, run `npm run typecheck` before
 committing changes to verify validity of TypeScript types.
+
+## Troubleshooting
