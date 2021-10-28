@@ -149,25 +149,25 @@ class NameSvc(_S2nService):
     @cherrypy.tools.json_out()
     def GET(self, namestr=None, provider=None, is_accepted=True, gbif_parse=True, 
             gbif_count=True, kingdom=None, **kwargs):
-        """Get one or more taxon records for a scientific name string from each
+        """Get one or more taxon records for a scientific name string from each requested and 
         available name service.
         
         Args:
             namestr: a scientific name
-            is_accepted: flag to indicate whether to limit to 'valid' or 
-                'accepted' taxa in the ITIS or GBIF Backbone Taxonomy
-            gbif_parse: flag to indicate whether to first use the GBIF parser 
-                to parse a scientific name into canonical name
-            gbif_count: flag to indicate whether to count GBIF occurrences of 
-                this taxon
+            provider: comma-delimited list of requested provider codes.  Codes are delimited
+                for each in lmtrex.common.lmconstants ServiceProvider
+            is_accepted: flag to indicate whether to limit to 'valid' or  'accepted' taxa 
+                in the ITIS or GBIF Backbone Taxonomy
+            gbif_parse: flag to indicate whether to first use the GBIF parser to parse a 
+                scientific name into canonical name
+            gbif_count: flag to indicate whether to count GBIF occurrences of this taxon
             kingdom: not yet implemented
             kwargs: any additional keyword arguments are ignored
 
         Return:
-            a dictionary with keys for each service queried.  Values contain 
-            lmtrex.services.api.v1.S2nOutput object with records as a list of 
-            dictionaries of records corresponding to names in the provider 
-            taxonomy.
+            A lmtrex.common.s2n_type S2nOutput object containing records for each provider.  Each provider 
+            element is a S2nOutput object with records as a list of dictionaries following the 
+            lmtrex.common.s2n_type S2nSchema.NAME corresponding to names in the provider taxonomy.
         """
         error_description = None
         http_status = int(HTTPStatus.OK)
@@ -221,7 +221,8 @@ if __name__ == '__main__':
     pass
     # test_names = TST_VALUES.NAMES[0:4]
     test_names = [
-        'Artemisia ludoviciana',
+        'Notemigonus crysoleucas (Mitchill, 1814)',
+        # 'Artemisia ludoviciana',
         # 'Mycteroperca microlepis',
         # 'Plagiloecia patina Lamarck, 1816', 
         # 'Poa annua',

@@ -379,7 +379,7 @@ class Lifemapper:
     VALID_MAPLAYER_TYPES = ['occ', 'prj', 'bmng']
     VALID_MAP_FORMAT = ['image/png', 'image/gif', 'image/jpeg', 'image/tiff', 'image/x-aaigrid']
     VALID_SRS = ['epsg:4326', 'epsg:3857', 'AUTO:42003']
-    VALID_COLORS = [
+    VALID_PALETTES = [
         'red', 'gray', 'green', 'blue', 'safe', 'pretty', 'yellow', 
         'fuschia', 'aqua', 'bluered', 'bluegreen', 'greenred']
     # TODO: replace with a schema definition
@@ -418,8 +418,8 @@ BrokerParameters = {
     'bbox': {'type': '', 'default': '-180,-90,180,90'},
     'color': {
         'type': '', 
-        'options': Lifemapper.VALID_COLORS, 
-        'default': Lifemapper.VALID_COLORS[0]},
+        'options': Lifemapper.VALID_PALETTES, 
+        'default': Lifemapper.VALID_PALETTES[0]},
     'exceptions': {'type': '', 'default': None},
     'height': {'type': 300, 'default': 300},
     'width': {'type': 600, 'default': 600},
