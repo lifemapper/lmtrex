@@ -104,20 +104,28 @@ class MapSvc(_S2nService):
 
     # ...............................................
     @cherrypy.tools.json_out()
-    def GET(self, namestr=None, provider=None, gbif_parse=True, is_accepted=True, 
+    def GET(self, namestr=None, provider=None, is_accepted=True, gbif_parse=True,  
             scenariocode=None, color=None, **kwargs):
         """Get one or more taxon records for a scientific name string from each
         available name service.
         
         Args:
             namestr: a scientific name
-            gbif_parse: flag to indicate whether to first use the GBIF parser 
-                to parse a scientific name into canonical name 
+            provider: comma-delimited list of requested provider codes.  Codes are delimited
+                for each in lmtrex.common.lmconstants ServiceProvider
+            is_accepted: flag to indicate whether to limit to 'valid' or  'accepted' taxa 
+                in the ITIS or GBIF Backbone Taxonomy
+            gbif_parse: flag to indicate whether to first use the GBIF parser to parse a 
+                scientific name into canonical name
+            scenariocode: for Lifemapper (lm) provider, filter available SDM (predicted distribution) 
+                layer results by the given scenariocode (for past, present, or future predicted 
+                distribution)
+            color:  for Lifemapper (lm) provider, name of the desired color palette for predicted 
+                distribution layers.  Options at lmtrex.common.lmconstants Lifemapper.VALID_PALETTES
         Return:
-            a dictionary with keys for each service queried.  Values contain 
-            lmtrex.services.api.v1.S2nOutput object with records as a 
-            list of dictionaries of Lifemapper records corresponding to 
-            maps with URLs and their layers in the Lifemapper archive
+            A lmtrex.common.s2n_type S2nOutput object containing records for each provider.  Each provider 
+            element is a S2nOutput object with records as a list of dictionaries following the 
+            lmtrex.common.s2n_type S2nSchema.MAP corresponding to map layers available from the provider.
         """
         error_description = None
         http_status = int(HTTPStatus.OK)

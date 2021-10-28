@@ -336,7 +336,7 @@ class GbifAPI(APIQuery):
             cls, dataset_key, count_only, logger=None):
         """
         Count and optionally return (a limited number of) records with the given 
-        dataset_key.
+        dataset_key.  This currently only returns the first page (0-limit) of records.
         
         Args:
             dataset_key: unique identifier for the dataset, assigned by GBIF
