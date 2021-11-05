@@ -35,20 +35,20 @@ paths:
         - name
       summary: 'Get taxonomic information for a scientific name'
       description: Get taxonomic information for a scientific name from available providers
-      operationId: nameTentacles
+      operationId: name
       parameters:
         - $ref: '#/components/parameters/namestr'
         - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/is_accepted'
         - $ref: '#/components/parameters/gbif_parse'
         - $ref: '#/components/parameters/gbif_count'
-        - $ref: '#/components/parameters/is_accepted'
       responses:
         '200':
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/names_tentacles'
+                $ref: '#/components/schemas/name'
               examples:
                 Denitrobacterium etoxificans:
                   $ref: >-
@@ -57,68 +57,18 @@ paths:
                   $ref: '#/components/examples/names_Plagioecia_patina'
                 Tulipa ylvestris:
                   $ref: '#/components/examples/names_Tulipa_sylvestris'
-#  '/name/gbif/{namestr}':
-#    get:
-#      tags:
-#        - name
-#      summary: 'GBIF : Get taxonomy information for a scientific name'
-#      description: >-
-#        Get taxonomy information for a scientific name from the Global
-#        Biodiversity Information Facility (GBIF) Backbone Taxonomy
-#      operationId: nameGBIF
-#      parameters:
-#        - $ref: '#/components/parameters/namestr'
-#        - $ref: '#/components/parameters/gbif_parse'
-#        - $ref: '#/components/parameters/gbif_count'
-#        - $ref: '#/components/parameters/is_accepted'
-#      responses:
-#        '200':
-#          description: successful operation
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/names_gbif'
-#              examples:
-#                Denitrobacterium etoxificans:
-#                  $ref: >-
-#                    #/components/examples/names_gbif_Denitrobacterium_detoxificans
-#                Plagioecia patina:
-#                  $ref: '#/components/examples/names_gbif_Plagioecia_patina'
-#                Tulipa ylvestris:
-#                  $ref: '#/components/examples/names_gbif_Tulipa_sylvestris'
-#  '/name/itis/{namestr}':
-#    get:
-#      tags:
-#        - name
-#      summary: 'ITIS : Get species determination information'
-#      description: >-
-#        Get taxonomy information for a scientific name from the Integrated
-#        Taxonomic Information System (ITIS)
-#      operationId: nameITIS
-#      parameters:
-#        - $ref: '#/components/parameters/namestr'
-#        - $ref: '#/components/parameters/gbif_parse'
-#      responses:
-#        '200':
-#          description: successful operation
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/names_itis'
-#              examples:
-#                Denitrobacterium etoxificans:
-#                  $ref: >-
-#                    #/components/examples/names_itis_Denitrobacterium_detoxificans
+                  
   '/occ/{occurrenceid}':
     get:
       tags:
         - occ
-      summary: 'Tentacles : Get specimen occurrence information'
+      summary: 'Get specimen occurrence information'
       description: Get specimen occurrence information from available services
-      operationId: occTentacles
+      operationId: occ
       parameters:
         - $ref: '#/components/parameters/occurrenceid'
         - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/dataset_key'
         - $ref: '#/components/parameters/count_only'
       responses:
         '200':
@@ -127,134 +77,13 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/occ_tentacles'
-                  - $ref: '#/components/schemas/occ_tentacles_with_records'
+                  - $ref: '#/components/schemas/occ'
+                  - $ref: '#/components/schemas/occ_with_records'
               examples:
                 KU Bird occurrence:
-                  $ref: '#/components/examples/occ_tentacles'
+                  $ref: '#/components/examples/occ'
                 KU Bird Occurence (count only):
-                  $ref: '#/components/examples/occ_tentacles_count_only'
-#  '/occ/gbif/{occurrenceid}':
-#    get:
-#      tags:
-#        - occ
-#      summary: 'ITIS : Get specimen occurrence information'
-#      description: >-
-#        Get specimen occurrence information from the Global Biodiversity
-#        Information Facility (GBIF)
-#      operationId: occGBIF
-#      parameters:
-#        - $ref: '#/components/parameters/occurrenceid'
-#        - $ref: '#/components/parameters/count_only'
-#      responses:
-#        '200':
-#          description: successful operation
-#          content:
-#            application/json:
-#              schema:
-#                oneOf:
-#                  - $ref: '#/components/schemas/occ_gbif'
-#                  - $ref: '#/components/schemas/occ_gbif_with_records'
-#              examples:
-#                KU Birds dataset:
-#                  $ref: '#/components/examples/occ_gbif'
-#                KU Birds dataset (count only):
-#                  $ref: '#/components/examples/occ_gbif_count_only'
-#  '/occ/idb/{occurrenceid}':
-#    get:
-#      tags:
-#        - occ
-#      summary: 'iDigBio : Get specimen occurrence information'
-#      description: >-
-#        Get specimen occurrence information from the Integrated Digitized
-#        Biocollections (iDigBio)
-#      operationId: occIdb
-#      parameters:
-#        - $ref: '#/components/parameters/occurrenceid'
-#        - $ref: '#/components/parameters/count_only'
-#      responses:
-#        '200':
-#          description: successful operation
-#          content:
-#            application/json:
-#              schema:
-#                oneOf:
-#                  - $ref: '#/components/schemas/occ_idb'
-#                  - $ref: '#/components/schemas/occ_idb_with_records'
-#              examples:
-#                KU Birds occurrence:
-#                  $ref: '#/components/examples/occ_idb'
-#                KU Birds occurrence (count only):
-#                  $ref: '#/components/examples/occ_idb_count_only'
-#  '/occ/mopho/{occurrenceid}':
-#    get:
-#      tags:
-#        - occ
-#      summary: 'MorphoSource : Get specimen occurrence information'
-#      description: Get information related to specimen occurrences from MorphoSource
-#      operationId: occMopho
-#      parameters:
-#        - $ref: '#/components/parameters/occurrenceid'
-#        - $ref: '#/components/parameters/count_only'
-#      responses:
-#        '200':
-#          description: successful operation
-#          content:
-#            application/json:
-#              schema:
-#                oneOf:
-#                  - $ref: '#/components/schemas/occ_mopho'
-#                  - $ref: '#/components/schemas/occ_mopho_with_records'
-#              examples:
-#                KU Bird occurrence:
-#                  $ref: '#/components/examples/occ_mopho'
-#                KU Bird Occurence (count only):
-#                  $ref: '#/components/examples/occ_mopho_count_only'
-#  '/occ/specify/{occurrenceid}':
-#    get:
-#      tags:
-#        - occ
-#      summary: 'Specify : Get specimen occurrence information'
-#      description: Get specimen occurrence information from Specify
-#      operationId: occSpecify
-#      parameters:
-#        - $ref: '#/components/parameters/occurrenceid'
-#      responses:
-#        '200':
-#          description: successful operation
-#          content:
-#            application/json:
-#              schema:
-#                oneOf:
-#                  - $ref: '#/components/schemas/occ_specify_with_records'
-#              examples:
-#                KU Fish Occurence:
-#                  $ref: '#/components/examples/occ_specify'
-  '/dataset/{datasetguid}':
-    get:
-      tags:
-        - dataset
-      summary: 'Get a list of occurrences for a dataset'
-      description: Get a list of occurrences in GBIF for a dataset
-      operationId: dataset
-      parameters:
-        - $ref: '#/components/parameters/datasetguid'
-        - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/count_only'
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/dataset'
-                  - $ref: '#/components/schemas/dataset_with_records'
-              examples:
-                KU Birds dataset:
-                  $ref: '#/components/examples/dataset'
-                KU Birds dataset (count only):
-                  $ref: '#/components/examples/dataset_count_only'
+                  $ref: '#/components/examples/occ_count_only'
   '/map/':
     get:
       tags:
@@ -265,6 +94,10 @@ paths:
       parameters:
         - $ref: '#/components/parameters/namestr'
         - $ref: '#/components/parameters/provider'
+        - $ref: '#/components/parameters/gbif_parse'
+        - $ref: '#/components/parameters/is_accepted'
+        - $ref: '#/components/parameters/scenariocode'
+        - $ref: '#/components/parameters/color'
       responses:
         '200':
           description: successful operation
@@ -369,11 +202,25 @@ components:
           value: Acer skutchii Rehder
         Acer saccharum Marshall:
           value: Acer saccharum Marshall
+    provider:
+      name: provider
+      in: query
+      description: Code indicating one or more providers to query
+      required: false
+      enum:
+        - 'gbif'
+        - 'idb'
+        - 'ipni'
+        - 'itis'
+        - 'lm'
+        - 'mopho'
+        - 'specify'
+        - 'worms'
     gbif_parse:
       name: gbif_parse
       in: query
       description: >-
-        whether to parse the scientific name (removing author and date
+        Flag indicating whether to parse the scientific name into a canonical name
         information)
       required: false
       schema:
@@ -383,7 +230,7 @@ components:
       name: gbif_count
       in: query
       description: >-
-        Whether to include in the response `occurrence_count` for a count of
+        Flag indicating whether to include in the response `occurrence_count` for a count of
         specimen occurrences in GBIF and and `occurrence_url` for a query to
         retrieve those specimen occurrences
       required: false
@@ -393,15 +240,15 @@ components:
     gbif_accepted:
       name: gbif_accepted
       in: query
-      description: Whether to limit the response to `ACCEPTED` or `VALID` names
+      description: Flag indicating whether to limit the response to `ACCEPTED` or `VALID` names
       required: false
       schema:
         type: boolean
         default: true
-    datasetguid:
-      name: datasetguid
+    dataset_key:
+      name: dataset_key
       in: path
-      description: Dataset GUID
+      description: Dataset GUID from GBIF
       required: true
       schema:
         $ref: '#/components/schemas/guid'
@@ -439,7 +286,7 @@ components:
     count_only:
       name: count_only
       in: query
-      description: Whether to limit the response to a count of results
+      description: Flag indicating whether to limit the response to a count of results
       required: false
       schema:
         type: boolean
@@ -447,7 +294,7 @@ components:
     count_only_default:
       name: count_only
       in: query
-      description: Whether to limit the response to a count of results
+      description: Flag indicating whether whether to limit the response to a count of results
       required: false
       schema:
         type: boolean
@@ -458,13 +305,10 @@ components:
       properties:
         count:
           $ref: '#/components/schemas/count'
-        query_term:
-          type: string
-          example: 'Plagioecia patina'
         service:
           type: string
         provider:
-          type: string
+          $ref: '#/components/schemas/provider'
         provider_query:
           type: object
           items:
@@ -483,16 +327,51 @@ components:
         there are usually 0 or 1 matches
       minimum: 0
       example: 1
-    guid:
-      type: string
-      minLength: 36
-      maxLength: 36
-    etag:
-      type: integer
-      minimum: 40
-      maximum: 40
-      example: f81047edaf16be575d75542872e01580be9a9a2b
-    names_tentacles:
+    view_url:
+       type: string
+       description: URL to provider web page for this data
+    api_url:
+       type: string
+       description: URL for provider api query for this data
+    provider:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - 'gbif'
+            - 'idb'
+            - 'ipni'
+            - 'itis'
+            - 'lm'
+            - 'mopho'
+            - 'specify'
+            - 'worms'
+          description: parameter string used for requesting this provider
+        label:
+          type: string
+          enum:
+            - 'GBIF'
+            - 'iDigBio'
+            - 'IPNI'
+            - 'ITIS'
+            - 'Lifemapper'
+            - 'MorphoSource'
+            - 'Specify'
+            - 'WoRMS'
+          description: Name of the provider
+        icon_url:
+          type: string
+          description: URL for retrieving the provider icon
+        status_code:
+          type: integer
+          description: HTTP status code for the request
+        query_url:
+          type: array
+          items:
+            type:string
+          description: Array of URLs used to assemble the response      
+    names_all:
       allOf:
         - $ref: '#/components/schemas/wrapper'
         - type: object
@@ -502,19 +381,13 @@ components:
               enum:
                 - 'name'
             provider:
-              type: string
-              enum:
-                - 'S2N'
+              $ref: '#/components/schemas/provider'
             records:
               type: array
               items:
-                oneOf:
-                  - $ref: '#/components/schemas/names_gbif'
-                  - $ref: '#/components/schemas/names_itis'
-              minItems: 2
-              maxItems: 2
-              description: "First item is GBIF' response. The second one is ITIS"
-    names_gbif:
+                $ref: '#/components/schemas/names_one'
+              description: "Each item contains data from a different taxonomic provider"
+    names_one:
       allOf:
         - $ref: '#/components/schemas/wrapper'
         - type: object
@@ -527,99 +400,108 @@ components:
               type: string
               enum:
                 - 'GBIF'
+                - 'ITIS'
+                - 'WoRMS'
             records:
               type: array
               items:
                 oneOf:
-                  - $ref: '#/components/schemas/names_gbif_record'
-                  - $ref: '#/components/schemas/names_gbif_record_with_count'
-              minItems: 1
-              maxItems: 1
-    names_gbif_record:
+                  - $ref: '#/components/schemas/names_record'
+                  - $ref: '#/components/schemas/names_record_with_count'
+    names_record:
       type: object
       properties:
-        usageKey:
-          type: integer
-          minimum: 0
-          example: 1004151
-        scientificName:
+        's2n:view_url':
+          $ref: '#/components/schemas/view_url'
+        's2n:api_url':
+          $ref: '#/components/schemas/api_url'
+        's2n:status': 
+          type: string
+          description: taxonomic status of this name
+          example: 'valid'
+        's2n:scientific_name': 
           type: string
           example: 'Plagioecia patina (Lamarck, 1816)'
-        canonicalName:
+        's2n:canonical_name': 
           type: string
-          example: Plagioecia patina
-        rank:
+          example: 'Plagioecia patina'
+        's2n:common_names': 
           type: string
-          example: SPECIES
-        status:
+          example: 'red maple'
+        's2n:kingdom': 
           type: string
-          example: ACCEPTED
-        confidence:
+          description: taxonomic kingdom containing this name
+          example: 'Animalia'
+        's2n:rank': 
+          type: string
+          description: taxonomic rank of this name
+          example: 'genus'
+        's2n:synonyms':
+          type: array
+          items:
+            type:string
+          description: Array of synonyms of this name
+        's2n:hierarchy':
+          $ref: '#/components/schemas/hierarchy'
+        's2n:gbif_occurrence_count':
           type: integer
+          description: Number of occurrences reported by GBIF for this name
+        's2n:gbif_occurrence_url':
+          type: string
+          description: API URL to query for specimen occurrences in GBIF for this name
+        's2n:gbif_confidence':
+          type: number
+          description: Confidence score assigned by GBIF
           minimum: 0
           maximum: 100
           example: 98
-        note:
-          type: string
-          example: >-
-            Similarity: name=110; authorship=0; classification=-2; rank=5;
-            status=1; nextMatch=5
-        matchType:
-          type: string
-          example: EXACT
-        kingdom:
-          type: string
-          example: Animalia
-        phylum:
-          type: string
-          example: Bryozoa
-        order:
-          type: string
-          example: Cyclostomatida
-        family:
-          type: string
-          example: Plagioeciidae
-        genus:
-          type: string
-          example: Plagioecia
-        species:
-          type: string
-          example: Plagioecia patina
-        kingdomKey:
+        's2n:gbif_taxon_key':
           type: integer
-          minimum: 1
-          example: 1
-        phylumKey:
+          description: GBIF identifier key for this taxon
+        's2n:itis_tsn':
           type: integer
-          minimum: 1
-          example: 53
-        classKey:
-          type: integer
-          minimum: 1
-          example: 226
-        orderKey:
-          type: integer
-          minimum: 1
-          example: 1497
-        familyKey:
-          type: integer
-          minimum: 1
-          example: 9593
-        genusKey:
-          type: integer
-          minimum: 1
-          example: 1004147
-        speciesKey:
-          type: integer
-          minimum: 1
-          example: 1004151
-        synonym:
-          type: boolean
-          example: false
-        class:
+          description: ITIS identifier key for this taxon
+        's2n:itis_credibility':
           type: string
-          example: Stenolaemata
-    names_gbif_record_with_count:
+          description: Category assigned by ITIS indicating taxon credibility
+          example: 'TWG standards met'
+        's2n:worms_valid_AphiaID':
+          type: integer
+          description: WoRMS identifier key for this taxon
+        's2n:worms_lsid':
+          type: string
+          description: WoRMS resolvable unique identifier key for this taxon
+        's2n:worms_isMarine':
+          type: integer
+          description: WoRMS flag indicating if the taxon is a marine organism
+          minimum: 0
+          maximum: 1
+        's2n:worms_isBrackish':
+          type: integer
+          description: WoRMS flag indicating if the organism lives in brackish water
+          minimum: 0
+          maximum: 1
+        's2n:worms_isFreshwater':
+          type: integer
+          description: WoRMS flag indicating if the organism lives in fresh water
+          minimum: 0
+          maximum: 1
+        's2n:worms_isTerrestrial':
+          type: integer
+          description: WoRMS flag indicating if the taxon is a terrestrial organism
+          minimum: 0
+          maximum: 1
+        's2n:worms_isExtinct':
+          type: integer
+          description: WoRMS flag indicating if the taxon is an extinct organism
+          minimum: 0
+          maximum: 1
+        's2n:worms_match_type':
+          type: string
+          description: WoRMS code indicating how the taxon requested matched the response
+          example: 'exact'
+
+    names_record_with_count:
       allOf:
         - type: object
           properties:
@@ -629,180 +511,34 @@ components:
             occurrences_url:
               type: string
               example: 'https://www.gbif.org/species/1004151'
-        - $ref: '#/components/schemas/names_gbif_record'
-    names_itis:
-      allOf:
-        - $ref: '#/components/schemas/wrapper'
-        - type: object
-          properties:
-            service:
-              type: string
-              enum:
-                - 'name'
-            provider:
-              type: string
-              enum:
-                - 'ITIS Solr Web Services'
-            records:
-              type: array
-              items:
-                type: object
-                properties:
-                  tsn:
-                    type: integer
-                    minimum: 0
-                    example: 961092
-                  nameWInd:
-                    type: string
-                    example: Denitrobacterium detoxificans
-                  nameWOInd:
-                    type: string
-                    example: Denitrobacterium detoxificans
-                  unit1:
-                    type: string
-                    example: Denitrobacterium
-                  unit2:
-                    type: string
-                    example: detoxificans
-                  usage:
-                    type: string
-                    example: valid
-                  credibilityRating:
-                    type: string
-                    example: TWG standards met
-                  taxonAuthor:
-                    type: string
-                    example: 'Anderson et al., 2000'
-                  kingdom:
-                    type: string
-                    example: Bacteria
-                  parentTSN:
-                    type: integer
-                    minimum: 0
-                    example: 957030
-                  rankID:
-                    type: integer
-                    minimum: 0
-                    example: 220
-                  rank:
-                    type: string
-                    example: Species
-                  hierarchySoFar:
-                    type: string
-                    example: >-
-                      961092:$Bacteria$Posibacteria$Actinobacteria$Coriobacteridae$Coriobacteriales$Coriobacterineae$Coriobacteriaceae$Denitrobacterium$Denitrobacterium
-                      detoxificans$
-                  hierarchySoFarWRanks:
-                    type: string
-                    example: >-
-                      961092:$Kingdom:Bacteria$Subkingdom:Posibacteria$Phylum:Actinobacteria$Subclass:Coriobacteridae$Order:Coriobacteriales$Suborder:Coriobacterineae$Family:Coriobacteriaceae$Genus:Denitrobacterium$Species:Denitrobacterium
-                      detoxificans$
-                  hierarchyTSN:
-                    type: string
-                    example: >-
-                      $50$956097$956099$956180$956210$956291$956365$957030$961092$
-                  otherSource:
-                    type: string
-                    example: >-
-                      $SRC$1096$website$Bacterial Nomenclature up-to-date$Jun
-                      2012$2012-07-02 00:00:00$Bacterial Nomenclature up-to-date
-                      published by the Leibniz Institute DSMZ-German Collection
-                      of Microorganisms and Cell Cultures at
-                      http://www.dsmz.de/bacterial-diversity/bacterial-nomenclature-up-to-date.html$2015-03-02
-                      00:00:00$
-                  comment:
-                    type: string
-                    example: >-
-                      $30315$DSMZ$sp. nov. (VP)$2014-12-22 13:38:32$2014-12-22
-                      00:00:00$,$36774$DSMZ$International Journal of Systematic
-                      and Evolutionary Microbiology (IJSEM), 2000 50:637:
-                      Original publication in the IJSEM$2015-03-02
-                      15:13:23$2015-03-02 00:00:00$,$36775$DSMZ$Risk group 1;
-                      Strains ATCC 700546, NPOH1$2015-03-02 15:13:24$2015-03-02
-                      00:00:00$
-                  createDate:
-                    type: string
-                    format: date-time
-                    example: 2015-03-02T13:52:49.000Z
-                  updateDate:
-                    type: string
-                    format: date-time
-                    example: 2015-03-02T00:00:00.000Z
-                  hierarchicalSort:
-                    type: string
-                    example: >-
-                      9990Bacteria-9980Posibacteria-9970Actinobacteria-9930Coriobacteridae-9900Coriobacteriales-9890Coriobacterineae-9860Coriobacteriaceae-9820Denitrobacterium-9780Denitrobacterium
-                      detoxificans
-                  _version_:
-                    type: integer
-                    minimum: 0
-                    example: 1687796933281710000
-              minItems: 1
-              maxItems: 1
-    occ_specify_base:
-      allOf:
-        - $ref: '#/components/schemas/wrapper'
-        - type: object
-          properties:
-            service:
-              type: string
-              enum:
-                - 'occ'
-            provider:
-              type: string
-              enum:
-                - 'Specify'
-    occ_specify:
-      allOf:
-        - $ref: '#/components/schemas/occ_specify_base'
-        - type: object
-          properties:
-            records:
-              type: array
-              items:
-                $ref: '#/components/schemas/occ_specify_record'
-              minItems: 0
-              maxItems: 0
-    occ_specify_with_records:
-      allOf:
-        - $ref: '#/components/schemas/wrapper'
-        - type: object
-          properties:
-            service:
-              type: string
-              enum:
-                - 'occ'
-            provider:
-              type: string
-              enum:
-                - 'Specify'
-            records:
-              type: array
-              items:
-                oneOf:
-                  - $ref: '#/components/schemas/occ_specify_record'
-              minItems: 1
-              maxItems: 1
-    occ_specify_record:
+        - $ref: '#/components/schemas/names_record'
+        
+    hierarchy:
       type: object
       properties:
-        core:
-          type: array
-          items: {}
-        extensions:
-          type: array
-          items:
-            type: object
-            properties:
-              class:
-                type: string
-                example: 'http://data.ggbn.org/schemas/ggbn/terms/Amplification'
-              records:
-                type: array
-                items:
-                  type: array
-                  items: {}
-    occ_tentacles_base:
+        kingdom:
+          type: string
+          example: 'Animalia'
+        phylum:
+          type: string
+          example: 'Bryozoa'
+        class:
+          type: string
+          example: 'Stenolaemata'
+        order:
+          type: string
+          example: 'Cyclostomatida'
+        family:
+          type: string
+          example: 'Plagioeciidae'
+        genus:
+          type: string
+          example: 'Plagioecia'
+        species:
+          type: string
+          example: 'Plagioecia patina'
+          
+    occ_all:
       allOf:
         - $ref: '#/components/schemas/wrapper'
         - type: object
@@ -812,40 +548,13 @@ components:
               enum:
                 - 'occ'
             provider:
-              type: string
-              enum:
-                - 'S2N'
-    occ_tentacles:
-      allOf:
-        - $ref: '#/components/schemas/occ_tentacles_base'
-        - type: object
-          properties:
+              $ref: '#/components/schemas/provider'
             records:
               type: array
               items:
-                allOf:
-                  - $ref: '#/components/schemas/occ_specify'
-                  - $ref: '#/components/schemas/occ_gbif'
-                  - $ref: '#/components/schemas/occ_idb'
-                  - $ref: '#/components/schemas/occ_mopho'
-              minItems: 4
-              maxItems: 4
-    occ_tentacles_with_records:
-      allOf:
-        - $ref: '#/components/schemas/occ_tentacles_base'
-        - type: object
-          properties:
-            records:
-              type: array
-              items:
-                allOf:
-                  - $ref: '#/components/schemas/occ_specify_with_records'
-                  - $ref: '#/components/schemas/occ_gbif_with_records'
-                  - $ref: '#/components/schemas/occ_idb_with_records'
-                  - $ref: '#/components/schemas/occ_mopho_with_records'
-              minItems: 4
-              maxItems: 4
-    occ_gbif_base:
+                $ref: '#/components/schemas/occ_one'
+              description: "Each item contains data from a different specimen occurrence provider"
+    occ_one:
       allOf:
         - $ref: '#/components/schemas/wrapper'
         - type: object
@@ -855,34 +564,100 @@ components:
               enum:
                 - 'occ'
             provider:
-              type: string
-              enum:
-                - 'GBIF'
-    occ_gbif:
-      allOf:
-        - $ref: '#/components/schemas/occ_gbif_base'
-        - type: object
-          properties:
+              $ref: '#/components/schemas/provider'
             records:
               type: array
               items:
-                $ref: '#/components/schemas/occ_gbif_record'
-              minItems: 0
-              maxItems: 0
-    occ_gbif_with_records:
-      allOf:
-        - $ref: '#/components/schemas/occ_gbif_base'
-        - type: object
-          properties:
-            records:
-              type: array
-              items:
-                $ref: '#/components/schemas/occ_gbif_record'
-              minItems: 1
-              maxItems: 1
-    occ_gbif_record:
+                $ref: '#/components/schemas/occ_record'
+    occ_record:
       type: object
       properties:
+        's2n:view_url':
+          $ref: '#/components/schemas/view_url'
+        's2n:api_url':
+          $ref: '#/components/schemas/api_url'
+        'dwc:scientificName':
+          type: string
+          description: Scientific name for this object
+          example: 'Eryngium ebracteatum Lam.'
+        'dwc:taxonRank':
+          type: string
+          description: Taxonomic rank for the taxon identified for this object
+          example: 'SPECIES'
+        'dwc:kingdom': 
+          type: string
+          example: Animalia
+        'dwc:phylum':
+          type: string
+          example: Chordata
+        'dwc:class':
+          type: string
+          example: Aves          
+        'dwc:order':
+          type: string
+          example: Passeriformes
+        'dwc:family':
+          type: string
+          example: Pachycephalidae
+        'dwc:genus':
+          type: string
+          example: Pachycephala
+        'dwc:species':
+          type: string
+          example: Pachycephala pectoralis
+        'dwc:specificEpithet': 
+          type: string 
+          example: pectoralis
+        'dwc:scientificNameAuthorship': 
+          type: string
+          example: 'Pachycephala pectoralis (Latham, 1802)'
+        'dwc:catalogNumber':
+          type: string
+          example: '21469'
+        'dwc:collectionCode':
+          type: string
+          example: 'FLOR'
+        'dwc:institutionCode':
+          type: string
+          example: 'Universidade Federal de Santa Catarina'
+        'dwc:otherCatalogNumbers':
+          type: array
+          items: string
+
+        'dwc:datasetName':
+          type: string
+          example: 'FLOR - Herbário do Departamento de Botânica da Universidade Federal de Santa Catarina'
+        'dwc:year': COMMUNITY_SCHEMA.DWC,
+        'dwc:month': COMMUNITY_SCHEMA.DWC,
+        'dwc:day': COMMUNITY_SCHEMA.DWC,
+        'dwc:recordedBy': COMMUNITY_SCHEMA.DWC,
+        'dwc:fieldNumber': COMMUNITY_SCHEMA.DWC,
+        'dwc:locality': COMMUNITY_SCHEMA.DWC,
+        'dwc:county': COMMUNITY_SCHEMA.DWC,
+        'dwc:stateProvince': COMMUNITY_SCHEMA.DWC,
+        'dwc:country': COMMUNITY_SCHEMA.DWC,
+        'dwc:countryCode': COMMUNITY_SCHEMA.DWC,
+        'dwc:decimalLongitude': COMMUNITY_SCHEMA.DWC,           # string
+        'dwc:decimalLatitude': COMMUNITY_SCHEMA.DWC,            # string
+        'dwc:geodeticDatum': COMMUNITY_SCHEMA.DWC,
+        'dwc:basisOfRecord': COMMUNITY_SCHEMA.DWC,
+        'dwc:preparations': COMMUNITY_SCHEMA.DWC,
+        'dwc:associatedReferences': COMMUNITY_SCHEMA.DWC,       # list of strings 
+        'dwc:associatedSequences': COMMUNITY_SCHEMA.DWC,        # list of strings
+        's2n:issues': COMMUNITY_SCHEMA.S2N,               # dictionary of codes: descriptions
+        'dcterms:accessRights': COMMUNITY_SCHEMA.DCT,
+        'dcterms:language': COMMUNITY_SCHEMA.DCT,
+        'dcterms:license': COMMUNITY_SCHEMA.DCT,
+        'dcterms:modified': COMMUNITY_SCHEMA.DCT,
+        'dcterms:type': COMMUNITY_SCHEMA.DCT,
+        'gbif:gbifID': COMMUNITY_SCHEMA.GBIF,
+        'gbif:publishingOrgKey': COMMUNITY_SCHEMA.GBIF,
+        'gbif:datasetKey': COMMUNITY_SCHEMA.GBIF,
+        'gbif:acceptedScientificName': COMMUNITY_SCHEMA.GBIF,
+        'idigbio:uuid': COMMUNITY_SCHEMA.IDB,
+        'mopho:specimen.specimen_id': COMMUNITY_SCHEMA.MS,
+        's2n:specify_identifier': COMMUNITY_SCHEMA.S2N,
+
         key:
           type: integer
           minimum: 1
@@ -979,6 +754,9 @@ components:
         phylum:
           type: string
           example: Chordata
+        class:
+          type: string
+          example: Aves          
         order:
           type: string
           example: Passeriformes
