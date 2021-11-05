@@ -7,7 +7,7 @@ from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_outp
 from lmtrex.services.api.v1.base import _S2nService
 
 from lmtrex.tools.provider.gbif import GbifAPI
-from lmtrex.tools.provider.ipni import IpniAPI
+# from lmtrex.tools.provider.ipni import IpniAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.tools.provider.worms import WormsAPI
 from lmtrex.tools.utils import get_traceback
@@ -66,19 +66,19 @@ class NameSvc(_S2nService):
                 output.format_records(self.ORDERED_FIELDNAMES)
         return output.response
 
-    # ...............................................
-    def _get_ipni_records(self, namestr, is_accepted):
-        try:
-            output = IpniAPI.match_name(namestr, is_accepted=is_accepted)
-        except Exception as e:
-            traceback = get_traceback()
-            output = IpniAPI.get_api_failure(
-                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
-                errinfo={'error': [traceback]})
-        else:
-            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
-            output.format_records(self.ORDERED_FIELDNAMES)
-        return output.response
+    # # ...............................................
+    # def _get_ipni_records(self, namestr, is_accepted):
+    #     try:
+    #         output = IpniAPI.match_name(namestr, is_accepted=is_accepted)
+    #     except Exception as e:
+    #         traceback = get_traceback()
+    #         output = IpniAPI.get_api_failure(
+    #             self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+    #             errinfo={'error': [traceback]})
+    #     else:
+    #         output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+    #         output.format_records(self.ORDERED_FIELDNAMES)
+    #     return output.response
 
     # ...............................................
     def _get_itis_records(self, namestr, is_accepted, kingdom):
@@ -125,10 +125,10 @@ class NameSvc(_S2nService):
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
                     goutput = self._get_gbif_records(namestr, is_accepted, gbif_count)
                     allrecs.append(goutput)
-                # IPNI
-                elif pr == ServiceProvider.IPNI[S2nKey.PARAM]:
-                    isoutput = self._get_ipni_records(namestr, is_accepted)
-                    allrecs.append(isoutput)
+                # # IPNI
+                # elif pr == ServiceProvider.IPNI[S2nKey.PARAM]:
+                #     isoutput = self._get_ipni_records(namestr, is_accepted)
+                #     allrecs.append(isoutput)
                 #  ITIS
                 elif pr == ServiceProvider.ITISSolr[S2nKey.PARAM]:
                     isoutput = self._get_itis_records(namestr, is_accepted, kingdom)
