@@ -180,7 +180,7 @@ class OccurrenceSvc(_S2nService):
         else:   
             # No filter_params defined for Name service yet
             try:
-                good_params, errinfo = self._standardize_params(
+                good_params, _, errinfo = self._standardize_params(
                 occid=occid, provider=provider, dataset_key=dataset_key, 
                 count_only=count_only)
                 # Bad parameters

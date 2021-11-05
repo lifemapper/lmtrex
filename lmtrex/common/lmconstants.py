@@ -109,6 +109,7 @@ class TST_VALUES:
         'KU :KUIZ:1743', 'KU :KUIZ:3019', 'KU :KUIZ:1816', 'KU :KUIZ:2542', 
         'KU :KUIZ:2396']
     NAMES = [
+        'Eucosma raracana',
         'Plagioecia patina',
         'Plagiloecia patina Lamarck, 1816',
         'Plagioecia patina (Lamarck, 1816)',

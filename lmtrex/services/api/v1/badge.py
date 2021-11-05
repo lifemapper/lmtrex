@@ -51,7 +51,7 @@ class BadgeSvc(_S2nService):
         error_description = None
         http_status = int(HTTPStatus.OK)
         try:
-            good_params, errinfo = self._standardize_params(
+            good_params, _, errinfo = self._standardize_params(
                 provider=provider, icon_status=icon_status)
             # Bad parameters
             try:

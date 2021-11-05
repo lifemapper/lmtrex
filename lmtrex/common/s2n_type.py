@@ -553,15 +553,17 @@ class S2nOutput(object):
             raise Exception('Unrecognized property {}'.format(prop))
         
     def append_value(self, prop, value):
-        if prop == S2nKey.RECORDS:
-            # Append or set
-            self._response[prop].append(value)
-        elif prop == S2nKey.PROVIDER_QUERY_URL:
-            # Append or set
-            self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL].append(value)
-        else:
-            raise Exception(
-                'Property {} is not a multi-value element, use `set_value`'.format(prop))
+        # Do not add null value to list
+        if value:
+            if prop == S2nKey.RECORDS:
+                # Append or set
+                self._response[prop].append(value)
+            elif prop == S2nKey.PROVIDER_QUERY_URL:
+                # Append or set
+                self._response[S2nKey.PROVIDER][S2nKey.PROVIDER_QUERY_URL].append(value)
+            else:
+                raise Exception(
+                    'Property {} is not a multi-value element, use `set_value`'.format(prop))
 
     def append_error(self, error_type, error_desc):
         # Append or set

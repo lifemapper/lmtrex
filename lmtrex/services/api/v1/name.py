@@ -23,6 +23,7 @@ class NameSvc(_S2nService):
     def _get_gbif_records(self, namestr, is_accepted, gbif_count):
         try:
             output = GbifAPI.match_name(namestr, is_accepted=is_accepted)
+            gbif_queries = output.provider['query_url']
         except Exception as e:
             traceback = get_traceback()
             output = GbifAPI.get_api_failure(
@@ -30,6 +31,7 @@ class NameSvc(_S2nService):
                 errinfo={'error': [traceback]})
         else:
             output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            
 
             # Add occurrence count to name records
             if gbif_count is True:
@@ -178,7 +180,7 @@ class NameSvc(_S2nService):
         else:
             # No filter_params defined for Name service yet
             try:
-                good_params, errinfo = self._standardize_params(
+                good_params, standardize_name_query, errinfo = self._standardize_params(
                     namestr=namestr, provider=provider, is_accepted=is_accepted, 
                     gbif_parse=gbif_parse, gbif_count=gbif_count, kingdom=kingdom)
                 # Bad parameters
@@ -198,6 +200,9 @@ class NameSvc(_S2nService):
                         output = self.get_records(
                             good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
                             good_params['gbif_count'], good_params['kingdom'])
+
+                        # Add name-matching query if present
+                        output.append_value(S2nKey.PROVIDER_QUERY_URL, standardize_name_query)
     
                         # Add message on invalid parameters to output
                         try:

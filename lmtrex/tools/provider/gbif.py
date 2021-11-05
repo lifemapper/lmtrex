@@ -565,7 +565,7 @@ class GbifAPI(APIQuery):
                     name_api.url, cls.__class__.__name__)
                 log_error(msg, logger=logger)
                 output[S2nKey.ERRORS] = msg
-        return output
+        return output, name_api.url
 
     # ...............................................
     @classmethod

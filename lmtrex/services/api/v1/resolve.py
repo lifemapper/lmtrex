@@ -123,7 +123,7 @@ class ResolveSvc(_S2nService):
             output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, errinfo = self._standardize_params(
+                good_params, _, errinfo = self._standardize_params(
                     occid=occid, provider=provider)
                 # Bad parameters
                 try:

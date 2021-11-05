@@ -28,26 +28,28 @@ class MapSvc(_S2nService):
             errinfo = add_errinfo(errinfo, 'error', traceback)
             scinames.append(namestr)
         else:
+            gbif_queries = nm_output.provider_query
             for rec in nm_output.records:
                 try:
                     scinames.append(rec['s2n:scientific_name'])
                 except Exception as e:
                     errinfo['warning'].append(
                         'No scientificName element in GBIF record {} for {}'.format(rec, namestr))
-        return scinames, errinfo
+        return scinames, gbif_queries, errinfo
 
     # ...............................................
     def _get_lifemapper_records(self, namestr, is_accepted, scenariocodes, color):
         errinfo = {}
+        stdrecs = []
+        statii = []
+        queries = []
         # First: get name(s)
         if is_accepted is False:
             scinames = [namestr] 
         else:
-            scinames, errinfo = self._match_gbif_names(namestr, is_accepted=is_accepted)
+            scinames, gbif_queries, errinfo = self._match_gbif_names(namestr, is_accepted=is_accepted)
+            queries.extend(gbif_queries)
         # Second: get completed Lifemapper projections (map layers)
-        stdrecs = []
-        statii = []
-        queries = []
         for sname in scinames:
             # TODO: search on occurrenceset, then also pull projection layers
             try:
@@ -135,7 +137,7 @@ class MapSvc(_S2nService):
             output = self._show_online(valid_providers)
         else:   
             try:
-                good_params, errinfo = self._standardize_params(
+                good_params, standardize_name_query, errinfo = self._standardize_params(
                     namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                     is_accepted=is_accepted, scenariocode=scenariocode, color=color)
                 # Bad parameters
@@ -155,6 +157,9 @@ class MapSvc(_S2nService):
                             good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
                             good_params['scenariocode'], good_params['color'])
                         
+                        # Add name-matching query if present
+                        output.append_value(S2nKey.PROVIDER_QUERY_URL, standardize_name_query)
+                        
                         # Add message on invalid parameters to output
                         try:
                             for err in errinfo['warning']:
@@ -172,15 +177,14 @@ class MapSvc(_S2nService):
 
 # .............................................................................
 if __name__ == '__main__':
+    scodes = [None, 'worldclim-curr']
     names = TST_VALUES.NAMES[5:9]
     names = ['Eucosma raracana', 'Tulipa sylvestris', 'Phlox longifolia Nutt']
     # names.insert(0, None)
     svc = MapSvc()
     for namestr in names:
-        for scodes in (None, 'worldclim-curr'):
-            for prov in svc.get_providers():
-                out = svc.GET(namestr=namestr, scenariocode=scodes)
-                print_s2n_output(out, do_print_rec=True)
+        out = svc.GET(namestr=namestr, scenariocode=None)
+        print_s2n_output(out, do_print_rec=True)
 
 """
 http://broker-dev.spcoco.org/api/v1/map/?provider=lm&namestr=test

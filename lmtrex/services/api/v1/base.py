@@ -149,7 +149,7 @@ class _S2nService:
 
     # ...............................................
     def parse_name_with_gbif(self, namestr):
-        output = GbifAPI.parse_name(namestr)
+        output, query = GbifAPI.parse_name(namestr)
         try:
             rec = output['record']
         except:
@@ -162,7 +162,7 @@ class _S2nService:
             if success:
                 if namestr.startswith('? '):
                     namestr = rec['scientificName']
-        return namestr
+        return namestr, query
 
     # ...............................................
     def match_name_with_itis(self, namestr):
@@ -172,7 +172,11 @@ class _S2nService:
         except:
             # Default to original namestring if match fails
             pass
-        return namestr
+        try:
+            query = output.provider_query[0]
+        except:
+            query = None
+        return namestr, query
 
     # ...............................................
     def _fix_type_new(self, key, provided_val):
@@ -469,6 +473,7 @@ class _S2nService:
             'transparent': transparent, 
             'width': width, 
             'icon_status': icon_status}
+        standardize_name_query = None
         
         providers, prov_errinfo = self._get_providers(provider, filter_params=filter_params)
         usr_params, errinfo = self._process_params(user_kwargs)
@@ -488,9 +493,9 @@ class _S2nService:
             pass
         # Replace namestr with GBIF-parsed namestr
         if namestr and (gbif_parse or itis_match):
-            usr_params['namestr'] = self.parse_name_with_gbif(namestr)
+            usr_params['namestr'], standardize_name_query = self.parse_name_with_gbif(namestr)
             
-        return usr_params, errinfo
+        return usr_params, standardize_name_query, errinfo
 
     # ..........................
     @staticmethod

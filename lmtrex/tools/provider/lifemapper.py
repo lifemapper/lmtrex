@@ -65,9 +65,9 @@ class LifemapperAPI(APIQuery):
                 return {}
             # Required map level elements
             try:
-                mapname = melt['mapName']
+                mapname = melt['map_name']
                 map_url = melt[endpt_fld]
-                layer_name = melt['layerName']
+                layer_name = melt['layer_name']
                 endpoint = '{}/{}'.format(map_url, mapname)
             except Exception as e:
                 return {}
@@ -88,17 +88,17 @@ class LifemapperAPI(APIQuery):
                 species_name = rec[sp_fld]
             except:
                 try:
-                    species_name = rec['speciesName']
+                    species_name = rec['species_name']
                 except: 
                     species_name = None
               
             # Must be spatialRaster or spatialVector
             try:
-                lyr_elt = rec['spatialRaster']
+                lyr_elt = rec['spatial_raster']
                 lyrtype = 'raster'
             except:
                 try:
-                    lyr_elt = rec['spatialVector']
+                    lyr_elt = rec['spatial_vector']
                     lyrtype = 'vector'
                 except:
                     pass
