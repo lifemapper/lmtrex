@@ -43,10 +43,19 @@ Broker is now available at [https://localhost/](https://localhost:443)
 
 ### Development
 
+Install npm and Node.js
+
+Install front-end dependencies:
+
+```
+cd ./lmtrex/lmtrex/frontend/js_src
+npm i
+```
+
 Run the containers:
 
 ```zsh
-docker compose up -d
+docker compose up
 ```
 
 Broker is now available at [http://localhost/](http://localhost:443).

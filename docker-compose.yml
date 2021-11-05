@@ -17,9 +17,8 @@ services:
   front-end:
     build:
       context: ./.
-      target: front-end
+      target: dev-front-end
     restart: unless-stopped
-    command: npm run watch
     volumes:
       - "webpack-output:/home/node/dist"
       - "./lmtrex/frontend/js_src/:/home/node/"

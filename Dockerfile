@@ -26,6 +26,18 @@ COPY --chown=specify:specify ./lmtrex ./lmtrex
 CMD ["./venv/bin/python", "-m", "lmtrex.config.broker"]
 
 
+FROM node:16.10.0-buster as dev-front-end
+
+LABEL maintainer="Specify Collections Consortium <github.com/specify>"
+
+USER node
+WORKDIR /home/node
+
+RUN mkdir dist \
+ && chown node:node dist
+
+CMD ["npm", "run", "watch"]
+
 
 FROM node:16.10.0-buster as front-end
 
