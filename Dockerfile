@@ -23,7 +23,7 @@ RUN python -m venv venv \
  && venv/bin/pip install --no-cache-dir -r ./requirements.txt
 
 COPY --chown=specify:specify ./lmtrex ./lmtrex
-CMD ./venv/bin/python -m lmtrex.config.broker
+CMD ["./venv/bin/python", "-m", "lmtrex.config.broker"]
 
 
 
@@ -36,7 +36,10 @@ WORKDIR /home/node
 
 COPY --chown=node:node lmtrex/frontend/js_src/package*.json ./
 RUN npm install
+
 RUN mkdir dist \
  && chown node:node dist
+
 COPY --chown=node:node lmtrex/frontend/js_src .
+
 RUN npm run build

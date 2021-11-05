@@ -13,6 +13,19 @@ This work has been supported by NSF Awards NSF BIO-1458422, OCI-1234983.
 
 ## Deployment
 
+To run the containers, generate `fullchain.pem` and `privkey.pem` (certificate
+and the private key) using Let's Encrypt and put these files into the
+`./lmtrex/config/` directory.
+
+While in development, you can generate self-signed certificates:
+
+```zsh
+openssl req \
+  -x509 -sha256 -nodes -newkey rsa:2048 -days 365 \
+  -keyout ./lmtrex/config/privkey.pem \
+  -out ./lmtrex/config/fullchain.pem
+```
+
 To run the production container, or the development container with HTTPs
 support, generate `fullchain.pem` and `privkey.pem` (certificate and the private
 key) using Let's Encrypt and put these files into the `./lmtrex/config/`
@@ -20,7 +33,7 @@ directory.
 
 ### Production
 
-Run the container:
+Run the containers:
 
 ```zsh
 docker compose -f docker-compose.production.yml up -d
@@ -30,41 +43,13 @@ Broker is now available at [https://localhost/](https://localhost:443)
 
 ### Development
 
-#### Without HTTPs support
-
-Run HTTP only version:
+Run the containers:
 
 ```zsh
 docker compose up -d
 ```
 
-#### With HTTPs support
-
-Generate self-signed certificates:
-
-```zsh
-openssl req \
-  -x509 -sha256 -nodes -newkey rsa:2048 -days 365 \
-  -keyout ./lmtrex/config/privkey.pem \
-  -out ./lmtrex/config/fullchain.pem
-```
-
-Go thermo-nuclear on Docker:
-```zsh
-docker compose stop
-# this ignores running container
-docker system prune --all --force --volumes
-```
-
-Run the containers:
-
-```zsh
-docker compose -f docker-compose.https.yml up -d
-```
-
-#### After deployment
-
-Broker is now available at [http://localhost/](http://localhost:80).
+Broker is now available at [http://localhost/](http://localhost:443).
 
 Webpack is watching for front-end file changes and rebuilds the bundle when
 needed.
@@ -76,3 +61,17 @@ If any front-end changes were made, run `npm run typecheck` before
 committing changes to verify validity of TypeScript types.
 
 ## Troubleshooting
+
+To delete all containers, images, networks and volumes, stop any running
+containers:
+
+```zsh
+docker compose stop
+```
+
+And run this command:
+
+```zsh
+# this ignores running container
+docker system prune --all --volumes
+```
