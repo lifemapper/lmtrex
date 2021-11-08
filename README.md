@@ -84,3 +84,22 @@ And run this command:
 # this ignores running container
 docker system prune --all --volumes
 ```
+
+### SSL certificates
+
+SSL certificates are served from the base VM, and need apache to be renewed.  
+These are administered by Letsencrypt using Certbot and are only valid for 90 days at 
+a time.  When it is time for a renewal (approx every 60 days), bring the docker 
+containers down, and start apache.  Renew the certificates, then stop apache, 
+and bring the containers up again.
+
+```zsh
+certbot certificates 
+docker compose stop
+systemctl start httpd
+certbot renew
+systemctl stop httpd
+docker compose up -d
+```
+
+
