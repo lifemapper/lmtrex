@@ -2,27 +2,12 @@ from flask import Flask, Blueprint, request, json
 from werkzeug.exceptions import HTTPException
 
 import lmtrex.tools.s2n.utils as lmutil
-from lmtrex.common.lmconstants import (APIService, BrokerParameters,
-                                       ServiceProvider, )
+from lmtrex.common.lmconstants import (APIService, BrokerParameters, ServiceProvider)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 
 app = Flask(__name__)
-
-# @app.errorhandler(HTTPException)
-# def handle_exception(e):
-#     """Return JSON instead of HTML for HTTP errors."""
-#     # start with the correct headers and status code from the error
-#     response = e.get_response()
-#     # replace the body with JSON
-#     response.data = json.dumps({
-#         "code": e.code,
-#         "name": e.name,
-#         "description": e.description,
-#     })
-#     response.content_type = "application/json"
-#     return response
 
 # .............................................................................
 class _S2nService:
@@ -149,7 +134,6 @@ class _S2nService:
                 valid_requested_params = []
                         
         return valid_requested_params, invalid_params
-
 
     # .............................................................................
     @classmethod

@@ -1,6 +1,7 @@
 from http import HTTPStatus
+from markupsafe import escape
+from urllib.error import HTTPError
 from werkzeug.exceptions import (BadRequest, InternalServerError)
-
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
@@ -15,7 +16,6 @@ from lmtrex.tools.s2n.utils import get_traceback
 
 from lmtrex.flask_app.broker.base import _S2nService
 
-# .............................................................................
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
     ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Occurrence['endpoint'])
@@ -209,7 +209,6 @@ class OccurrenceSvc(_S2nService):
                 raise InternalServerError(error_description)
 
         return output.response
-    
 
 # .............................................................................
 if __name__ == '__main__':
@@ -249,10 +248,17 @@ from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
 from lmtrex.tools.provider.mopho import MorphoSourceAPI
 from lmtrex.tools.provider.specify import SpecifyPortalAPI
+<<<<<<< HEAD
 from lmtrex.tools.s2n.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.flask_app.broker.resolve import ResolveSvc
+=======
+from lmtrex.tools.utils import get_traceback
+
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.services.api.v1.resolve import ResolveSvc
+>>>>>>> rewriting as flask app; unfinished
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 from lmtrex.services.api.v1.occ import *
