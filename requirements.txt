@@ -1,3 +1,7 @@
 flask>=2.0.2
+<<<<<<< HEAD
+=======
+cherrypy>=18.6.1
+>>>>>>> rewriting as flask app; unfinished
 requests>=2.26.0
 pykew>=0.1.3

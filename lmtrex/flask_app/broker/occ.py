@@ -23,7 +23,6 @@ class OccurrenceSvc(_S2nService):
     # ...............................................
     @classmethod
     def get_providers(cls, filter_params=None):
-        """Note: Overrides _S2nService.get_providers"""
         provnames = set()
         if filter_params is None:
             for p in ServiceProvider.all():
@@ -250,6 +249,7 @@ from lmtrex.tools.provider.mopho import MorphoSourceAPI
 from lmtrex.tools.provider.specify import SpecifyPortalAPI
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 from lmtrex.tools.s2n.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
@@ -267,6 +267,12 @@ from lmtrex.services.api.v1.resolve import ResolveSvc
 =======
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 >>>>>>> converted more APIs to Flask; other APIs unfinished
+=======
+from lmtrex.tools.utils import get_traceback
+
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.services.api.v1.resolve import ResolveSvc
+>>>>>>> rewriting as flask app; unfinished
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 from lmtrex.services.api.v1.occ import *
