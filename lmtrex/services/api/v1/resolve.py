@@ -102,6 +102,8 @@ class ResolveSvc(_S2nService):
         Args:
             occid: an occurrenceID, a DarwinCore field intended for a globally 
                 unique identifier (https://dwc.tdwg.org/list/#dwc_occurrenceID)
+            provider: comma-delimited list of requested provider codes.  Codes are delimited
+                for each in lmtrex.common.lmconstants ServiceProvider
             kwargs: any additional keyword arguments are ignored
 
         Return:

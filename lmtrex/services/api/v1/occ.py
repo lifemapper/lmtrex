@@ -158,15 +158,18 @@ class OccurrenceSvc(_S2nService):
         Args:
             occid: an occurrenceID, a DarwinCore field intended for a globally 
                 unique identifier (https://dwc.tdwg.org/list/#dwc_occurrenceID)
+            provider: comma-delimited list of requested provider codes.  Codes are delimited
+                for each in lmtrex.common.lmconstants ServiceProvider
+            dataset_key: for GBIF provider, a GBIF dataset UUID for which to return some or 
+                count all records. This currently only returns the first page (0-limit) of records.
             count_only: flag to indicate whether to return only a count, or 
                 a count and records
             kwargs: any additional keyword arguments are ignored
 
         Return:
-            a dictionary with keys for each service queried.  Values contain 
-            lmtrex.services.api.v1.S2nOutput object with optional records as a 
-            list of dictionaries of records corresponding to specimen 
-            occurrences in the provider database
+            A lmtrex.common.s2n_type S2nOutput object containing records for each provider.  Each provider 
+            element is a S2nOutput object with records as a list of dictionaries following the 
+            lmtrex.common.s2n_type S2nSchema.OCCURRENCE schema from the provider.
         """
         error_description = None
         http_status = int(HTTPStatus.OK)
