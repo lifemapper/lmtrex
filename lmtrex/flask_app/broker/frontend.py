@@ -1,18 +1,15 @@
-import cherrypy
-
 from lmtrex.common.lmconstants import (APIService)
 from lmtrex.frontend.templates import frontend_template
-from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.flask_app.broker.base import _S2nService
 
 
 # .............................................................................
-@cherrypy.expose
 class FrontendSvc(_S2nService):
     SERVICE_TYPE = APIService.Frontend
 
     # ...............................................
-    # ...............................................
-    def GET(self, **kwargs):
+    @classmethod
+    def get_frontend(cls, **kwargs):
         """Front end for the broker services
 
         Aggregate the results from badge, occ, name and map endpoints into a

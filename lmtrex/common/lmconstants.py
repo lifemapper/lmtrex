@@ -164,7 +164,7 @@ class APIService:
     # Specify guid resolver
     Resolve = {
         'endpoint': 'resolve', 
-        'params': ['provider', 'occid'],
+        'params': ['occid'],
         S2nKey.RECORD_FORMAT: ''}
     # TODO: Consider an Extension service for Digital Object Architecture
     SpecimenExtension = {'endpoint': S2nEndpoint.SpecimenExtension, 'params': None,
