@@ -1,7 +1,7 @@
 from flask import Flask, Blueprint, request, json
 from werkzeug.exceptions import HTTPException
 
-import lmtrex.tools.utils as lmutil
+import lmtrex.tools.s2n.utils as lmutil
 from lmtrex.common.lmconstants import (APIService, BrokerParameters,
                                        ServiceProvider, )
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput
