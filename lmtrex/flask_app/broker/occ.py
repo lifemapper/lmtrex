@@ -1,6 +1,9 @@
 from http import HTTPStatus
+<<<<<<< HEAD
 from markupsafe import escape
 from urllib.error import HTTPError
+=======
+>>>>>>> converted more APIs to Flask; other APIs unfinished
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
@@ -257,8 +260,12 @@ from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
+<<<<<<< HEAD
 from lmtrex.services.api.v1.resolve import ResolveSvc
 >>>>>>> rewriting as flask app; unfinished
+=======
+from lmtrex.flask_app.broker.resolve import ResolveSvc
+>>>>>>> converted more APIs to Flask; other APIs unfinished
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 from lmtrex.services.api.v1.occ import *
