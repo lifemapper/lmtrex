@@ -249,12 +249,16 @@ from lmtrex.tools.provider.idigbio import IdigbioAPI
 from lmtrex.tools.provider.mopho import MorphoSourceAPI
 from lmtrex.tools.provider.specify import SpecifyPortalAPI
 <<<<<<< HEAD
+<<<<<<< HEAD
 from lmtrex.tools.s2n.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 =======
 from lmtrex.tools.utils import get_traceback
+=======
+from lmtrex.tools.s2n.utils import get_traceback
+>>>>>>> reorg
 
 from lmtrex.services.api.v1.base import _S2nService
 <<<<<<< HEAD
