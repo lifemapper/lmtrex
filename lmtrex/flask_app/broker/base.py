@@ -2,7 +2,12 @@ from flask import Flask, Blueprint, request, json
 from werkzeug.exceptions import HTTPException
 
 import lmtrex.tools.s2n.utils as lmutil
+<<<<<<< HEAD
 from lmtrex.common.lmconstants import (APIService, BrokerParameters, ServiceProvider)
+=======
+from lmtrex.common.lmconstants import (APIService, BrokerParameters,
+                                       ServiceProvider, )
+>>>>>>> reorg
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
