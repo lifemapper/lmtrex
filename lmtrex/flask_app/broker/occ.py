@@ -23,6 +23,7 @@ class OccurrenceSvc(_S2nService):
     # ...............................................
     @classmethod
     def get_providers(cls, filter_params=None):
+        """Note: Overrides _S2nService.get_providers"""
         provnames = set()
         if filter_params is None:
             for p in ServiceProvider.all():
