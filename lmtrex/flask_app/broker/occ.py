@@ -1,6 +1,9 @@
 from http import HTTPStatus
+<<<<<<< HEAD
 from markupsafe import escape
 from urllib.error import HTTPError
+=======
+>>>>>>> converted more APIs to Flask; other APIs unfinished
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
@@ -237,3 +240,55 @@ if __name__ == '__main__':
     
     x = 1
     
+<<<<<<< HEAD
+=======
+"""
+https://broker-dev.spcoco.org/api/v1/frontend/?occid=2c1becd5-e641-4e83-b3f5-76a55206539a
+https://broker.spcoco.org/api/v1/occ/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+https://broker-dev.spcoco.org/api/v1/occ/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+
+from lmtrex.common.lmconstants import (ServiceProvider, APIService)
+
+from lmtrex.tools.provider.gbif import GbifAPI
+from lmtrex.tools.provider.idigbio import IdigbioAPI
+from lmtrex.tools.provider.mopho import MorphoSourceAPI
+from lmtrex.tools.provider.specify import SpecifyPortalAPI
+from lmtrex.tools.utils import get_traceback
+
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.flask_app.broker.resolve import ResolveSvc
+from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
+
+from lmtrex.services.api.v1.occ import *
+
+from lmtrex.common.lmconstants import TST_VALUES
+
+occids = [TST_VALUES.GUIDS_W_SPECIFY_ACCESS[0]]
+svc = OccurrenceSvc()
+
+# Get all providers 
+# Specify success
+occid = occids[-1]
+
+# Morphosource success
+occid = TST_VALUES.GUIDS_WO_SPECIFY_ACCESS[0]
+
+out = svc.GET(occid=occid, count_only=False)
+
+specify_occ = gbif_occ = idig_occ = mopho_occ = None 
+outputs = out['records']
+for pout in outputs:
+    if pout['count'] > 0:
+        if pout['provider'] == 'Specify':
+            specify_occ = pout['records'][0]
+        elif pout['provider'] == 'GBIF':
+            gbif_occ = pout['records'][0]
+        elif pout['provider'] == 'iDigBio':
+            idig_occ = pout['records'][0]
+        elif pout['provider'] == 'MorphoSource':
+            mopho_occ = pout['records'][0]
+
+
+"""
+
+>>>>>>> converted more APIs to Flask; other APIs unfinished
