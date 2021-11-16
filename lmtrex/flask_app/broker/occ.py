@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from markupsafe import escape
-from urllib.error import HTTPError
+from werkzeug.exceptions import (BadRequest, InternalServerError, NotFound, UnsupportedMediaType)
+
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
@@ -24,6 +25,7 @@ class OccurrenceSvc(_S2nService):
     # ...............................................
     @classmethod
     def get_providers(cls, filter_params=None):
+        """Note: Overrides _S2nService.get_providers"""
         provnames = set()
         if filter_params is None:
             for p in ServiceProvider.all():
@@ -35,9 +37,11 @@ class OccurrenceSvc(_S2nService):
         return provnames
 
     # ...............................................
-    def _get_specify_records(self, occid, count_only):
+    @classmethod
+    def _get_specify_records(cls, occid, count_only):
         # Resolve for record URL
         spark = SpecifyResolverAPI()
+
         api_url = spark.resolve_guid_to_url(occid)
                 
         try:
@@ -45,45 +49,48 @@ class OccurrenceSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = SpecifyPortalAPI.get_api_failure(
-                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                cls.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errinfo={'error': [traceback]})
         else:
-            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
-            output.format_records(self.ORDERED_FIELDNAMES)
+            output.set_value(S2nKey.RECORD_FORMAT, cls.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            output.format_records(cls.ORDERED_FIELDNAMES)
         return output.response
 
     # ...............................................
-    def _get_mopho_records(self, occid, count_only):
+    @classmethod
+    def _get_mopho_records(cls, occid, count_only):
         try:
             output = MorphoSourceAPI.get_occurrences_by_occid_page1(
                 occid, count_only=count_only)
         except Exception as e:
             traceback = get_traceback()
             output = MorphoSourceAPI.get_api_failure(
-                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                cls.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errinfo={'error': [traceback]})
         else:
-            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
-            output.format_records(self.ORDERED_FIELDNAMES)
+            output.set_value(S2nKey.RECORD_FORMAT, cls.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            output.format_records(cls.ORDERED_FIELDNAMES)
         return output.response
 
     # ...............................................
-    def _get_idb_records(self, occid, count_only):
+    @classmethod
+    def _get_idb_records(cls, occid, count_only):
         try:
             output = IdigbioAPI.get_occurrences_by_occid(occid, count_only=count_only)
         except Exception as e:
             traceback = get_traceback()
             output = IdigbioAPI.get_api_failure(
-                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                cls.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errinfo={'error': [traceback]})
         else:
-            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
-            output.format_records(self.ORDERED_FIELDNAMES)
+            output.set_value(S2nKey.RECORD_FORMAT, cls.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            output.format_records(cls.ORDERED_FIELDNAMES)
         return output.response
 
 
     # ...............................................
-    def _get_gbif_records(self, occid, dataset_key, count_only):
+    @classmethod
+    def _get_gbif_records(cls, occid, dataset_key, count_only):
         try:
             if occid is not None:
                 output = GbifAPI.get_occurrences_by_occid(
@@ -94,15 +101,16 @@ class OccurrenceSvc(_S2nService):
         except Exception as e:
             traceback = get_traceback()
             output = GbifAPI.get_api_failure(
-                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                cls.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errinfo={'error': [traceback]})
         else:
-            output.set_value(S2nKey.RECORD_FORMAT, self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
-            output.format_records(self.ORDERED_FIELDNAMES)
+            output.set_value(S2nKey.RECORD_FORMAT, cls.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+            output.format_records(cls.ORDERED_FIELDNAMES)
         return output.response
 
     # ...............................................
-    def get_records(self, occid, req_providers, count_only, dataset_key=None):
+    @classmethod
+    def _get_records(cls, occid, req_providers, count_only, dataset_key=None):
         allrecs = []
         # for response metadata
         query_term = None
@@ -120,42 +128,52 @@ class OccurrenceSvc(_S2nService):
             if occid is not None:
                 # GBIF
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
+                    gbif_output = cls._get_gbif_records(occid, dataset_key, count_only)
                     allrecs.append(gbif_output)
                 # iDigBio
                 elif pr == ServiceProvider.iDigBio[S2nKey.PARAM]:
-                    idb_output = self._get_idb_records(occid, count_only)
+                    idb_output = cls._get_idb_records(occid, count_only)
                     allrecs.append(idb_output)
                 # MorphoSource
                 elif pr == ServiceProvider.MorphoSource[S2nKey.PARAM]:
-                    mopho_output = self._get_mopho_records(occid, count_only)
+                    mopho_output = cls._get_mopho_records(occid, count_only)
                     allrecs.append(mopho_output)
                 # Specify
                 elif pr == ServiceProvider.Specify[S2nKey.PARAM]:
-                    sp_output = self._get_specify_records(occid, count_only)
+                    sp_output = cls._get_specify_records(occid, count_only)
                     allrecs.append(sp_output)
             # Filter by parameters
             elif dataset_key:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    gbif_output = self._get_gbif_records(occid, dataset_key, count_only)
+                    gbif_output = cls._get_gbif_records(occid, dataset_key, count_only)
                     allrecs.append(gbif_output)
 
-        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
+        prov_meta = cls._get_s2n_provider_response_elt(query_term=query_term)
         # Assemble
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
-            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), cls.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
         return full_out
 
     # ...............................................
     @classmethod
-    def get_test(self, occid=None, **kwargs):
+    def get_test(cls, occid=None, **kwargs):
         return f"Testing occid, {escape(occid)}!"
 
     # ...............................................
     @classmethod
-    def get_occurrence_records(self, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
+    def get_endpoint(cls, **kwargs):
+        try:
+            valid_providers = cls._get_valid_providers()
+            output = cls._show_online(valid_providers)
+        except Exception as e:
+            raise
+        return output.response
+
+    # ...............................................
+    @classmethod
+    def get_occurrence_records(cls, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
         """Get one or more occurrence records for a dwc:occurrenceID from each
         available occurrence record service.
         
@@ -172,52 +190,43 @@ class OccurrenceSvc(_S2nService):
             list of dictionaries of records corresponding to specimen 
             occurrences in the provider database
         """
-        error_description = None
-        http_status = int(HTTPStatus.OK)
-        
-        valid_providers = self.get_valid_providers()
         if occid is None and dataset_key is None:
-            output = self._show_online(valid_providers)
+            valid_providers = cls._get_valid_providers()
+            output = cls._show_online(valid_providers)
         else:   
             # No filter_params defined for Name service yet
             try:
-                good_params, errinfo = self._standardize_params(
-                occid=occid, provider=provider, dataset_key=dataset_key, 
-                count_only=count_only)
+                good_params, errinfo = cls._standardize_params(
+                    occid=occid, provider=provider, dataset_key=dataset_key, count_only=count_only)
                 # Bad parameters
                 try:
-                    error_description = '; '.join(errinfo['error'])                            
-                    http_status = int(HTTPStatus.BAD_REQUEST)
+                    error_description = '; '.join(errinfo['error'])
+                    raise BadRequest(error_description)
                 except:
                     pass
                     
             except Exception as e:
-                http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                 error_description = get_traceback()
+                raise InternalServerError(error_description)
                 
-            else:  
-                if http_status != HTTPStatus.BAD_REQUEST:
-                    # Do Query!
-                    try:
-                        output = self.get_records(
-                            good_params['occid'], good_params['provider'], good_params['count_only'], 
-                            dataset_key=good_params['dataset_key'])
-    
-                        # Add message on invalid parameters to output
-                        try:
-                            for err in errinfo['warning']:
-                                output.append_error('warning', err)
-                        except:
-                            pass
-                            
-                    except Exception as e:
-                        http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
-                        error_description = get_traceback()
+            # Do Query!
+            try:
+                output = cls._get_records(
+                    good_params['occid'], good_params['provider'], good_params['count_only'], 
+                    dataset_key=good_params['dataset_key'])
 
-        if http_status == HTTPStatus.OK:
-            return output.response
-        else:
-            raise HTTPError(status=http_status, msg=error_description)
+                # Add message on invalid parameters to output
+                try:
+                    for err in errinfo['warning']:
+                        output.append_error('warning', err)
+                except:
+                    pass
+                    
+            except Exception as e:
+                error_description = get_traceback()
+                raise InternalServerError(error_description)
+
+        return output.response
     
 
 # .............................................................................
@@ -237,15 +246,11 @@ if __name__ == '__main__':
     occids = ['bffe655b-ea32-4838-8e80-a80e391d5b11']
     occids = ['db193603-1ed3-11e3-bfac-90b11c41863e']
     
-    dskeys = [TST_VALUES.DS_GUIDS_W_SPECIFY_ACCESS_RECS[0]]
     svc = OccurrenceSvc()
-    out = svc.GET(dataset_key=dskeys[0], provider='gbif', count_only=True)
-    # out = svc.GET(occid='test', provider='mopho', count_only=False)
-    # out = svc.GET(occid='2facc7a2-dd88-44af-b95a-733cc27527d4', provider='gbif', count_only=False)
+    out = svc.get_endpoint()
     
-    prov = None
     for occid in occids:
-        out = svc.GET(occid=occid, provider=prov, count_only=False)
+        out = svc.get_occurrence_records(occid=occid, provider=None, count_only=False)
         outputs = out['records']
         print_s2n_output(out, do_print_rec=True)
     
