@@ -85,7 +85,7 @@ class SpecifyResolverAPI(APIQuery):
         api = SpecifyResolverAPI(logger=logger)
 
         try:
-            cls.query_by_get(output_type='json')
+            api.query_by_get(output_type='json')
         except Exception as e:
             tb = get_traceback()
             errinfo = add_errinfo(errinfo, 'error', cls._get_error_message(err=tb))
