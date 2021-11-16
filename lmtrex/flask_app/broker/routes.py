@@ -3,6 +3,7 @@ from markupsafe import escape
 
 from lmtrex.flask_app.broker.address import AddressSvc
 from lmtrex.flask_app.broker.badge import BadgeSvc
+from lmtrex.flask_app.broker.frontend import FrontendSvc
 from lmtrex.flask_app.broker.map import MapSvc
 from lmtrex.flask_app.broker.name import NameSvc
 from lmtrex.flask_app.broker.occ import OccurrenceSvc
@@ -162,6 +163,13 @@ def stats_get():
     response = StatsSvc.get_stats()
     return response
 
+# .....................................................................................
+@app.route("/api/v1/frontend")
+def frontend_get():
+    occid = request.args.get('occid', default = None, type = str)
+    namestr = request.args.get('namestr', default = None, type = str)
+    response = FrontendSvc.get_frontend(occid=occid, namestr=namestr)
+    return response
 
 """
 To run in debug mode, from directory containing flask app
