@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from markupsafe import escape
-from werkzeug.exceptions import (BadRequest, InternalServerError, NotFound, UnsupportedMediaType)
+from werkzeug.exceptions import (BadRequest, InternalServerError)
 
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
@@ -15,9 +15,8 @@ from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.flask_app.broker.base import _S2nService
+
 # .............................................................................
-# @cherrypy.expose
-# @cherrypy.popargs('occid')
 class OccurrenceSvc(_S2nService):
     SERVICE_TYPE = APIService.Occurrence
     ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Occurrence['endpoint'])
@@ -191,8 +190,7 @@ class OccurrenceSvc(_S2nService):
             occurrences in the provider database
         """
         if occid is None and dataset_key is None:
-            valid_providers = cls._get_valid_providers()
-            output = cls._show_online(valid_providers)
+            return cls.get_endpoint()
         else:   
             # No filter_params defined for Name service yet
             try:
