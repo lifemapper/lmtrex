@@ -10,7 +10,7 @@ from lmtrex.fileop.logtools import (log_info)
 from lmtrex.fileop.ready_file import ready_filename
 
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import add_errinfo
+from lmtrex.tools.s2n.utils import add_errinfo
 
 # .............................................................................
 class IdigbioAPI(APIQuery):
