@@ -3,10 +3,7 @@ from markupsafe import escape
 
 from lmtrex.flask_app.broker.address import AddressSvc
 from lmtrex.flask_app.broker.badge import BadgeSvc
-<<<<<<< HEAD
 from lmtrex.flask_app.broker.frontend import FrontendSvc
-=======
->>>>>>> converted more APIs to Flask; other APIs unfinished
 from lmtrex.flask_app.broker.map import MapSvc
 from lmtrex.flask_app.broker.name import NameSvc
 from lmtrex.flask_app.broker.occ import OccurrenceSvc
@@ -148,10 +145,6 @@ def resolve_endpoint():
 @app.route('/api/v1/resolve/<string:identifier>', methods=['GET'])
 def resolve_get(identifier):
     """Get a Specify GUID resolution record from the Specify Resolver.
-<<<<<<< HEAD
-=======
-
->>>>>>> converted more APIs to Flask; other APIs unfinished
     Args:
         identifier (str): An occurrence identifier to search for among the Specify Cache of 
         registered Specify records.
