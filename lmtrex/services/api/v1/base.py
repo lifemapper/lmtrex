@@ -266,7 +266,7 @@ class _S2nService:
 
     # .............................................................................
     @classmethod
-    def get_valid_requested_params(cls, user_params_string, valid_params):
+    def _get_valid_requested_params(cls, user_params_string, valid_params):
         """
         Return valid requested and invalid options for parameters that accept multiple values,
         including provider and scenariocode parameters.
