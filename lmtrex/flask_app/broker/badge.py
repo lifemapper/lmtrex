@@ -60,16 +60,6 @@ class BadgeSvc(_S2nService):
 
     # ...............................................
     @classmethod
-    def get_endpoint(cls, **kwargs):
-        try:
-            valid_providers = cls._get_valid_providers()
-            output = cls._show_online(valid_providers)
-        except Exception as e:
-            raise
-        return output.response
-
-    # ...............................................
-    @classmethod
     def get_icon(cls, provider=None, icon_status=None, stream=True, app_path='', **kwargs):
         """Get one icon to indicate a provider in a GUI
         

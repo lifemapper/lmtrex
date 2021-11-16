@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from markupsafe import escape
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
 
@@ -157,21 +156,6 @@ class OccurrenceSvc(_S2nService):
 
     # ...............................................
     @classmethod
-    def get_test(cls, occid=None, **kwargs):
-        return f"Testing occid, {escape(occid)}!"
-
-    # ...............................................
-    @classmethod
-    def get_endpoint(cls, **kwargs):
-        try:
-            valid_providers = cls._get_valid_providers()
-            output = cls._show_online(valid_providers)
-        except Exception as e:
-            raise
-        return output.response
-
-    # ...............................................
-    @classmethod
     def get_occurrence_records(cls, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
         """Get one or more occurrence records for a dwc:occurrenceID from each
         available occurrence record service.
@@ -268,7 +252,7 @@ from lmtrex.tools.provider.specify import SpecifyPortalAPI
 from lmtrex.tools.utils import get_traceback
 
 from lmtrex.services.api.v1.base import _S2nService
-from lmtrex.services.api.v1.resolve import ResolveSvc
+from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 from lmtrex.services.api.v1.occ import *
