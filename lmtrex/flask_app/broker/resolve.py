@@ -1,18 +1,18 @@
+import cherrypy
 from http import HTTPStatus
-from werkzeug.exceptions import (BadRequest, InternalServerError)
 
-from lmtrex.common.lmconstants import (APIService)
+from lmtrex.common.lmconstants import (APIService, ServiceProvider)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
-from lmtrex.flask_app.broker.base import _S2nService
+from lmtrex.services.api.v1.base import _S2nService
 from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI
-from lmtrex.tools.s2n.utils import get_traceback
-from http import HTTPStatus
-from werkzeug.exceptions import (BadRequest, InternalServerError)
+from lmtrex.tools.utils import get_traceback
 
 collection = 'spcoco'
 solr_location = 'notyeti-192.lifemapper.org'
 
 # .............................................................................
+@cherrypy.expose
+@cherrypy.popargs('occid')
 class ResolveSvc(_S2nService):
     """Query the Specify Resolver with a UUID for a resolvable GUID and URL"""
     SERVICE_TYPE = APIService.Resolve
@@ -39,42 +39,62 @@ class ResolveSvc(_S2nService):
         return (url, msg)
     
     # ...............................................
-    @classmethod
-    def resolve_specify_guid(cls, occid):
+    def resolve_specify_guid(self, occid):
         try:
             output = SpecifyResolverAPI.query_for_guid(occid)
-            output.format_records(cls.ORDERED_FIELDNAMES)
+            output.format_records(self.ORDERED_FIELDNAMES)
         except Exception as e:
             traceback = get_traceback()
             output = SpecifyResolverAPI.get_api_failure(
-                cls.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
+                self.SERVICE_TYPE['endpoint'], HTTPStatus.INTERNAL_SERVER_ERROR, 
                 errinfo={'error': [traceback]})
         return output.response
 
     # ...............................................
-    @classmethod
-    def count_resolvable_specify_recs(cls):
+    def count_resolvable_specify_recs(self):
         std_output = SpecifyResolverAPI.count_docs()
-        return std_output.response
+        return std_output
     
     # ...............................................
-    @classmethod
-    def _get_records(cls, occid):
+    def get_counts(self, req_providers):
         allrecs = []
-        query_term = 'occid={}'.format(occid)
-        # Address single record
-        sp_output = cls.resolve_specify_guid(occid)
-        allrecs.append(sp_output)
+        # for response metadata
+        provnames = []
+        for pr in req_providers:
+            # Address single record
+            if pr == ServiceProvider.Specify[S2nKey.PARAM]:
+                sp_output = self.count_resolvable_specify_recs()
+                allrecs.append(sp_output)
+                provnames.append(ServiceProvider.Specify[S2nKey.NAME])
         # Assemble
-        prov_meta = cls._get_s2n_provider_response_elt(query_term=query_term)
+        provstr = ','.join(provnames)
         full_out = S2nOutput(
-            len(allrecs), cls.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provstr, records=allrecs,
+            record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT])
+        return full_out
+
+    # ...............................................
+    def get_records(self, occid, req_providers):
+        allrecs = []
+        # for response metadata
+        provstr = ','.join(req_providers)
+        query_term = 'occid={}&provider={}'.format(occid, provstr)
+        for pr in req_providers:
+            # Address single record
+            if pr == ServiceProvider.Specify[S2nKey.PARAM]:
+                sp_output = self.resolve_specify_guid(occid)
+                allrecs.append(sp_output)
+        # Assemble
+        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
+        full_out = S2nOutput(
+            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
         return full_out
 
         
-    @classmethod
-    def get_guid_resolution(cls, occid=None, **kwargs):
+    # ...............................................
+    @cherrypy.tools.json_out()
+    def GET(self, occid=None, provider=None, **kwargs):
         """Get zero or one record for an identifier from the resolution
         service du jour (DOI, ARK, etc) or get a count of all records indexed
         by this resolution service.
@@ -82,6 +102,8 @@ class ResolveSvc(_S2nService):
         Args:
             occid: an occurrenceID, a DarwinCore field intended for a globally 
                 unique identifier (https://dwc.tdwg.org/list/#dwc_occurrenceID)
+            provider: comma-delimited list of requested provider codes.  Codes are delimited
+                for each in lmtrex.common.lmconstants ServiceProvider
             kwargs: any additional keyword arguments are ignored
 
         Return:
@@ -91,37 +113,47 @@ class ResolveSvc(_S2nService):
         Note: 
             There will never be more than one record returned.
         """
+        error_description = None
+        http_status = int(HTTPStatus.OK)
+
+        valid_providers = self.get_valid_providers()
         if occid is None:
-            return cls.get_endpoint()
+            output = self._show_online(valid_providers)
         elif occid.lower() == 'count':
-            return cls.count_resolvable_specify_recs()
+            output = self.count_resolvable_specify_recs()
         else:   
             try:
-                good_params, errinfo = cls._standardize_params(occid=occid)
+                good_params, errinfo = self._standardize_params(
+                    occid=occid, provider=provider)
                 # Bad parameters
                 try:
                     error_description = '; '.join(errinfo['error'])                            
-                    raise BadRequest(error_description)
-                except:
-                    pass
-            except Exception as e:
-                error_description = get_traceback()
-                raise InternalServerError(error_description)
-            
-            try:
-                output = cls._get_records(good_params['occid'])
-
-                # Add message on invalid parameters to output
-                try:
-                    for err in errinfo['warning']:
-                        output.append_error('warning', err)
+                    http_status = int(HTTPStatus.BAD_REQUEST)
                 except:
                     pass
 
             except Exception as e:
                 error_description = get_traceback()
-                raise InternalServerError(error_description)
-        return output.response
+                http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
+            else:
+                if http_status != HTTPStatus.BAD_REQUEST:
+                    try:
+                        output = self.get_records(good_params['occid'], good_params['provider'])
+    
+                        # Add message on invalid parameters to output
+                        try:
+                            for err in errinfo['warning']:
+                                output.append_error('warning', err)
+                        except:
+                            pass
+
+                    except Exception as e:
+                        error_description = get_traceback()
+                        http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
+        if http_status == HTTPStatus.OK:
+            return output.response
+        else:
+            raise cherrypy.HTTPError(http_status, error_description)
 
 
 # .............................................................................
