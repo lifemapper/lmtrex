@@ -180,6 +180,16 @@ class _S2nService:
 
     # ...............................................
     @classmethod
+    def get_endpoint(cls, **kwargs):
+        try:
+            valid_providers = cls._get_valid_providers()
+            output = cls._show_online(valid_providers)
+        except Exception as e:
+            raise
+        return output.response
+
+    # ...............................................
+    @classmethod
     def _show_online(cls, providers):
         svc = cls.SERVICE_TYPE['endpoint']
         info = {
@@ -189,7 +199,7 @@ class _S2nService:
         for p in cls.SERVICE_TYPE['params']:
             pinfo = BrokerParameters[p].copy()
             pinfo['type'] = str(type(pinfo['type']))
-            if p == 'provider':
+            if providers is not None and p == 'provider':
                 pinfo['options'] = list(providers)
             param_lst.append({p: pinfo})
         info['parameters'] = param_lst
@@ -200,7 +210,8 @@ class _S2nService:
         return output
 
     # ...............................................
-    def parse_name_with_gbif(self, namestr):
+    @classmethod
+    def parse_name_with_gbif(cls, namestr):
         output = GbifAPI.parse_name(namestr)
         try:
             rec = output['record']
