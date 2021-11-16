@@ -10,7 +10,7 @@ from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.ipni import IpniAPI
 from lmtrex.tools.provider.itis import ItisAPI
 from lmtrex.tools.provider.worms import WormsAPI
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.s2n.utils import get_traceback
 
 # .............................................................................
 class NameSvc(_S2nService):
