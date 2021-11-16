@@ -1,22 +1,20 @@
-import cherrypy
-from http import HTTPStatus
+from werkzeug.exceptions import BadRequest, InternalServerError
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider, TST_VALUES)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
-from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.flask_app.broker.base import _S2nService
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.lifemapper import LifemapperAPI
 from lmtrex.tools.utils import get_traceback, combine_errinfo, add_errinfo
 
 # .............................................................................
-@cherrypy.expose
-@cherrypy.popargs('namestr')
 class MapSvc(_S2nService):
     SERVICE_TYPE = APIService.Map
     ORDERED_FIELDNAMES = S2nSchema.get_s2n_fields(APIService.Map['endpoint'])
     
     # ...............................................
-    def _match_gbif_names(self, namestr, is_accepted):
+    @classmethod
+    def _match_gbif_names(cls, namestr, is_accepted):
         scinames = []
         errinfo = {}
         try:
@@ -37,13 +35,14 @@ class MapSvc(_S2nService):
         return scinames, errinfo
 
     # ...............................................
-    def _get_lifemapper_records(self, namestr, is_accepted, scenariocodes, color):
+    @classmethod
+    def _get_lifemapper_records(cls, namestr, is_accepted, scenariocodes, color):
         errinfo = {}
         # First: get name(s)
         if is_accepted is False:
             scinames = [namestr] 
         else:
-            scinames, errinfo = self._match_gbif_names(namestr, is_accepted=is_accepted)
+            scinames, errinfo = cls._match_gbif_names(namestr, is_accepted=is_accepted)
         # Second: get completed Lifemapper projections (map layers)
         stdrecs = []
         statii = []
@@ -69,14 +68,15 @@ class MapSvc(_S2nService):
         # query_term = 'namestr={}&is_accepted={}&scenariocodes={}&color={}'.format(
         #     namestr, is_accepted, scenariocodes, color)
         full_out = S2nOutput(
-            len(stdrecs), self.SERVICE_TYPE['endpoint'], prov_meta, 
-            records=stdrecs, record_format=self.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errinfo)
-        full_out.format_records(self.ORDERED_FIELDNAMES)
+            len(stdrecs), cls.SERVICE_TYPE['endpoint'], prov_meta, 
+            records=stdrecs, record_format=cls.SERVICE_TYPE[S2nKey.RECORD_FORMAT], errors=errinfo)
+        full_out.format_records(cls.ORDERED_FIELDNAMES)
         return full_out.response
 
     # ...............................................
-    def get_records(
-            self, namestr, req_providers, is_accepted, scenariocodes, color):
+    @classmethod
+    def _get_records(
+            cls, namestr, req_providers, is_accepted, scenariocodes, color):
         allrecs = []
         # for response metadata
         query_term = ''
@@ -90,21 +90,21 @@ class MapSvc(_S2nService):
         for pr in req_providers:
             # Lifemapper
             if pr == ServiceProvider.Lifemapper[S2nKey.PARAM]:
-                lmoutput = self._get_lifemapper_records(
+                lmoutput = cls._get_lifemapper_records(
                     namestr, is_accepted, scenariocodes, color)
                 allrecs.append(lmoutput)
                 provnames.append(ServiceProvider.Lifemapper[S2nKey.NAME])
         # Assemble
-        prov_meta = self._get_s2n_provider_response_elt(query_term=query_term)
+        prov_meta = cls._get_s2n_provider_response_elt(query_term=query_term)
         # TODO: Figure out why errors are retained from query to query!!!  Resetting to {} works.
         full_out = S2nOutput(
-            len(allrecs), self.SERVICE_TYPE['endpoint'], provider=prov_meta, 
+            len(allrecs), cls.SERVICE_TYPE['endpoint'], provider=prov_meta, 
             records=allrecs, errors={})
         return full_out
 
     # ...............................................
-    @cherrypy.tools.json_out()
-    def GET(self, namestr=None, provider=None, is_accepted=True, gbif_parse=True,  
+    @classmethod
+    def get_map_meta(cls, namestr=None, provider=None, is_accepted=True, gbif_parse=True,  
             scenariocode=None, color=None, **kwargs):
         """Get one or more taxon records for a scientific name string from each
         available name service.
@@ -127,48 +127,43 @@ class MapSvc(_S2nService):
             element is a S2nOutput object with records as a list of dictionaries following the 
             lmtrex.common.s2n_type S2nSchema.MAP corresponding to map layers available from the provider.
         """
-        error_description = None
-        http_status = int(HTTPStatus.OK)
-        
-        valid_providers = self.get_valid_providers()
         if namestr is None:
-            output = self._show_online(valid_providers)
+            return cls.get_endpoint()
         else:   
             try:
-                good_params, errinfo = self._standardize_params(
+                good_params, errinfo = cls._standardize_params(
                     namestr=namestr, provider=provider, gbif_parse=gbif_parse, 
                     is_accepted=is_accepted, scenariocode=scenariocode, color=color)
                 # Bad parameters
                 try:
                     error_description = '; '.join(errinfo['error'])                            
-                    http_status = int(HTTPStatus.BAD_REQUEST)
+                    raise BadRequest(error_description)
                 except:
                     pass
+                
             except Exception as e:
-                http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
                 error_description = get_traceback()
-            else:
-                if http_status != HTTPStatus.BAD_REQUEST:
-                    try:
-                        # Do Query!
-                        output = self.get_records(
-                            good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
-                            good_params['scenariocode'], good_params['color'])
-                        
-                        # Add message on invalid parameters to output
-                        try:
-                            for err in errinfo['warning']:
-                                output.append_error('warning', err)
-                        except:
-                            pass
-                            
-                    except Exception as e:
-                        http_status = int(HTTPStatus.INTERNAL_SERVER_ERROR)
-                        error_description = get_traceback()
-        if http_status == HTTPStatus.OK:
-            return output.response
-        else:
-            raise cherrypy.HTTPError(http_status, error_description)
+                raise InternalServerError(error_description)
+            
+            try:
+                # Do Query!
+                output = cls._get_records(
+                    good_params['namestr'], good_params['provider'], good_params['is_accepted'], 
+                    good_params['scenariocode'], good_params['color'])
+                
+                # Add message on invalid parameters to output
+                try:
+                    for err in errinfo['warning']:
+                        output.append_error('warning', err)
+                except:
+                    pass
+                    
+            except Exception as e:
+                error_description = get_traceback()
+                raise InternalServerError(error_description)
+
+        return output.response
+
 
 # .............................................................................
 if __name__ == '__main__':
@@ -179,7 +174,7 @@ if __name__ == '__main__':
     for namestr in names:
         for scodes in (None, 'worldclim-curr'):
             for prov in svc.get_providers():
-                out = svc.GET(namestr=namestr, scenariocode=scodes)
+                out = MapSvc.get_map_meta(namestr=namestr, scenariocode=scodes)
                 print_s2n_output(out, do_print_rec=True)
 
 """
