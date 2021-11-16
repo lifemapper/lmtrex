@@ -3,7 +3,7 @@ from http import HTTPStatus
 from lmtrex.common.lmconstants import (APIService, SYFTER, ServiceProvider)
 from lmtrex.common.s2n_type import COMMUNITY_SCHEMA, S2nEndpoint, S2nKey, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback, add_errinfo
+from lmtrex.tools.s2n.utils import get_traceback, add_errinfo
 
 # .............................................................................
 class SpecifyResolverAPI(APIQuery):

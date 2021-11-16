@@ -7,7 +7,7 @@ from lmtrex.common.lmconstants import (
     APIService, ICON_CONTENT, ICON_DIR, ServiceProvider, VALID_ICON_OPTIONS)
 from lmtrex.common.s2n_type import S2nKey
 
-from lmtrex.tools.utils import get_traceback
+from lmtrex.tools.s2n.utils import get_traceback
 
 from lmtrex.flask_app.broker.base import _S2nService
 

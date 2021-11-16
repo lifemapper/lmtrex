@@ -12,7 +12,7 @@ from lmtrex.fileop.logtools import (log_info, log_error)
 
 
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils  import get_traceback, add_errinfo
+from lmtrex.tools.s2n.utils  import get_traceback, add_errinfo
 
 # .............................................................................
 class GbifAPI(APIQuery):

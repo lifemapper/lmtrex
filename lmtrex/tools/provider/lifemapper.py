@@ -3,7 +3,7 @@ from http import HTTPStatus
 from lmtrex.common.lmconstants import (Lifemapper, ServiceProvider)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import get_traceback, add_errinfo
+from lmtrex.tools.s2n.utils import get_traceback, add_errinfo
 
 # .............................................................................
 class LifemapperAPI(APIQuery):
