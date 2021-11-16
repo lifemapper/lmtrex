@@ -9,7 +9,6 @@ from lmtrex.tools.s2n.utils import get_traceback
 from http import HTTPStatus
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
-
 collection = 'spcoco'
 solr_location = 'notyeti-192.lifemapper.org'
 
