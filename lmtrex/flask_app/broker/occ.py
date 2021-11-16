@@ -1,9 +1,6 @@
 from http import HTTPStatus
-<<<<<<< HEAD
 from markupsafe import escape
 from urllib.error import HTTPError
-=======
->>>>>>> converted more APIs to Flask; other APIs unfinished
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)
