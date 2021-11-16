@@ -11,7 +11,6 @@ class AddressSvc(_S2nService):
     @classmethod
     def get_endpoint(cls, **kwargs):
         """Get address for the Specify Cache.
-        Overrides _S2nService.get_endpoint
         
         Return:
             an API url for posting a DwCA file to be included in the Specify Cache
