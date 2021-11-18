@@ -146,9 +146,12 @@ def resolve_endpoint():
 def resolve_get(identifier):
     """Get a Specify GUID resolution record from the Specify Resolver.
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> converted more APIs to Flask; other APIs unfinished
+=======
+>>>>>>> bf99c8f0b8039b94aeacea2ecea38e208bb1504a
     Args:
         identifier (str): An occurrence identifier to search for among the Specify Cache of 
         registered Specify records.
