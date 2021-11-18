@@ -8,7 +8,7 @@ from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
     APIService, GBIF, ServiceProvider, URL_ESCAPES, ENCODING)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput, S2nSchema
-from lmtrex.fileop.logtools import (log_info, log_error)
+from lmtrex.tools.fileop.logtools import (log_info, log_error)
 
 
 from lmtrex.tools.provider.api import APIQuery

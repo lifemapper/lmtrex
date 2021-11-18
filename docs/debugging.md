@@ -15,9 +15,15 @@
 * Set up python virtual environment for the project
 * Connect IDE to venv python interpreter
 * Run flask at command prompt
+* Assuming that the project directory is 
 
 ```zsh
+export PROJDIR=~/git/lmtrex
+cd $PROJDIR/lmtrex/flask_app/broker/
+
+export PYTHONPATH=$PROJECT_DIR
 export FLASK_ENV=development
+export FLASK_APP=routes
 flask run
 ```
 
