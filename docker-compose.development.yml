@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  back-end:
+    build:
+      context: ./.
+      target: dev-back-end
+    environment:
+      - FLASK_APP=lmtrex.flask_app.routes:app
+    volumes:
+      - "./lmtrex/:/home/specify/lmtrex/"
+
+  front-end:
+    build:
+      context: ./.
+      target: dev-front-end
+    volumes:
+      - "./lmtrex/frontend/js_src/:/home/node/"

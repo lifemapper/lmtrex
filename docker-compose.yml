@@ -7,21 +7,19 @@ services:
     networks:
       - cherrypy
     environment:
-      - DEVELOPMENT=true
+      - FLASK_APP=lmtrex.flask_app.routes:app
     restart: unless-stopped
     volumes:
       - "scratch-path:/scratch-path"
       - "webpack-output:/home/specify/lmtrex/frontend/js_src/dist"
-      - "./lmtrex/:/home/specify/lmtrex/"
+      - "static-files:/home/specify/lmtrex/frontend/static"
 
   front-end:
     build:
       context: ./.
-      target: dev-front-end
-    restart: unless-stopped
+      target: front-end
     volumes:
       - "webpack-output:/home/node/dist"
-      - "./lmtrex/frontend/js_src/:/home/node/"
 
   nginx:
     image: nginx:1.21.3-alpine
@@ -35,7 +33,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - "./lmtrex/frontend/static:/volumes/static-files:ro"
+      - "static-files:/volumes/static-files:ro"
       - "./lmtrex/config/nginx/common.conf:/etc/nginx/common.conf:ro"
 
       - "webpack-output:/volumes/webpack-output:ro"
@@ -46,6 +44,7 @@ services:
 
 volumes:
   scratch-path:
+  static-files:
   webpack-output:
 
 networks:

@@ -1,6 +1,4 @@
 # from collections import OrderedDict
-import os
-
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey
 
 # .............................................................................
@@ -9,14 +7,6 @@ from lmtrex.common.s2n_type import S2nEndpoint, S2nKey
 CONFIG_DIR = 'config'
 TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
-
-# Identify if debugging, without access to Docker environment variables or cherrypy headers
-IS_DEVELOPMENT = True
-try:
-    if os.environ['DEVELOPMENT'] != 'true':
-        IS_DEVELOPMENT = False
-except:
-    pass
 
 # Always point to production Syftorium
 SYFT_BASE = 'https://syftorium.org'
