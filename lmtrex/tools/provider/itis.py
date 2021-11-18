@@ -5,7 +5,7 @@ import urllib
 from lmtrex.common.lmconstants import (
     ITIS, ServiceProvider, URL_ESCAPES, TST_VALUES)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nOutput, S2nSchema
-from lmtrex.fileop.logtools import log_info
+from lmtrex.tools.fileop.logtools import log_info
 from lmtrex.tools.provider.api import APIQuery
 from lmtrex.tools.s2n.utils import get_traceback, add_errinfo
 
