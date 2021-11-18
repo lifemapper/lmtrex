@@ -9,18 +9,7 @@ from lmtrex.flask_app.broker.occ import OccurrenceSvc
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.flask_app.broker.stats import StatsSvc
 
-# bp = Blueprint('occ', __name__, url_prefix='/occ')
 app = Flask(__name__)
-
-
-@app.route("/")
-def index():
-    return "<p>Hello, Brave New World!</p>"
-
-# .....................................................................................
-@app.route("/hello/<string:name>")
-def hello(name):
-    return "<p>Hello, Brave New {}!</p>".format(name)
 
 # .....................................................................................
 @app.route("/api/v1/address")
@@ -144,13 +133,6 @@ def resolve_endpoint():
 @app.route('/api/v1/resolve/<string:identifier>', methods=['GET'])
 def resolve_get(identifier):
     """Get a Specify GUID resolution record from the Specify Resolver.
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> converted more APIs to Flask; other APIs unfinished
-=======
->>>>>>> bf99c8f0b8039b94aeacea2ecea38e208bb1504a
     Args:
         identifier (str): An occurrence identifier to search for among the Specify Cache of 
         registered Specify records.
@@ -175,10 +157,3 @@ def frontend_get():
     namestr = request.args.get('namestr', default = None, type = str)
     response = FrontendSvc.get_frontend(occid=occid, namestr=namestr)
     return response
-
-"""
-To run in debug mode, from directory containing flask app
-export FLASK_ENV=development
-export FLASK_APP=routes
-flask run
-"""

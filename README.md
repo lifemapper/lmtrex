@@ -11,6 +11,16 @@ Lifemapper backend.
 
 This work has been supported by NSF Awards NSF BIO-1458422, OCI-1234983.
 
+## Debugging
+
+To run in debug mode, from directory containing flask app
+
+```zsh
+export FLASK_ENV=development
+export FLASK_APP=routes
+flask run
+```
+
 ## Deployment
 
 To run the containers, generate `fullchain.pem` and `privkey.pem` (certificate
