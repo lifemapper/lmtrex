@@ -209,6 +209,10 @@ class OccurrenceSvc(_S2nService):
                 raise InternalServerError(error_description)
 
         return output.response
+<<<<<<< HEAD:lmtrex/flask_app/broker/occ.py
+=======
+    
+>>>>>>> c542612801435062cefe8338eaf919fcba5c21ac:lmtrex/services/api/v1/occ.py
 
 # .............................................................................
 if __name__ == '__main__':
@@ -248,6 +252,7 @@ from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.idigbio import IdigbioAPI
 from lmtrex.tools.provider.mopho import MorphoSourceAPI
 from lmtrex.tools.provider.specify import SpecifyPortalAPI
+<<<<<<< HEAD:lmtrex/flask_app/broker/occ.py
 <<<<<<< HEAD
 <<<<<<< HEAD
 from lmtrex.tools.s2n.utils import get_traceback
@@ -267,6 +272,12 @@ from lmtrex.services.api.v1.resolve import ResolveSvc
 =======
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 >>>>>>> converted more APIs to Flask; other APIs unfinished
+=======
+from lmtrex.tools.s2n.utils import get_traceback
+
+from lmtrex.services.api.v1.base import _S2nService
+from lmtrex.flask_app.broker.resolve import ResolveSvc
+>>>>>>> c542612801435062cefe8338eaf919fcba5c21ac:lmtrex/services/api/v1/occ.py
 from lmtrex.services.api.v1.s2n_type import (S2nOutput, S2nKey, S2n, print_s2n_output)
 
 from lmtrex.services.api.v1.occ import *
