@@ -237,8 +237,8 @@ components:
       schema:
         type: boolean
         default: true
-    gbif_accepted:
-      name: gbif_accepted
+    is_accepted:
+      name: is_accepted
       in: query
       description: Flag indicating whether to limit the response to `ACCEPTED` or `VALID` names
       required: false
@@ -249,7 +249,7 @@ components:
       name: dataset_key
       in: path
       description: Dataset GUID from GBIF
-      required: true
+      required: false
       schema:
         $ref: '#/components/schemas/guid'
       examples:
@@ -299,6 +299,37 @@ components:
       schema:
         type: boolean
         default: true
+    color:
+      name: color
+      in: query
+      description: String indicating the color palette to use when requesting a Lifemapper SDM map layer
+      required: false
+      enum:
+        - 'gray'
+        - 'red'
+        - 'green'
+        - 'blue'
+        - 'yellow'
+        - 'fuschia'
+        - 'aqua'
+        - 'safe'
+        - 'pretty'
+        - 'bluered'
+        - 'bluegreen'
+        - 'greenred'
+    scenariocode:
+      name: scenariocode
+      in: query
+      description: String indicating one or more scenariocodes to filter by when requesting a Lifemapper SDM map layer
+      required: false
+      enum:
+        - 'worldclim-curr'
+        - 'AR5-CCSM4-RCP4.5-2050-10min'
+        - 'AR5-CCSM4-RCP4.5-2070-10min'
+        - 'AR5-CCSM4-RCP8.5-2050-10min'
+        - 'AR5-CCSM4-RCP8.5-2070-10min'
+        - 'CMIP5-CCSM4-lgm-10min'
+        - 'CMIP5-CCSM4-mid-10min'
   schemas:
     wrapper:
       type: object
@@ -680,10 +711,7 @@ components:
           type: array
           items: string
         's2n:issues':
-          $ref: '#/components/schemas/issue_code'
-          type: object
-          additionalProperties:
-            type: string
+          $ref: '#/components/schemas/issue_pairs'
         'dcterms:accessRights':
           type: string
           example: 'http://biodiversity.ku.edu/research/university-kansas-biodiversity-institute-data-publication-and-use-norms'
@@ -918,6 +946,9 @@ components:
           - rev_geocode_mismatch
           - scientificname_added
           - taxon_match_failed
+      description:
+        type: string
+
   examples:
     names_Denitrobacterium_detoxificans:
       description: 'namestr: Denitrobacterium detoxificans'
@@ -959,6 +990,8 @@ components:
 #        count: 0
 #        ...
 #        errors: []
+https://broker-dev.spcoco.org/api/v1/occ/?occid=2c1becd5-e641-4e83-b3f5-76a55206539a
+https://broker-dev.spcoco.org/api/v1/name/?&namestr=Gnatholepis cauerensis
     occ_2facc7a2-dd88-44af-b95a-733cc27527d4:
       "s2n:view_url": null
       "s2n:api_url": null
@@ -1008,16 +1041,4 @@ components:
       "mopho:specimen.specimen_id": null
       "s2n:specify_identifier": "2facc7a2-dd88-44af-b95a-733cc27527d4"
 
-    
-    map_tentacles:
-      description: 'namestr = Puntius ticto'
-      value:
-        count: 0
-        query_term: Puntius ticto
-        service: map
-        provider: Lifemapper
-        provider_query:
-          - 'http://client.lifemapper.org/api/v2/sdmproject?displayname=Puntius+ticto&atom=0&projectionscenariocode=worldclim-curr'
-        record_format: lifemapper_layer schema TBD
-        records: []
-        errors: []
+
