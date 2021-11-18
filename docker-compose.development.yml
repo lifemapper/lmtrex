@@ -6,6 +6,7 @@ services:
       target: dev-back-end
     environment:
       - FLASK_APP=lmtrex.flask_app.routes:app
+      - DEBUG_PORt=5001
     volumes:
       - "./lmtrex/:/home/specify/lmtrex/"
 

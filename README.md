@@ -69,6 +69,13 @@ needed.
 If any front-end changes were made, run `npm run typecheck` before
 committing changes to verify validity of TypeScript types.
 
+#### Configuring Debugger
+
+Debugger configuration is IDE dependent. [Instructions for
+PyCharm](https://kartoza.com/en/blog/using-docker-compose-based-python-interpreter-in-pycharm/)
+
+`dev-back-end` container is running `debugpy` on port `5001`. 
+
 ## Troubleshooting
 
 To delete all containers, images, networks and volumes, stop any running
