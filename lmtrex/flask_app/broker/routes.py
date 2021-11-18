@@ -1,5 +1,4 @@
 from flask import Flask, request
-from markupsafe import escape
 
 from lmtrex.flask_app.broker.address import AddressSvc
 from lmtrex.flask_app.broker.badge import BadgeSvc
@@ -7,8 +6,8 @@ from lmtrex.flask_app.broker.frontend import FrontendSvc
 from lmtrex.flask_app.broker.map import MapSvc
 from lmtrex.flask_app.broker.name import NameSvc
 from lmtrex.flask_app.broker.occ import OccurrenceSvc
-from lmtrex.flask_app.broker.stats import StatsSvc
 from lmtrex.flask_app.broker.resolve import ResolveSvc
+from lmtrex.flask_app.broker.stats import StatsSvc
 
 # bp = Blueprint('occ', __name__, url_prefix='/occ')
 app = Flask(__name__)
@@ -136,7 +135,7 @@ def occ_get(identifier):
     return response
 
 # .....................................................................................
-@app.route("/api/v1/resolve")
+@app.route("/api/v1/resolve/")
 def resolve_endpoint():
     response = ResolveSvc.get_endpoint()
     return response
@@ -164,13 +163,13 @@ def resolve_get(identifier):
     return response
 
 # .....................................................................................
-@app.route("/api/v1/stats")
+@app.route("/api/v1/stats/")
 def stats_get():
     response = StatsSvc.get_stats()
     return response
 
 # .....................................................................................
-@app.route("/api/v1/frontend")
+@app.route("/api/v1/frontend/")
 def frontend_get():
     occid = request.args.get('occid', default = None, type = str)
     namestr = request.args.get('namestr', default = None, type = str)
