@@ -36,7 +36,7 @@ directory.
 Run the containers:
 
 ```zsh
-docker compose -f docker-compose.production.yml up -d
+docker compose up -d
 ```
 
 Broker is now available at [https://localhost/](https://localhost:443)
@@ -55,7 +55,7 @@ npm i
 Run the containers:
 
 ```zsh
-docker compose up
+docker compose up -f docker-compose.yml -f docker-compose.development.yml 
 ```
 
 Broker is now available at [http://localhost/](http://localhost:443).
