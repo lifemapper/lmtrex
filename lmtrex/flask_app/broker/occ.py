@@ -209,10 +209,6 @@ class OccurrenceSvc(_S2nService):
                 raise InternalServerError(error_description)
 
         return output.response
-<<<<<<< HEAD:lmtrex/flask_app/broker/occ.py
-=======
-    
->>>>>>> c542612801435062cefe8338eaf919fcba5c21ac:lmtrex/services/api/v1/occ.py
 
 # .............................................................................
 if __name__ == '__main__':
