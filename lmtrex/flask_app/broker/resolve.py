@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
-from lmtrex.common.lmconstants import (APIService, ServiceProvider)
+from lmtrex.common.lmconstants import (APIService)
 from lmtrex.common.s2n_type import (S2nKey, S2nOutput, S2nSchema, print_s2n_output)
 from lmtrex.flask_app.broker.base import _S2nService
 from lmtrex.tools.provider.specify_resolver import SpecifyResolverAPI

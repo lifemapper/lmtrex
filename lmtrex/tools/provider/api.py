@@ -6,8 +6,8 @@ import urllib
 
 from lmtrex.common.lmconstants import (URL_ESCAPES, ENCODING)
 from lmtrex.common.s2n_type import S2nKey, S2nOutput
-from lmtrex.fileop.logtools import (log_warn)
-from lmtrex.tools.lm_xml import fromstring, deserialize
+from lmtrex.tools.fileop.logtools import (log_warn)
+from lmtrex.tools.misc.lm_xml import fromstring, deserialize
 from lmtrex.tools.s2n.utils import add_errinfo, combine_errinfo, get_traceback
 
 import lmtrex.tools.s2n.utils as lmutil
