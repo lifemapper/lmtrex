@@ -12,10 +12,6 @@
 ## Description
 A few sentences describing the overall goals of the pull request's commits.
 
-## Link(s) to issue
-What issue(s) does this pull request address?  Both bugs and feature requests.
-Please provide links.
-
 ## Todos
 - [ ] Tests
 - [ ] Documentation
