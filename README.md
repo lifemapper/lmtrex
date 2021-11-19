@@ -24,7 +24,7 @@ flask run
 ## Deployment
 
 To run the containers, generate `fullchain.pem` and `privkey.pem` (certificate
-and the private key) using Let's Encrypt and put these files into the
+and the private key) using Let's Encrypt and put (or symlink) these files into the
 `./lmtrex/config/` directory.
 
 While in development, you can generate self-signed certificates:
@@ -35,11 +35,6 @@ openssl req \
   -keyout ./lmtrex/config/privkey.pem \
   -out ./lmtrex/config/fullchain.pem
 ```
-
-To run the production container, or the development container with HTTPs
-support, generate `fullchain.pem` and `privkey.pem` (certificate and the private
-key) using Let's Encrypt and put these files into the `./lmtrex/config/`
-directory.
 
 ### Production
 
