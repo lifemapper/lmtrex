@@ -1,12 +1,13 @@
-import cherrypy
+from flask import Flask, Blueprint, request, json
+from werkzeug.exceptions import HTTPException
 
-import lmtrex.tools.utils as lmutil
-from lmtrex.common.lmconstants import (APIService, BrokerParameters,
-                                       ServiceProvider, )
+import lmtrex.tools.s2n.utils as lmutil
+from lmtrex.common.lmconstants import (APIService, BrokerParameters, ServiceProvider)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nOutput
 from lmtrex.tools.provider.gbif import GbifAPI
 from lmtrex.tools.provider.itis import ItisAPI
 
+app = Flask(__name__)
 
 # .............................................................................
 class _S2nService:
@@ -28,9 +29,11 @@ class _S2nService:
         provider_element[S2nKey.PROVIDER_STATUS_CODE] = 200
         # Handle local debugging
         try:
-            base_url = cherrypy.request.headers['Origin']
+            # TODO: get from headers
+            base_url = 'https://broker.spcoco.org'
+            # base_url = cherrypy.request.headers['Origin']
         except:
-            base_url = 'localhost'
+            base_url = 'https://localhost'
         # Optional URL queries
         standardized_url = '{}{}/{}'.format(
             base_url,
@@ -75,7 +78,7 @@ class _S2nService:
 
     # ...............................................
     @classmethod
-    def get_valid_providers(cls, filter_params=None):
+    def _get_valid_providers(cls, filter_params=None):
         """ Return a list of strings indicating all providers valid for this service. 
 
         Note:
@@ -93,6 +96,44 @@ class _S2nService:
                 provnames.add(p[S2nKey.PARAM])
         provnames = cls._order_providers(provnames)
         return provnames
+    
+    # .............................................................................
+    @classmethod
+    def _get_valid_requested_params(cls, user_params_string, valid_params):
+        """
+        Return valid requested and invalid options for parameters that accept multiple values,
+        including provider and scenariocode parameters.
+        
+        Note: 
+            provider: 
+                For the badge service, exactly one provider is required.  For all other services, 
+                multiple providers are accepted, and None indicates to query all valid providers.
+            scenariocode: 
+                For the map service, multiple scenariocode are accepted, and None indicates to 
+                return map layers computed with all valid scenariocodes.
+        """
+        valid_requested_params = invalid_params = []
+        
+        if user_params_string:
+            tmplst = user_params_string.split(',')
+            user_params = set([tp.lower().strip() for tp in tmplst])
+            
+            valid_requested_params = set()
+            invalid_params = set()
+            # valid_requested_providers, invalid_providers = cls.get_multivalue_options(user_provs, valid_providers)
+            for param in user_params:
+                if param in valid_params:
+                    valid_requested_params.add(param)
+                else:
+                    invalid_params.add(param)
+                    
+            invalid_params = list(invalid_params)
+            if valid_requested_params:
+                valid_requested_params = list(valid_requested_params)
+            else:
+                valid_requested_params = []
+                        
+        return valid_requested_params, invalid_params
 
     # .............................................................................
     @classmethod
@@ -122,34 +163,40 @@ class _S2nService:
         return endpoint
 
     # ...............................................
-    def _set_default(self, param, default):
-        if param is None:
-            param = default
-        return param
-    
+    @classmethod
+    def get_endpoint(cls, **kwargs):
+        try:
+            valid_providers = cls._get_valid_providers()
+            output = cls._show_online(valid_providers)
+        except Exception as e:
+            raise
+        return output.response
+
     # ...............................................
-    def _show_online(self, providers):
-        svc = self.SERVICE_TYPE['endpoint']
+    @classmethod
+    def _show_online(cls, providers):
+        svc = cls.SERVICE_TYPE['endpoint']
         info = {
             'info': 'S^n {} service is online.'.format(svc)}
 
         param_lst = []
-        for p in self.SERVICE_TYPE['params']:
+        for p in cls.SERVICE_TYPE['params']:
             pinfo = BrokerParameters[p].copy()
             pinfo['type'] = str(type(pinfo['type']))
-            if p == 'provider':
+            if providers is not None and p == 'provider':
                 pinfo['options'] = list(providers)
             param_lst.append({p: pinfo})
         info['parameters'] = param_lst
         
-        prov_meta = self._get_s2n_provider_response_elt()
+        prov_meta = cls._get_s2n_provider_response_elt()
         
         output = S2nOutput(0, svc, provider=prov_meta, errors=info)
         return output
 
     # ...............................................
-    def parse_name_with_gbif(self, namestr):
-        output, query = GbifAPI.parse_name(namestr)
+    @classmethod
+    def parse_name_with_gbif(cls, namestr):
+        output = GbifAPI.parse_name(namestr)
         try:
             rec = output['record']
         except:
@@ -162,7 +209,7 @@ class _S2nService:
             if success:
                 if namestr.startswith('? '):
                     namestr = rec['scientificName']
-        return namestr, query
+        return namestr
 
     # ...............................................
     def match_name_with_itis(self, namestr):
@@ -172,14 +219,11 @@ class _S2nService:
         except:
             # Default to original namestring if match fails
             pass
-        try:
-            query = output.provider_query[0]
-        except:
-            query = None
-        return namestr, query
+        return namestr
 
     # ...............................................
-    def _fix_type_new(self, key, provided_val):
+    @classmethod
+    def _fix_type_new(cls, key, provided_val):
         """Correct parameter by 
             * casting to correct type 
             * if there are limited options, make sure it valid.
@@ -239,82 +283,10 @@ class _S2nService:
             usr_val = provided_val
                 
         return usr_val, valid_options
-
-    # ...............................................
-    def _get_def_val(self, default_val):
-        # Sequences containing None have that as default value, or first value
-        if isinstance(default_val, list) or isinstance(default_val, tuple):
-            def_val = default_val[0]
-        else:
-            def_val = default_val
-        return def_val
-
-    # # .............................................................................
-    # @classmethod
-    # def get_multivalue_options(cls, user_vals, valid_vals):
-    #     "Default for parameters allowing multiple values is to return results for all options"
-    #     valid_params = set()
-    #     invalid_params = set()        
-    #
-    #     for v in user_vals:
-    #         if v in valid_vals:
-    #             valid_params.add(v)
-    #         else:
-    #             invalid_params.add(v)
-    #
-    #     return list(valid_params), list(invalid_params)
-
-    # .............................................................................
-    @classmethod
-    def get_valid_requested_params(cls, user_params_string, valid_params):
-        """
-        Return valid requested and invalid options for parameters that accept multiple values,
-        including provider and scenariocode parameters.
-        
-        Note: 
-            provider: 
-                For the badge service, exactly one provider is required.  For all other services, 
-                multiple providers are accepted, and None indicates to query all valid providers.
-            scenariocode: 
-                For the map service, multiple scenariocode are accepted, and None indicates to 
-                return map layers computed with all valid scenariocodes.
-        """
-        valid_requested_params = invalid_params = []
-        
-        if user_params_string:
-            tmplst = user_params_string.split(',')
-            user_params = set([tp.lower().strip() for tp in tmplst])
-            
-            valid_requested_params = set()
-            invalid_params = set()
-            # valid_requested_providers, invalid_providers = cls.get_multivalue_options(user_provs, valid_providers)
-            for param in user_params:
-                if param in valid_params:
-                    valid_requested_params.add(param)
-                else:
-                    invalid_params.add(param)
-                    
-            invalid_params = list(invalid_params)
-            if valid_requested_params:
-                valid_requested_params = list(valid_requested_params)
-            else:
-                valid_requested_params = []
-                        
-        return valid_requested_params, invalid_params
     
     # ...............................................
-    def _is_fatal(self, msg_lst):
-        for msg in msg_lst:
-            try:
-                msg['error']
-            except:
-                pass
-            else:
-                return True
-        return False
-
-    # ...............................................
-    def _process_params(self, user_kwargs):
+    @classmethod
+    def _process_params(cls, user_kwargs={}):
         """
         Modify all user provided key/value pairs to change keys to lower case, 
         and change values to the expected type (string, int, float, boolean).
@@ -334,7 +306,7 @@ class _S2nService:
         errinfo = {}
         
         # Correct all parameter keys/values present
-        for key in self.SERVICE_TYPE['params']:
+        for key in cls.SERVICE_TYPE['params']:
             val = user_kwargs[key]
             # Done in calling function
             if key == 'provider':
@@ -364,7 +336,7 @@ class _S2nService:
                 # Allows None or comma-delimited list
                 if key == 'scenariocode':
                     valid_scens = BrokerParameters[key]['options']
-                    valid_requested_scens, invalid_scens = self.get_valid_requested_params(val, valid_scens)
+                    valid_requested_scens, invalid_scens = cls._get_valid_requested_params(val, valid_scens)
                     good_params[key] = valid_requested_scens
                     # But include message for invalid options
                     for badscen in invalid_scens:
@@ -375,7 +347,7 @@ class _S2nService:
                                 badscen, valid_scens))
                 # All other parameters have single value
                 else:
-                    usr_val, valid_options = self._fix_type_new(key, val)
+                    usr_val, valid_options = cls._fix_type_new(key, val)
                     if valid_options is not None and val not in valid_options:
                         errinfo = lmutil.add_errinfo(
                             errinfo, 'error',
@@ -386,7 +358,7 @@ class _S2nService:
                         good_params[key] = usr_val
                 
         # Fill in defaults for missing parameters
-        for key in self.SERVICE_TYPE['params']:
+        for key in cls.SERVICE_TYPE['params']:
             param_meta = BrokerParameters[key]
             try:
                 val = good_params[key]
@@ -396,20 +368,21 @@ class _S2nService:
         return good_params, errinfo
 
     # ...............................................
-    def _get_providers(self, usr_req_providers, filter_params=None):
+    @classmethod
+    def _get_providers_from_string(cls, usr_req_providers, filter_params=None):
         providers = []
         errinfo = {}
         
-        valid_providers = self.get_valid_providers(filter_params=filter_params)
+        valid_providers = cls._get_valid_providers(filter_params=filter_params)
         # Allows None or comma-delimited list
-        valid_requested_providers, invalid_providers = self.get_valid_requested_params(
+        valid_requested_providers, invalid_providers = cls._get_valid_requested_params(
             usr_req_providers, valid_providers)
 
         # # TODO: Delete? Not used elsewhere
         # prov_vals['valid_providers'] = valid_providers
         # prov_vals['invalid_providers'] = invalid_providers
 
-        if self.SERVICE_TYPE != APIService.Badge:
+        if cls.SERVICE_TYPE != APIService.Badge:
             if valid_requested_providers:
                 providers = valid_requested_providers
             else:
@@ -434,8 +407,9 @@ class _S2nService:
         return providers, errinfo
 
     # ...............................................
+    @classmethod
     def _standardize_params(
-            self, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
+            cls, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
             gbif_count=False, itis_match=False, kingdom=None, 
             occid=None, dataset_key=None, count_only=False, url=None,
             scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
@@ -473,10 +447,9 @@ class _S2nService:
             'transparent': transparent, 
             'width': width, 
             'icon_status': icon_status}
-        standardize_name_query = None
         
-        providers, prov_errinfo = self._get_providers(provider, filter_params=filter_params)
-        usr_params, errinfo = self._process_params(user_kwargs)
+        providers, prov_errinfo = cls._get_providers_from_string(provider, filter_params=filter_params)
+        usr_params, errinfo = cls._process_params(user_kwargs)
         # consolidate parameters and errors
         usr_params['provider'] = providers
         errinfo = lmutil.combine_errinfo(errinfo, prov_errinfo)
@@ -493,9 +466,9 @@ class _S2nService:
             pass
         # Replace namestr with GBIF-parsed namestr
         if namestr and (gbif_parse or itis_match):
-            usr_params['namestr'], standardize_name_query = self.parse_name_with_gbif(namestr)
+            usr_params['namestr'] = cls.parse_name_with_gbif(namestr)
             
-        return usr_params, standardize_name_query, errinfo
+        return usr_params, errinfo
 
     # ..........................
     @staticmethod

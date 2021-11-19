@@ -1,6 +1,4 @@
 # from collections import OrderedDict
-import os
-
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey
 
 # .............................................................................
@@ -9,14 +7,6 @@ from lmtrex.common.s2n_type import S2nEndpoint, S2nKey
 CONFIG_DIR = 'config'
 TEST_SPECIFY7_SERVER = 'http://preview.specifycloud.org'
 TEST_SPECIFY7_RSS_URL = '{}/export/rss'.format(TEST_SPECIFY7_SERVER)
-
-# Identify if debugging, without access to Docker environment variables or cherrypy headers
-IS_DEVELOPMENT = True
-try:
-    if os.environ['DEVELOPMENT'] != 'true':
-        IS_DEVELOPMENT = False
-except:
-    pass
 
 # Always point to production Syftorium
 SYFT_BASE = 'https://syftorium.org'
@@ -35,7 +25,7 @@ GBIF_MISSING_KEY = 'unmatched_gbif_ids'
 # VALID broker parameter options, must be list
 VALID_MAP_REQUESTS = ['getmap', 'getlegendgraphic']
 VALID_ICON_OPTIONS = ['active', 'inactive', 'hover']
-ICON_DIR='./lmtrex/static/img'
+ICON_DIR='../../static/img'
 
 ICON_CONTENT = 'image/png'
     
@@ -165,7 +155,7 @@ class APIService:
     # Specify guid resolver
     Resolve = {
         'endpoint': 'resolve', 
-        'params': ['provider', 'occid'],
+        'params': ['occid'],
         S2nKey.RECORD_FORMAT: ''}
     # TODO: Consider an Extension service for Digital Object Architecture
     SpecimenExtension = {'endpoint': S2nEndpoint.SpecimenExtension, 'params': None,
@@ -186,25 +176,25 @@ class ServiceProvider:
         S2nKey.NAME: 'Specify Network', 
         S2nKey.PARAM: 'specifynetwork', 
         S2nKey.SERVICES: [S2nEndpoint.Badge],
-        # 'icon': {'active': '{}/SpNetwork_active.png'.format(ICON_DIR),
-        #          'inactive': '{}/SpNetwork_inactive.png'.format(ICON_DIR),
-        #          'hover': '{}/SpNetwork_hover.png'.format(ICON_DIR)}
+        # 'icon': {'active': '{}/SpNetwork_active.png',
+        #          'inactive': '{}/SpNetwork_inactive.png',
+        #          'hover': '{}/SpNetwork_hover.png'}
         }
     GBIF = {
         S2nKey.NAME: 'GBIF', 
         S2nKey.PARAM: 'gbif', 
         S2nKey.SERVICES: [S2nEndpoint.Occurrence, S2nEndpoint.Name, S2nEndpoint.Badge],
-        'icon': {'active': '{}/gbif_active-01.png'.format(ICON_DIR),
-                 'inactive': '{}/gbif_inactive-01.png'.format(ICON_DIR),
-                 'hover': '{}/gbif_hover-01-01.png'.format(ICON_DIR)}
+        'icon': {'active': 'gbif_active-01.png',
+                 'inactive': 'gbif_inactive-01.png',
+                 'hover': 'gbif_hover-01-01.png'}
         }
     iDigBio = {
         S2nKey.NAME: 'iDigBio', 
         S2nKey.PARAM: 'idb', 
         S2nKey.SERVICES: [S2nEndpoint.Occurrence, S2nEndpoint.Badge],
-        'icon': {'active': '{}/idigbio_colors_active-01.png'.format(ICON_DIR),
-                 'inactive': '{}/idigbio_colors_inactive-01.png'.format(ICON_DIR),
-                 'hover': '{}/idigbio_colors_hover-01.png'.format(ICON_DIR)}
+        'icon': {'active': 'idigbio_colors_active-01.png',
+                 'inactive': 'idigbio_colors_inactive-01.png',
+                 'hover': 'idigbio_colors_hover-01.png'}
         }
     IPNI = {
         S2nKey.NAME: 'IPNI', 
@@ -215,40 +205,40 @@ class ServiceProvider:
         S2nKey.NAME: 'ITIS', 
         S2nKey.PARAM: 'itis', 
         S2nKey.SERVICES: [S2nEndpoint.Badge, S2nEndpoint.Name],
-        'icon': {'active': '{}/itis_active.png'.format(ICON_DIR),
-                 'inactive': '{}/itis_inactive.png'.format(ICON_DIR),
-                 'hover': '{}/itis_hover.png'.format(ICON_DIR)}
+        'icon': {'active': 'itis_active.png',
+                 'inactive': 'itis_inactive.png',
+                 'hover': 'itis_hover.png'}
         }
     Lifemapper = {
         S2nKey.NAME: 'Lifemapper', 
         S2nKey.PARAM: 'lm', 
         S2nKey.SERVICES: [S2nEndpoint.Map, S2nEndpoint.Badge],
-        'icon': {'active': '{}/lm_active.png'.format(ICON_DIR),
-                 'inactive': '{}/lm_inactive-01.png'.format(ICON_DIR),
-                 'hover': '{}/lm_hover-01.png'.format(ICON_DIR)}
+        'icon': {'active': 'lm_active.png',
+                 'inactive': 'lm_inactive-01.png',
+                 'hover': 'lm_hover-01.png'}
         }
     MorphoSource = {
         S2nKey.NAME: 'MorphoSource', 
         S2nKey.PARAM: 'mopho', 
         S2nKey.SERVICES: [
             S2nEndpoint.Badge, S2nEndpoint.Occurrence, S2nEndpoint.SpecimenExtension],
-        'icon': {'active': '{}/morpho_active-01.png'.format(ICON_DIR),
-                 'inactive': '{}/morpho_inactive-01.png'.format(ICON_DIR),
-                 'hover': '{}/morpho_hover-01.png'.format(ICON_DIR)}
+        'icon': {'active': 'morpho_active-01.png',
+                 'inactive': 'morpho_inactive-01.png',
+                 'hover': 'morpho_hover-01.png'}
         }
     Specify = {
         S2nKey.NAME: 'Specify', 
         S2nKey.PARAM: 'specify', 
         S2nKey.SERVICES: [
             S2nEndpoint.Badge, S2nEndpoint.Occurrence, S2nEndpoint.Resolve],
-        'icon': {'active': '{}/specify_network_active.png'.format(ICON_DIR),}}
+        'icon': {'active': 'specify_network_active.png',}}
     # TODO: need an WoRMS badge
     WoRMS = {
         S2nKey.NAME: 'WoRMS',
         S2nKey.PARAM: 'worms', 
         S2nKey.SERVICES: [S2nEndpoint.Badge, S2nEndpoint.Name],
         'icon': {
-            'active': '{}/worms_active.png'.format(ICON_DIR),
+            'active': 'worms_active.png',
         }
     }
     

@@ -6,11 +6,11 @@ from lmtrex.common.issue_definitions import ISSUE_DEFINITIONS
 from lmtrex.common.lmconstants import (
     GBIF_MISSING_KEY, Idigbio, ServiceProvider, ENCODING, DATA_DUMP_DELIMITER)
 from lmtrex.common.s2n_type import S2nEndpoint, S2nKey, S2nSchema
-from lmtrex.fileop.logtools import (log_info)
-from lmtrex.fileop.ready_file import ready_filename
+from lmtrex.tools.fileop.logtools import (log_info)
+from lmtrex.tools.fileop.ready_file import ready_filename
 
 from lmtrex.tools.provider.api import APIQuery
-from lmtrex.tools.utils import add_errinfo
+from lmtrex.tools.s2n.utils import add_errinfo
 
 # .............................................................................
 class IdigbioAPI(APIQuery):

@@ -2,8 +2,6 @@ import sys
 import traceback
 from uuid import UUID
 
-import cherrypy
-
 from lmtrex.common.lmconstants import ICON_API, ServiceProvider
 from lmtrex.common.s2n_type import S2nEndpoint
 
@@ -51,7 +49,9 @@ def get_icon_url(provider_code, icon_status=None):
     url = None
     # for function testing outside of cherrypy
     try:
-        base_url = cherrypy.request.headers['Origin']
+        # TODO: get the URL from headers
+        base_url = 'https://broker.spcoco.org'
+        # base_url = cherrypy.request.headers['Origin']
     except:
         base_url = 'https://localhost'
         

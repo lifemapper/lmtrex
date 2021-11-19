@@ -2,7 +2,7 @@
 
 Note: Mainly wraps elementTree functionality to fit Lifemapper needs
 """
-from lmtrex.tools.attribute_object import LmAttList, LmAttObj
+from lmtrex.tools.misc.attribute_object import LmAttList, LmAttObj
 
 from types import (BuiltinFunctionType, BuiltinMethodType, FunctionType,
                    LambdaType, MethodType)

@@ -2,9 +2,9 @@ import os
 import shutil
 import time
 
-from lmtrex.tools.dwca import (
+from lmtrex.tools.misc.dwca import (
     assemble_download_filename, DwCArchive, get_dwca_urls, download_dwca)
-from lmtrex.tools.utils import is_valid_uuid
+from lmtrex.tools.s2n.utils import is_valid_uuid
 from lmtrex.common.lmconstants import (DWCA, TST_VALUES)
 
 
