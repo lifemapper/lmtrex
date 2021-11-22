@@ -7,27 +7,25 @@ info:
   contact:
     name: Aimee Stewart
     email: aimee.stewart@ku.edu
-    url: 'http://www.lifemapper.org/'
+    url: 'https://www.lifemapper.org/'
   license:
     name: GPL-3.0 License
     url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
 servers:
-  - url: 'http://data.lifemapper.org/api/v1'
+  - url: 'https://data.lifemapper.org/api/v1'
     description: Lifemapper server
 tags:
   - name: name
     description: Get taxonomic information for a scientific name
   - name: occ
     description: Get specimen occurrences
-  - name: dataset
-    description: Get specimen occurrences from a dataset
   - name: resolve
     description: Get unique identifier metadata for a digital specimen object in Specify
   - name: map
     description: Get URL for map of species points and predicted distributions from Lifemapper
 externalDocs:
   description: Lifemapper
-  url: 'http://www.lifemapper.org/'
+  url: 'https://www.lifemapper.org/'
 paths:
   '/name/{namestr}':
     get:
@@ -340,12 +338,11 @@ components:
           type: string
         provider:
           $ref: '#/components/schemas/provider'
-        provider_query:
-          type: object
-          items:
-            type: string
         record_format:
           type: string
+        records:
+          type: array
+          items: object
         errors:
           type: array
           items:
@@ -783,30 +780,30 @@ components:
         endpoint:
           type: string
           #format: uri
-          example: http://client.lifemapper.org/api/v2/ogc/data_300456
+          example: https://data.lifemapper.org/api/v2/ogc/data_352290
         point_link:
           type: string
           #format: uri
-          example: http://client.lifemapper.org/api/v2/occurrence/300456
+          example: https://data.lifemapper.org/api/v2/occurrence/352290
         point_name:
           type: string
-          example: occ_300456
+          example: occ_352290
         species_name:
           type: string
           example: Phlox longifolia Nutt.
         modtime:
           type: string
           format: datetime
-          example: 2019-12-29 18:53:36
+          example: 2021-09-05 10:23:09
         projection_link:
           type: string
           #format: uri
-          example: http://client.lifemapper.org/api/v2/sdmProject/717933
+          example: https://data.lifemapper.org/api/v2/sdmProject/119965
         vendor-specific-parameters:
           type: object
         projection_name:
           type: string
-          example: prj_717933
+          example: prj_119965
     issue_pairs:
       type: object
       code:
