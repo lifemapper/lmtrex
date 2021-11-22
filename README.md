@@ -13,13 +13,26 @@ This work has been supported by NSF Awards NSF BIO-1458422, OCI-1234983.
 
 ## Debugging
 
-To run in debug mode, from directory containing flask app
+
+To run flask in debug mode, first setup virtual environment for python at the 
+top level of the repo, activate, then add dependencies from requirements.txt:
+
+```zsh
+cd ~/git/lmtrex
+python3 -m venv venv
+. venv/bin/activate
+pip3 install flask requests pykew gunicorn
+```
+
+then start the flask application
 
 ```zsh
 export FLASK_ENV=development
-export FLASK_APP=routes
+export FLASK_APP=lmtrex.flask_app.broker.routes
 flask run
 ```
+
+test on development port in browser: https://127.0.0.1:5000/api/v1/occ
 
 ## Deployment
 
