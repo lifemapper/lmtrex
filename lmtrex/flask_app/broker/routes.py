@@ -18,7 +18,7 @@ def address_endpoint():
     return response
 
 # .....................................................................................
-@app.route("/api/v1/badge")
+@app.route("/api/v1/badge/")
 def badge_endpoint():
     response = BadgeSvc.get_endpoint()
     return response
@@ -43,9 +43,20 @@ def badge_get(provider):
     return response
 
 # .....................................................................................
-@app.route("/api/v1/map")
+@app.route("/api/v1/map/")
 def map_endpoint():
-    response = MapSvc.get_endpoint()
+    name_arg = request.args.get('namestr', default = None, type = str)
+    provider = request.args.get('provider', default = None, type = str)
+    is_accepted = request.args.get('is_accepted', default = 'True', type = str)
+    gbif_parse = request.args.get('gbif_parse', default = 'True', type = str)
+    scenariocode = request.args.get('scenariocode', default = None, type = str)
+    color = request.args.get('color', default = 'red', type = str)
+    if name_arg is None:
+        response = MapSvc.get_endpoint()
+    else:
+        response = NameSvc.get_name_records(
+            namestr=name_arg, provider=provider, is_accepted=is_accepted, gbif_parse=gbif_parse, 
+            scenariocode=scenariocode, color=color)
     return response
 
 # .....................................................................................
@@ -59,24 +70,32 @@ def map_get(namestr):
     Returns:
         dict: A dictionary of metadata for the requested record.
     """
-    # response = OccurrenceSvc.get_occurrence_records(occid='identifier')
-    name_arg = request.args.get('namestr', default = None, type = str)
     provider = request.args.get('provider', default = None, type = str)
     is_accepted = request.args.get('is_accepted', default = 'True', type = str)
     gbif_parse = request.args.get('gbif_parse', default = 'True', type = str)
     scenariocode = request.args.get('scenariocode', default = None, type = str)
     color = request.args.get('color', default = 'red', type = str)
-    if name_arg is not None:
-        namestr = name_arg
     response = NameSvc.get_name_records(
         namestr=namestr, provider=provider, is_accepted=is_accepted, gbif_parse=gbif_parse, 
         scenariocode=scenariocode, color=color)
     return response
 
 # .....................................................................................
-@app.route("/api/v1/name")
+@app.route("/api/v1/name/")
 def name_endpoint():
-    response = NameSvc.get_endpoint()
+    name_arg = request.args.get('namestr', default = None, type = str)
+    provider = request.args.get('provider', default = None, type = str)
+    is_accepted = request.args.get('is_accepted', default = 'True', type = str)
+    gbif_parse = request.args.get('gbif_parse', default = 'True', type = str)
+    gbif_count = request.args.get('gbif_count', default = 'True', type = str)
+    kingdom = request.args.get('kingdom', default = None, type = str)
+    if name_arg is None:
+        response = NameSvc.get_endpoint()
+    else:
+        response = NameSvc.get_name_records(
+            namestr=name_arg, provider=provider, is_accepted=is_accepted, 
+            gbif_parse=gbif_parse, gbif_count=gbif_count)
+
     return response
 
 # .....................................................................................
@@ -91,23 +110,28 @@ def name_get(namestr):
         dict: A dictionary of metadata for the requested record.
     """
     # response = OccurrenceSvc.get_occurrence_records(occid='identifier')
-    name_arg = request.args.get('namestr', default = None, type = str)
     provider = request.args.get('provider', default = None, type = str)
     is_accepted = request.args.get('is_accepted', default = 'True', type = str)
     gbif_parse = request.args.get('gbif_parse', default = 'True', type = str)
     gbif_count = request.args.get('gbif_count', default = 'True', type = str)
     kingdom = request.args.get('kingdom', default = None, type = str)
-    if name_arg is not None:
-        namestr = name_arg
     response = NameSvc.get_name_records(
         namestr=namestr, provider=provider, is_accepted=is_accepted, gbif_parse=gbif_parse, 
         gbif_count=gbif_count)
     return response
 
 # .....................................................................................
-@app.route("/api/v1/occ")
+@app.route("/api/v1/occ/")
 def occ_endpoint():
-    response = OccurrenceSvc.get_endpoint()
+    occ_arg = request.args.get('occid', default = None, type = str)
+    provider = request.args.get('provider', default = None, type = str)
+    dataset_key = request.args.get('dataset_key', default = None, type = str)
+    count_only = request.args.get('count_only', default = 'False', type = str)
+    if occ_arg is None and dataset_key is None:
+        response = OccurrenceSvc.get_endpoint()
+    else:
+        response = OccurrenceSvc.get_occurrence_records(
+            occid=occ_arg, provider=provider, dataset_key=dataset_key, count_only=count_only)
     return response
 
 # .....................................................................................
@@ -121,13 +145,9 @@ def occ_get(identifier):
     Returns:
         dict: A dictionary of metadata for the requested record.
     """
-    # response = OccurrenceSvc.get_occurrence_records(occid='identifier')
-    occ_arg = request.args.get('occid', default = None, type = str)
     provider = request.args.get('provider', default = None, type = str)
     dataset_key = request.args.get('dataset_key', default = None, type = str)
     count_only = request.args.get('count_only', default = 'False', type = str)
-    if occ_arg is not None:
-        identifier = occ_arg
     response = OccurrenceSvc.get_occurrence_records(
         occid=identifier, provider=provider, dataset_key=dataset_key, count_only=count_only)
     return response
