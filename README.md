@@ -32,7 +32,10 @@ export FLASK_APP=lmtrex.flask_app.broker.routes
 flask run
 ```
 
-test on development port in browser: https://127.0.0.1:5000/api/v1/occ
+test through flask:
+http://localhost:5000/api/v1/name?namestr=Notemigonus%20crysoleucas%20(Mitchill,%201814)
+http://localhost:5000/api/v1/occ?occid=01493b05-4310-4f28-9d81-ad20860311f3
+
 
 ## Deployment
 
@@ -75,6 +78,10 @@ needed.
 CherryPy is watching for back-end file changes and restarts the server when
 needed.
 
+Test in docker:
+https://localhost/api/v1/name?namestr=Notemigonus%20crysoleucas%20(Mitchill,%201814)
+https://localhost/api/v1/occ?occid=01493b05-4310-4f28-9d81-ad20860311f3
+
 #### (Optional) NPM dependencies
 
 If you need to do front-end development, follow these steps:
@@ -107,10 +114,9 @@ containers:
 docker compose stop
 ```
 
-And run this command:
+And run this command (which ignores running container):
 
 ```zsh
-# this ignores running container
 docker system prune --all --volumes
 ```
 
