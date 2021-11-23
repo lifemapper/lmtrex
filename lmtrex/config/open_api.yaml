@@ -13,7 +13,9 @@ info:
     url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
 servers:
   - url: 'https://broker-dev.lifemapper.org/api/v1'
-    description: Internal testing server
+    description: Internal testing broker server
+  - url: 'https://broker.lifemapper.org/api/v1'
+    description: Production broker server
 tags:
   - name: name
     description: Get taxonomy information for a scientific name
@@ -105,7 +107,7 @@ paths:
       tags:
         - resolve
       summary: 'Get a metadata record with URL for a Specify GUID'
-      description: Get a metadata record with URL for a Specify GUID
+      description: Get resolution metadata for a digital specimen object in Specify
       operationId: resolve
       parameters:
         - $ref: '#/components/parameters/occurrenceid'
@@ -217,7 +219,7 @@ components:
         default: true
     dataset_key:
       name: dataset_key
-      in: path
+      in: query
       description: Dataset GUID
       required: true
       schema:
@@ -730,8 +732,8 @@ components:
           example: '2021-09-05 10:23:09'
         's2n:vendor_specific_parameters':
           type: array
-      items:
-        $ref: '#/components/schemas/vsp'
+          items:
+            $ref: '#/components/schemas/vsp'
 
     resolve_record:
       type: object
