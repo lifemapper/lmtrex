@@ -75,7 +75,7 @@ def map_get(namestr):
     gbif_parse = request.args.get('gbif_parse', default = 'True', type = str)
     scenariocode = request.args.get('scenariocode', default = None, type = str)
     color = request.args.get('color', default = 'red', type = str)
-    response = NameSvc.get_name_records(
+    response = MapSvc.get_map_meta(
         namestr=namestr, provider=provider, is_accepted=is_accepted, gbif_parse=gbif_parse, 
         scenariocode=scenariocode, color=color)
     return response
