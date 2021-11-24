@@ -10,6 +10,7 @@ from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.flask_app.broker.stats import StatsSvc
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 
 # .....................................................................................
 @app.route("/api/v1/address")

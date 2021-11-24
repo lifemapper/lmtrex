@@ -630,7 +630,7 @@ class S2nOutput(object):
         list_fields, dict_fields = S2nSchema.get_s2n_collection_fields(self._response[S2nKey.SERVICE])
         recs = self._response[S2nKey.RECORDS]
         for rec in recs:
-            ordrec = {}
+            ordrec = OrderedDict({})
             for fn in ordered_fieldnames:
                 try:
                     val = rec[fn]
