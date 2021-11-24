@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Specify Network services
   description: API services for returning biological metadata from available data providers
-  version: 0.0.1 pre-release buggy alpha beta
+  version: 1.0.0
   termsOfService: 'https://lifemapper.ku.edu/?page_id=1096'
   contact:
     name: Aimee Stewart
@@ -12,9 +12,9 @@ info:
     name: GPL-3.0 License
     url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
 servers:
-  - url: 'https://broker-dev.lifemapper.org/api/v1'
+  - url: 'https://broker-dev.spcoco.org/api/v1'
     description: Internal testing broker server
-  - url: 'https://broker.lifemapper.org/api/v1'
+  - url: 'https://broker.spcoco.org/api/v1'
     description: Production broker server
 tags:
   - name: name
@@ -49,16 +49,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/names_tentacles'
-#               examples:
-#                 Denitrobacterium etoxificans:
-#                   $ref: >-
-#                     '#/components/examples/names_Denitrobacterium_detoxificans'
-#                 Plagioecia patina:
-#                   $ref: '#/components/examples/names_Plagioecia_patina'
-#                 Tulipa sylvestris:
-#                   $ref: '#/components/examples/names_Tulipa_sylvestris'
-# 
-  '/occ/{occurrenceid}':
+  #               examples:
+  #                 Denitrobacterium etoxificans:
+  #                   $ref: >-
+  #                     '#/components/examples/names_Denitrobacterium_detoxificans'
+  #                 Plagioecia patina:
+  #                   $ref: '#/components/examples/names_Plagioecia_patina'
+  #                 Tulipa sylvestris:
+  #                   $ref: '#/components/examples/names_Tulipa_sylvestris'
+  #
+  '/occ/{occid}':
     get:
       tags:
         - occ
@@ -66,7 +66,7 @@ paths:
       description: Get specimen occurrence information from available services
       operationId: occ_tentacles
       parameters:
-        - $ref: '#/components/parameters/occurrenceid'
+        - $ref: '#/components/parameters/occid'
         - $ref: '#/components/parameters/provider'
         - $ref: '#/components/parameters/dataset_key'
         - $ref: '#/components/parameters/count_only'
@@ -76,14 +76,12 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/occ_tentacles'
-#                   - $ref: '#/components/schemas/occ_tentacles_count_only'
-#               examples:
-#                 KU Bird occurrence:
-#                   $ref: '#/components/examples/occ_tentacles'
-#                 KU Bird Occurence (count only):
-#                   $ref: '#/components/examples/occ_tentacles_count_only'
+                $ref: '#/components/schemas/occ_tentacles'
+  #               examples:
+  #                 KU Bird occurrence:
+  #                   $ref: '#/components/examples/occ_tentacles'
+  #                 KU Bird Occurence (count only):
+  #                   $ref: '#/components/examples/occ_tentacles_count_only'
 
   '/map/{namestr}':
     get:
@@ -102,7 +100,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/map_tentacles'
 
-  '/resolve/{occurrenceid}':
+  '/resolve/{occid}':
     get:
       tags:
         - resolve
@@ -110,7 +108,7 @@ paths:
       description: Get resolution metadata for a digital specimen object in Specify
       operationId: resolve
       parameters:
-        - $ref: '#/components/parameters/occurrenceid'
+        - $ref: '#/components/parameters/occid'
       responses:
         '200':
           description: successful operation
@@ -120,6 +118,7 @@ paths:
                 $ref: '#/components/schemas/resolve_record'
 
 components:
+
   parameters:
     namestr:
       name: namestr
@@ -170,9 +169,9 @@ components:
     provider:
       name: provider
       in: query
-      schema: 
+      schema:
         type: array
-        items: 
+        items:
           type: string
           enum:
             - 'gbif'
@@ -231,8 +230,8 @@ components:
           value: 8f79c802-a58c-447f-99aa-1d6a0790825a
         Birds dataset:
           value: e635240a-3cb1-4d26-ab87-57d8c7afdfdb
-    occurrenceid:
-      name: occurrenceid
+    occid:
+      name: occid
       in: path
       description: Occurence ID
       required: true
@@ -263,15 +262,39 @@ components:
       schema:
         type: boolean
         default: false
-    count_only_default:
-      name: count_only
-      in: query
-      description: Whether to limit the response to a count of results
-      required: false
-      schema:
-        type: boolean
-        default: true
+
+
   schemas:
+    provider:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - 'gbif'
+            - 'idb'
+            - 'ipni'
+            - 'itis'
+            - 'lm'
+            - 'mopho'
+            - 'specify'
+            - 'worms'
+            - 'specifynetwork'
+        icon_url:
+          type: string
+          example: https://broker.spcoco.org/api/v1/badge?provider=specifynetwork
+        label:
+          type: string
+          description: Human-readable provider name
+          example: Specify Network
+        query_url:
+          type: array
+          items:
+            type: string
+            example: https://broker.spcoco.org/api/v1/name?namestr=Acer saccharum Marshall&provider=gbif,itis,worms&is_accepted=True&gbif_count=True&kingdom=None
+        status_code:
+          type: number
+          example: 200
     wrapper:
       type: object
       properties:
@@ -280,18 +303,24 @@ components:
         service:
           type: string
         provider:
-          type: string
+          $ref: '#/components/schemas/provider'
         record_format:
           type: string
-        records:
-          type: array
-          items:
-            type: object
         errors:
-          type: array
-          items:
-            type: string
-          description: Array of error messages
+          type: object
+          properties:
+            error:
+              type: array
+              items:
+                type: string
+            info:
+              type: array
+              items:
+                type: string
+            warning:
+              type: array
+              items:
+                type: string
     count:
       type: integer
       description: >-
@@ -303,41 +332,45 @@ components:
       type: string
       minLength: 36
       maxLength: 36
-    etag:
-      type: integer
-      minimum: 40
-      maximum: 40
-      example: f81047edaf16be575d75542872e01580be9a9a2b
+    nullable_guid:
+      type: string
+      minLength: 36
+      maxLength: 36
+      nullable: true
     view_url:
-       type: string
-       description: URL to provider web page for this data
+      type: string
+      description: URL to provider web page for this data
+      nullable: true
     api_url:
-       type: string
-       description: URL for provider api query for this data
+      type: string
+      description: URL for provider api query for this data
+      nullable: true
     hierarchy:
-      type: object
-      properties:
-        kingdom:
-          type: string
-          example: 'Animalia'
-        phylum:
-          type: string
-          example: 'Bryozoa'
-        class:
-          type: string
-          example: 'Stenolaemata'
-        order:
-          type: string
-          example: 'Cyclostomatida'
-        family:
-          type: string
-          example: 'Plagioeciidae'
-        genus:
-          type: string
-          example: 'Plagioecia'
-        species:
-          type: string
-          example: 'Plagioecia patina'
+      type: array
+      items:
+        type: object
+        properties:
+          kingdom:
+            type: string
+            example: 'Animalia'
+          phylum:
+            type: string
+            example: 'Bryozoa'
+          class:
+            type: string
+            example: 'Stenolaemata'
+          order:
+            type: string
+            example: 'Cyclostomatida'
+          family:
+            type: string
+            example: 'Plagioeciidae'
+          genus:
+            type: string
+            example: 'Plagioecia'
+          species:
+            type: string
+            example: 'Plagioecia patina'
 
     names_tentacles:
       allOf:
@@ -351,11 +384,9 @@ components:
             records:
               type: array
               items:
-                oneOf:
-                  - $ref: '#/components/schemas/names_one_prov'
-              minItems: 2
-              maxItems: 2
-              description: "First item is GBIF' response. The second one is ITIS"
+                $ref: '#/components/schemas/names_one_prov'
+              minItems: 3
+              maxItems: 3
     names_one_prov:
       allOf:
         - $ref: '#/components/schemas/wrapper'
@@ -368,12 +399,7 @@ components:
             records:
               type: array
               items:
-                oneOf:
-                  - $ref: '#/components/schemas/name_record'
-                  - $ref: '#/components/schemas/name_record_with_count'
-              minItems: 1
-              maxItems: 1
-
+                $ref: '#/components/schemas/name_record'
     name_record:
       type: object
       properties:
@@ -381,24 +407,25 @@ components:
           $ref: '#/components/schemas/view_url'
         "s2n:api_url":
           $ref: '#/components/schemas/api_url'
-        "s2n:status": 
+        "s2n:status":
           type: string
           description: taxonomic status of this name
           example: 'valid'
-        "s2n:scientific_name": 
+        "s2n:scientific_name":
           type: string
           example: 'Plagioecia patina (Lamarck, 1816)'
-        "s2n:canonical_name": 
+        "s2n:canonical_name":
           type: string
           example: 'Plagioecia patina'
-        "s2n:common_names": 
+        "s2n:common_names":
           type: string
           example: 'red maple'
-        "s2n:kingdom": 
+          nullable: true
+        "s2n:kingdom":
           type: string
           description: taxonomic kingdom containing this name
           example: 'Animalia'
-        "s2n:rank": 
+        "s2n:rank":
           type: string
           description: taxonomic rank of this name
           example: 'genus'
@@ -407,77 +434,83 @@ components:
           items:
             type: string
           description: Array of synonyms of this name
+          nullable: true
         "s2n:hierarchy":
           $ref: '#/components/schemas/hierarchy'
-        "s2n:gbif_occurrence_count":
+        s2n:gbif_occurrence_count:
           type: integer
-          description: Number of occurrences reported by GBIF for this name
-        "s2n:gbif_occurrence_url":
+          description: Number of occurrences reported by GBIF for this name. This would be null if gbif_count is False
+          example: 926
+          nullable: true
+        s2n:gbif_occurrence_url:
           type: string
-          description: API URL to query for specimen occurrences in GBIF for this name
+          description: API URL to query for specimen occurrences in GBIF for this name. This would be null if gbif_count is False
+          example: 'https://www.gbif.org/species/1004151'
+          nullable: true
         "s2n:gbif_confidence":
           type: number
           description: Confidence score assigned by GBIF
           minimum: 0
           maximum: 100
           example: 98
+          nullable: true
         "s2n:gbif_taxon_key":
           type: integer
           description: GBIF identifier key for this taxon
+          nullable: true
         "s2n:itis_tsn":
           type: integer
           description: ITIS identifier key for this taxon
+          nullable: true
         "s2n:itis_credibility":
           type: string
           description: Category assigned by ITIS indicating taxon credibility
           example: 'TWG standards met'
+          nullable: true
         "s2n:worms_valid_AphiaID":
           type: integer
           description: WoRMS identifier key for this taxon
+          nullable: true
         "s2n:worms_lsid":
           type: string
           description: WoRMS resolvable unique identifier key for this taxon
+          nullable: true
         "s2n:worms_isMarine":
           type: integer
           description: WoRMS flag indicating if the taxon is a marine organism
           minimum: 0
           maximum: 1
+          nullable: true
         "s2n:worms_isBrackish":
           type: integer
           description: WoRMS flag indicating if the organism lives in brackish water
           minimum: 0
           maximum: 1
+          nullable: true
         "s2n:worms_isFreshwater":
           type: integer
           description: WoRMS flag indicating if the organism lives in fresh water
           minimum: 0
           maximum: 1
+          nullable: true
         "s2n:worms_isTerrestrial":
           type: integer
           description: WoRMS flag indicating if the taxon is a terrestrial organism
           minimum: 0
           maximum: 1
+          nullable: true
         "s2n:worms_isExtinct":
           type: integer
           description: WoRMS flag indicating if the taxon is an extinct organism
           minimum: 0
           maximum: 1
+          nullable: true
         "s2n:worms_match_type":
           type: string
-          description: WoRMS code indicating how the taxon requested matched the response
+          description:
+            WoRMS code indicating how the taxon requested matched the response
           example: 'exact'
-    name_record_with_count:
-      allOf:
-        - type: object
-          properties:
-            occurrence_count:
-              type: integer
-              example: 926
-            occurrences_url:
-              type: string
-              example: 'https://www.gbif.org/species/1004151'
-        - $ref: '#/components/schemas/name_record'
-        
+          nullable: true
 
     occ_tentacles:
       allOf:
@@ -491,10 +524,11 @@ components:
             records:
               type: array
               items:
-                allOf:
-                  - $ref: '#/components/schemas/occ_one_prov'
-              minItems: 4
+                $ref: '#/components/schemas/occ_one_prov'
+              minItems: 1
               maxItems: 4
+              description:
+                If GBIF dataset_key is provided, only GBIF response is returned
     occ_one_prov:
       allOf:
         - $ref: '#/components/schemas/wrapper'
@@ -508,153 +542,187 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/occ_record'
-              minItems: 0
-
+              description: This array would be empty if count_only is True
     occ_record:
       type: object
       properties:
         's2n:view_url':
-          $ref: '#/components/schemas/view_url'
+           $ref: '#/components/schemas/view_url'
         's2n:api_url':
           $ref: '#/components/schemas/api_url'
         'dwc:scientificName':
           type: string
           description: Scientific name for this object
           example: 'Eryngium ebracteatum Lam.'
+          nullable: true
         'dwc:taxonRank':
           type: string
           description: Taxonomic rank for the taxon identified for this object
           example: 'SPECIES'
-        'dwc:kingdom': 
+          nullable: true
+        'dwc:kingdom':
           type: string
           example: Animalia
+          nullable: true
         'dwc:phylum':
           type: string
           example: Chordata
+          nullable: true
         'dwc:class':
           type: string
-          example: Aves          
+          example: Aves
+          nullable: true
         'dwc:order':
           type: string
           example: Passeriformes
+          nullable: true
         'dwc:family':
           type: string
           example: Pachycephalidae
+          nullable: true
         'dwc:genus':
           type: string
           example: Pachycephala
+          nullable: true
         'dwc:species':
           type: string
           example: Pachycephala pectoralis
-        'dwc:specificEpithet': 
-          type: string 
+          nullable: true
+        'dwc:specificEpithet':
+          type: string
           example: pectoralis
-        'dwc:scientificNameAuthorship': 
+          nullable: true
+        'dwc:scientificNameAuthorship':
           type: string
           example: 'Pachycephala pectoralis (Latham, 1802)'
+          nullable: true
         'dwc:catalogNumber':
           type: string
           example: '21469'
         'dwc:collectionCode':
           type: string
           example: 'FLOR'
+          nullable: true
         'dwc:institutionCode':
           type: string
           example: 'Universidade Federal de Santa Catarina'
         'dwc:otherCatalogNumbers':
-          type: array
-          items: 
-            type: string
+          type: string
+          nullable: true
         'dwc:datasetName':
           type: string
           example: 'FLOR - Herbário do Departamento de Botânica da Universidade Federal de Santa Catarina'
+          nullable: true
         'dwc:year':
           type: string
           example: '1999'
+          nullable: true
         'dwc:month':
           type: string
           example: '11'
+          nullable: true
         'dwc:day':
           type: string
           example: '5'
-        'dwc:recordedBy': 
+          nullable: true
+        'dwc:recordedBy':
           type: string
           example: 'Bentley, Andrew C; Preston, Mike; Addison, Mark'
-        'dwc:fieldNumber': 
+          nullable: true
+        'dwc:fieldNumber':
           type: string
           example: 'ACB 02-02'
-        'dwc:locality': 
+          nullable: true
+        'dwc:locality':
           type: string
           example: 'Aliwal Shoal - Tiger ledge'
+          nullable: true
         'dwc:county':
           type: string
           example: 'Scottburgh'
-        'dwc:stateProvince': 
+          nullable: true
+        'dwc:stateProvince':
           type: string
           example: 'KwaZulu-Natal'
+          nullable: true
         'dwc:country':
           type: string
           example: 'United States'
+          nullable: true
         'dwc:countryCode':
           type: string
           example: 'US'
+          nullable: true
         'dwc:decimalLongitude':
           type: string
           example: '-79.91052'
+          nullable: true
         'dwc:decimalLatitude':
           type: string
           example: '32.753384'
+          nullable: true
         'dwc:geodeticDatum':
           type: string
           example: 'WGS84'
+          nullable: true
         'dwc:basisOfRecord':
           type: string
           example: 'MaterialSample'
+          nullable: true
         'dwc:preparations':
           type: string
           example: 'Tissue - 100'
+          nullable: true
         'dwc:associatedReferences':
           type: array
-          items: 
+          items:
             type: string
         'dwc:associatedSequences':
           type: array
-          items: 
+          items:
             type: string
         's2n:issues':
           $ref: '#/components/schemas/issue_pairs'
         'dcterms:accessRights':
           type: string
           example: 'http://biodiversity.ku.edu/research/university-kansas-biodiversity-institute-data-publication-and-use-norms'
+          nullable: true
         'dcterms:language':
           type: string
           example: 'en'
+          nullable: true
         'dcterms:license':
           type: string
           example: 'http://creativecommons.org/licenses/by/4.0/legalcode'
+          nullable: true
         'dcterms:modified':
           type: string
-          example: '2002-05-24T09:35:15.000+00:00'
+          example: '2019-01-17 10:04:50.0'
+          nullable: true
         'dcterms:type':
           type: string
           example: 'PhysicalObject'
+          nullable: true
         'gbif:gbifID':
           type: string
           example: '656981504'
+          nullable: true
         'gbif:publishingOrgKey':
-          $ref: '#/components/schemas/guid'
+          $ref: '#/components/schemas/nullable_guid'
         'gbif:datasetKey':
-          $ref: '#/components/schemas/guid'
+          $ref: '#/components/schemas/nullable_guid'
         'gbif:acceptedScientificName':
           type: string
           example: 'en'
+          nullable: true
         'idigbio:uuid':
-          $ref: '#/components/schemas/guid'
+          $ref: '#/components/schemas/nullable_guid'
         'mopho:specimen.specimen_id':
           type: string
           example: '25481'
+          nullable: true
         's2n:specify_identifier':
-          $ref: '#/components/schemas/guid'
+          $ref: '#/components/schemas/nullable_guid'
 
     map_tentacles:
       allOf:
@@ -668,11 +736,9 @@ components:
             records:
               type: array
               items:
-                oneOf:
-                  - $ref: '#/components/schemas/map_one_prov'
+                 $ref: '#/components/schemas/map_one_prov'
               minItems: 1
               maxItems: 1
-              description: "First item is Lifemapper response."
     map_one_prov:
       allOf:
         - $ref: '#/components/schemas/wrapper'
@@ -685,9 +751,7 @@ components:
             records:
               type: array
               items:
-                oneOf:
-                  - $ref: '#/components/schemas/map_record'
-
+                $ref: '#/components/schemas/map_record'
     map_record:
       type: object
       properties:
@@ -695,13 +759,13 @@ components:
           $ref: '#/components/schemas/view_url'
         's2n:api_url':
           $ref: '#/components/schemas/api_url'
-        's2n:endpoint':          
+        's2n:endpoint':
           type: string
           example: 'https://data.lifemapper.org/api/v2/ogc'
-        's2n:data_link':          
+        's2n:data_link':
           type: string
           example: 'https://data.lifemapper.org/api/v2/sdmProject/119965'
-        's2n:layer_type':          
+        's2n:layer_type':
           type: string
           enum:
             - 'vector'
@@ -756,7 +820,7 @@ components:
           example: 'http://spcoco.org/ark:/2c1becd5-e641-4e83-b3f5-76a55206539a'
         's2n:api_url':
           $ref: '#/components/schemas/api_url'
-          
+
     vsp:
       type: object
       properties:
@@ -766,150 +830,273 @@ components:
           type: string
 
     issue_pairs:
-      type: array
-      items:
-        $ref: '#/components/schemas/issue_code_desc'
-
-    issue_code_desc:
       type: object
+      description: Dictionary of error codes and error messages
       properties:
-        issue_description:
+        AMBIGUOUS_COLLECTION:
           type: string
-        code:
+        AMBIGUOUS_INSTITUTION:
           type: string
-          enum:
-            - 'AMBIGUOUS_COLLECTION'
-            - 'AMBIGUOUS_INSTITUTION'
-            - 'BASIS_OF_RECORD_INVALID'
-            - 'COLLECTION_MATCH_FUZZY'
-            - 'COLLECTION_MATCH_NONE'
-            - 'CONTINENT_COUNTRY_MISMATCH'
-            - 'CONTINENT_DERIVED_FROM_COORDINATES'
-            - 'CONTINENT_INVALID'
-            - 'COORDINATE_ACCURACY_INVALID'
-            - 'COORDINATE_INVALID'
-            - 'COORDINATE_OUT_OF_RANGE'
-            - 'COORDINATE_PRECISION_INVALID'
-            - 'COORDINATE_PRECISION_UNCERTAINTY_MISMATCH'
-            - 'COORDINATE_REPROJECTED'
-            - 'COORDINATE_REPROJECTION_FAILED'
-            - 'COORDINATE_REPROJECTION_SUSPICIOUS'
-            - 'COORDINATE_ROUNDED'
-            - 'COORDINATE_UNCERTAINTY_METERS_INVALID'
-            - 'COUNTRY_COORDINATE_MISMATCH'
-            - 'COUNTRY_DERIVED_FROM_COORDINATES'
-            - 'COUNTRY_INVALID'
-            - 'COUNTRY_MISMATCH'
-            - 'DEPTH_MIN_MAX_SWAPPED'
-            - 'DEPTH_NON_NUMERIC'
-            - 'DEPTH_NOT_METRIC'
-            - 'DEPTH_UNLIKELY'
-            - 'ELEVATION_MIN_MAX_SWAPPED'
-            - 'ELEVATION_NON_NUMERIC'
-            - 'ELEVATION_NOT_METRIC'
-            - 'ELEVATION_UNLIKELY'
-            - 'GEODETIC_DATUM_ASSUMED_WGS84'
-            - 'GEODETIC_DATUM_INVALID'
-            - 'GEOREFERENCED_DATE_INVALID'
-            - 'GEOREFERENCED_DATE_UNLIKELY'
-            - 'IDENTIFIED_DATE_INVALID'
-            - 'IDENTIFIED_DATE_UNLIKELY'
-            - 'INDIVIDUAL_COUNT_CONFLICTS_WITH_OCCURRENCE_STATUS'
-            - 'INDIVIDUAL_COUNT_INVALID'
-            - 'INSTITUTION_COLLECTION_MISMATCH'
-            - 'INSTITUTION_MATCH_FUZZY'
-            - 'INSTITUTION_MATCH_NONE'
-            - 'INTERPRETATION_ERROR'
-            - 'MODIFIED_DATE_INVALID'
-            - 'MODIFIED_DATE_UNLIKELY'
-            - 'MULTIMEDIA_DATE_INVALID'
-            - 'MULTIMEDIA_URI_INVALID'
-            - 'OCCURRENCE_STATUS_INFERRED_FROM_BASIS_OF_RECORD'
-            - 'OCCURRENCE_STATUS_INFERRED_FROM_INDIVIDUAL_COUNT'
-            - 'OCCURRENCE_STATUS_UNPARSABLE'
-            - 'POSSIBLY_ON_LOAN'
-            - 'PRESUMED_NEGATED_LATITUDE'
-            - 'PRESUMED_NEGATED_LONGITUDE'
-            - 'PRESUMED_SWAPPED_COORDINATE'
-            - 'RECORDED_DATE_INVALID'
-            - 'RECORDED_DATE_MISMATCH'
-            - 'RECORDED_DATE_UNLIKELY'
-            - 'REFERENCES_URI_INVALID'
-            - 'TAXON_MATCH_FUZZY'
-            - 'TAXON_MATCH_HIGHERRANK'
-            - 'TAXON_MATCH_NONE'
-            - 'TYPE_STATUS_INVALID'
-            - 'ZERO_COORDINATE'
-            - 'datecollected_bounds'
-            - 'dwc_acceptednameusageid_added'
-            - 'dwc_basisofrecord_invalid'
-            - 'dwc_basisofrecord_paleo_conflict'
-            - 'dwc_basisofrecord_removed'
-            - 'dwc_class_added'
-            - 'dwc_class_replaced'
-            - 'dwc_continent_added'
-            - 'dwc_continent_replaced'
-            - 'dwc_country_added'
-            - 'dwc_country_replaced'
-            - 'dwc_datasetid_added'
-            - 'dwc_datasetid_replaced'
-            - 'dwc_family_added'
-            - 'dwc_family_replaced'
-            - 'dwc_genus_added'
-            - 'dwc_genus_replaced'
-            - 'dwc_infraspecificepithet_added'
-            - 'dwc_infraspecificepithet_replaced'
-            - 'dwc_kingdom_added'
-            - 'dwc_kingdom_replaced'
-            - 'dwc_kingdom_suspect'
-            - 'dwc_multimedia_added'
-            - 'dwc_order_added'
-            - 'dwc_order_replaced'
-            - 'dwc_originalnameusageid_added'
-            - 'dwc_parentnameusageid_added'
-            - 'dwc_phylum_added'
-            - 'dwc_phylum_replaced'
-            - 'dwc_scientificnameauthorship_added'
-            - 'dwc_specificepithet_added'
-            - 'dwc_specificepithet_replaced'
-            - 'dwc_stateprovince_replaced'
-            - 'dwc_taxonid_added'
-            - 'dwc_taxonid_replaced'
-            - 'dwc_taxonomicstatus_added'
-            - 'dwc_taxonomicstatus_replaced'
-            - 'dwc_taxonrank_added'
-            - 'dwc_taxonrank_invalid'
-            - 'dwc_taxonrank_removed'
-            - 'dwc_taxonrank_replaced'
-            - 'dwc_taxonremarks_added'
-            - 'dwc_taxonremarks_replaced'
-            - 'gbif_canonicalname_added'
-            - 'gbif_genericname_added'
-            - 'gbif_reference_added'
-            - 'gbif_taxon_corrected'
-            - 'gbif_vernacularname_added'
-            - 'geopoint_0_coord'
-            - 'geopoint_bounds'
-            - 'geopoint_datum_error'
-            - 'geopoint_datum_missing'
-            - 'geopoint_low_precision'
-            - 'geopoint_pre_flip'
-            - 'geopoint_similar_coord'
-            - 'idigbio_isocountrycode_added'
-            - 'rev_geocode_both_sign'
-            - 'rev_geocode_corrected'
-            - 'rev_geocode_eez'
-            - 'rev_geocode_eez_corrected'
-            - 'rev_geocode_failure'
-            - 'rev_geocode_flip'
-            - 'rev_geocode_flip_both_sign'
-            - 'rev_geocode_flip_lat_sign'
-            - 'rev_geocode_flip_lon_sign'
-            - 'rev_geocode_lat_sign'
-            - 'rev_geocode_lon_sign'
-            - 'rev_geocode_mismatch'
-            - 'scientificname_added'
-            - 'taxon_match_failed'
+        BASIS_OF_RECORD_INVALID:
+          type: string
+        COLLECTION_MATCH_FUZZY:
+          type: string
+        COLLECTION_MATCH_NONE:
+          type: string
+        CONTINENT_COUNTRY_MISMATCH:
+          type: string
+        CONTINENT_DERIVED_FROM_COORDINATES:
+          type: string
+        CONTINENT_INVALID:
+          type: string
+        COORDINATE_ACCURACY_INVALID:
+          type: string
+        COORDINATE_INVALID:
+          type: string
+        COORDINATE_OUT_OF_RANGE:
+          type: string
+        COORDINATE_PRECISION_INVALID:
+          type: string
+        COORDINATE_PRECISION_UNCERTAINTY_MISMATCH:
+          type: string
+        COORDINATE_REPROJECTED:
+          type: string
+        COORDINATE_REPROJECTION_FAILED:
+          type: string
+        COORDINATE_REPROJECTION_SUSPICIOUS:
+          type: string
+        COORDINATE_ROUNDED:
+          type: string
+        COORDINATE_UNCERTAINTY_METERS_INVALID:
+          type: string
+        COUNTRY_COORDINATE_MISMATCH:
+          type: string
+        COUNTRY_DERIVED_FROM_COORDINATES:
+          type: string
+        COUNTRY_INVALID:
+          type: string
+        COUNTRY_MISMATCH:
+          type: string
+        DEPTH_MIN_MAX_SWAPPED:
+          type: string
+        DEPTH_NON_NUMERIC:
+          type: string
+        DEPTH_NOT_METRIC:
+          type: string
+        DEPTH_UNLIKELY:
+          type: string
+        ELEVATION_MIN_MAX_SWAPPED:
+          type: string
+        ELEVATION_NON_NUMERIC:
+          type: string
+        ELEVATION_NOT_METRIC:
+          type: string
+        ELEVATION_UNLIKELY:
+          type: string
+        GEODETIC_DATUM_ASSUMED_WGS84:
+          type: string
+        GEODETIC_DATUM_INVALID:
+          type: string
+        GEOREFERENCED_DATE_INVALID:
+          type: string
+        GEOREFERENCED_DATE_UNLIKELY:
+          type: string
+        IDENTIFIED_DATE_INVALID:
+          type: string
+        IDENTIFIED_DATE_UNLIKELY:
+          type: string
+        INDIVIDUAL_COUNT_CONFLICTS_WITH_OCCURRENCE_STATUS:
+          type: string
+        INDIVIDUAL_COUNT_INVALID:
+          type: string
+        INSTITUTION_COLLECTION_MISMATCH:
+          type: string
+        INSTITUTION_MATCH_FUZZY:
+          type: string
+        INSTITUTION_MATCH_NONE:
+          type: string
+        INTERPRETATION_ERROR:
+          type: string
+        MODIFIED_DATE_INVALID:
+          type: string
+        MODIFIED_DATE_UNLIKELY:
+          type: string
+        MULTIMEDIA_DATE_INVALID:
+          type: string
+        MULTIMEDIA_URI_INVALID:
+          type: string
+        OCCURRENCE_STATUS_INFERRED_FROM_BASIS_OF_RECORD:
+          type: string
+        OCCURRENCE_STATUS_INFERRED_FROM_INDIVIDUAL_COUNT:
+          type: string
+        OCCURRENCE_STATUS_UNPARSABLE:
+          type: string
+        POSSIBLY_ON_LOAN:
+          type: string
+        PRESUMED_NEGATED_LATITUDE:
+          type: string
+        PRESUMED_NEGATED_LONGITUDE:
+          type: string
+        PRESUMED_SWAPPED_COORDINATE:
+          type: string
+        RECORDED_DATE_INVALID:
+          type: string
+        RECORDED_DATE_MISMATCH:
+          type: string
+        RECORDED_DATE_UNLIKELY:
+          type: string
+        REFERENCES_URI_INVALID:
+          type: string
+        TAXON_MATCH_FUZZY:
+          type: string
+        TAXON_MATCH_HIGHERRANK:
+          type: string
+        TAXON_MATCH_NONE:
+          type: string
+        TYPE_STATUS_INVALID:
+          type: string
+        ZERO_COORDINATE:
+          type: string
+        datecollected_bounds:
+          type: string
+        dwc_acceptednameusageid_added:
+          type: string
+        dwc_basisofrecord_invalid:
+          type: string
+        dwc_basisofrecord_paleo_conflict:
+          type: string
+        dwc_basisofrecord_removed:
+          type: string
+        dwc_class_added:
+          type: string
+        dwc_class_replaced:
+          type: string
+        dwc_continent_added:
+          type: string
+        dwc_continent_replaced:
+          type: string
+        dwc_country_added:
+          type: string
+        dwc_country_replaced:
+          type: string
+        dwc_datasetid_added:
+          type: string
+        dwc_datasetid_replaced:
+          type: string
+        dwc_family_added:
+          type: string
+        dwc_family_replaced:
+          type: string
+        dwc_genus_added:
+          type: string
+        dwc_genus_replaced:
+          type: string
+        dwc_infraspecificepithet_added:
+          type: string
+        dwc_infraspecificepithet_replaced:
+          type: string
+        dwc_kingdom_added:
+          type: string
+        dwc_kingdom_replaced:
+          type: string
+        dwc_kingdom_suspect:
+          type: string
+        dwc_multimedia_added:
+          type: string
+        dwc_order_added:
+          type: string
+        dwc_order_replaced:
+          type: string
+        dwc_originalnameusageid_added:
+          type: string
+        dwc_parentnameusageid_added:
+          type: string
+        dwc_phylum_added:
+          type: string
+        dwc_phylum_replaced:
+          type: string
+        dwc_scientificnameauthorship_added:
+          type: string
+        dwc_specificepithet_added:
+          type: string
+        dwc_specificepithet_replaced:
+          type: string
+        dwc_stateprovince_replaced:
+          type: string
+        dwc_taxonid_added:
+          type: string
+        dwc_taxonid_replaced:
+          type: string
+        dwc_taxonomicstatus_added:
+          type: string
+        dwc_taxonomicstatus_replaced:
+          type: string
+        dwc_taxonrank_added:
+          type: string
+        dwc_taxonrank_invalid:
+          type: string
+        dwc_taxonrank_removed:
+          type: string
+        dwc_taxonrank_replaced:
+          type: string
+        dwc_taxonremarks_added:
+          type: string
+        dwc_taxonremarks_replaced:
+          type: string
+        gbif_canonicalname_added:
+          type: string
+        gbif_genericname_added:
+          type: string
+        gbif_reference_added:
+          type: string
+        gbif_taxon_corrected:
+          type: string
+        gbif_vernacularname_added:
+          type: string
+        geopoint_0_coord:
+          type: string
+        geopoint_bounds:
+          type: string
+        geopoint_datum_error:
+          type: string
+        geopoint_datum_missing:
+          type: string
+        geopoint_low_precision:
+          type: string
+        geopoint_pre_flip:
+          type: string
+        geopoint_similar_coord:
+          type: string
+        idigbio_isocountrycode_added:
+          type: string
+        rev_geocode_both_sign:
+          type: string
+        rev_geocode_corrected:
+          type: string
+        rev_geocode_eez:
+          type: string
+        rev_geocode_eez_corrected:
+          type: string
+        rev_geocode_failure:
+          type: string
+        rev_geocode_flip:
+          type: string
+        rev_geocode_flip_both_sign:
+          type: string
+        rev_geocode_flip_lat_sign:
+          type: string
+        rev_geocode_flip_lon_sign:
+          type: string
+        rev_geocode_lat_sign:
+          type: string
+        rev_geocode_lon_sign:
+          type: string
+        rev_geocode_mismatch:
+          type: string
+        scientificname_added:
+          type: string
+        taxon_match_failed:
+          type: string
 
   examples:
     names_gbif_Denitrobacterium_detoxificans:
@@ -949,4 +1136,4 @@ components:
             class: Coriobacteriia
             occurrence_count: 25
             occurrence_url: 'https://www.gbif.org/species/3223473'
-        errors: []
+        errors: [ ]
