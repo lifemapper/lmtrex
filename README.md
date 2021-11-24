@@ -32,7 +32,7 @@ export FLASK_APP=lmtrex.flask_app.broker.routes
 flask run
 ```
 
-test through flask:
+test through flask (no SSL):
 http://localhost:5000/api/v1/name?namestr=Notemigonus%20crysoleucas%20(Mitchill,%201814)
 http://localhost:5000/api/v1/occ?occid=01493b05-4310-4f28-9d81-ad20860311f3
 
@@ -78,7 +78,7 @@ needed.
 CherryPy is watching for back-end file changes and restarts the server when
 needed.
 
-Test in docker:
+Test in docker (with SSL):
 https://localhost/api/v1/name?namestr=Notemigonus%20crysoleucas%20(Mitchill,%201814)
 https://localhost/api/v1/occ?occid=01493b05-4310-4f28-9d81-ad20860311f3
 
