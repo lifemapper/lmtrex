@@ -333,13 +333,13 @@ class GbifAPI(APIQuery):
     # ...............................................
     @classmethod
     def get_occurrences_by_dataset(
-            cls, dataset_key, count_only, logger=None):
+            cls, gbif_dataset_key, count_only, logger=None):
         """
         Count and optionally return (a limited number of) records with the given 
-        dataset_key.  This currently only returns the first page (0-limit) of records.
+        gbif_dataset_key.  This currently only returns the first page (0-limit) of records.
         
         Args:
-            dataset_key: unique identifier for the dataset, assigned by GBIF
+            gbif_dataset_key: unique identifier for the dataset, assigned by GBIF
                 and retained by Specify
             count_only: boolean flag signaling to return records or only count
             logger: optional logger for info and error messages.  If None, 
@@ -360,7 +360,7 @@ class GbifAPI(APIQuery):
         api = GbifAPI(
             service=GBIF.OCCURRENCE_SERVICE, key=GBIF.SEARCH_COMMAND,
             other_filters={
-                'dataset_key': dataset_key, 'offset': 0, 
+                GBIF.REQUEST_DATASET_KEY: gbif_dataset_key, 'offset': 0, 
                 'limit': limit}, logger=logger)
         try:
             api.query()

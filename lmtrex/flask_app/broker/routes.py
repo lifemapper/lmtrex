@@ -126,13 +126,13 @@ def name_get(namestr):
 def occ_endpoint():
     occ_arg = request.args.get('occid', default = None, type = str)
     provider = request.args.get('provider', default = None, type = str)
-    dataset_key = request.args.get('dataset_key', default = None, type = str)
+    gbif_dataset_key = request.args.get('gbif_dataset_key', default = None, type = str)
     count_only = request.args.get('count_only', default = 'False', type = str)
-    if occ_arg is None and dataset_key is None:
+    if occ_arg is None and gbif_dataset_key is None:
         response = OccurrenceSvc.get_endpoint()
     else:
         response = OccurrenceSvc.get_occurrence_records(
-            occid=occ_arg, provider=provider, dataset_key=dataset_key, count_only=count_only)
+            occid=occ_arg, provider=provider, gbif_dataset_key=gbif_dataset_key, count_only=count_only)
     return response
 
 # .....................................................................................
@@ -147,10 +147,10 @@ def occ_get(identifier):
         dict: A dictionary of metadata for the requested record.
     """
     provider = request.args.get('provider', default = None, type = str)
-    dataset_key = request.args.get('dataset_key', default = None, type = str)
+    gbif_dataset_key = request.args.get('gbif_dataset_key', default = None, type = str)
     count_only = request.args.get('count_only', default = 'False', type = str)
     response = OccurrenceSvc.get_occurrence_records(
-        occid=identifier, provider=provider, dataset_key=dataset_key, count_only=count_only)
+        occid=identifier, provider=provider, gbif_dataset_key=gbif_dataset_key, count_only=count_only)
     return response
 
 # .....................................................................................
