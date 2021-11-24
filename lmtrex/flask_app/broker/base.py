@@ -411,7 +411,7 @@ class _S2nService:
     def _standardize_params(
             cls, provider=None, namestr=None, is_accepted=False, gbif_parse=False,  
             gbif_count=False, itis_match=False, kingdom=None, 
-            occid=None, dataset_key=None, count_only=False, url=None,
+            occid=None, gbif_dataset_key=None, count_only=False, url=None,
             scenariocode=None, bbox=None, color=None, exceptions=None, height=None, 
             layers=None, request=None, frmat=None, srs=None, transparent=None, 
             width=None, do_match=True, icon_status=None, filter_params=None):
@@ -432,7 +432,7 @@ class _S2nService:
             'itis_match': itis_match, 
             'kingdom': kingdom, 
             'occid': occid, 
-            'dataset_key': dataset_key, 
+            'gbif_dataset_key': gbif_dataset_key, 
             'count_only': count_only, 
             'url': url,
             'scenariocode': scenariocode,
