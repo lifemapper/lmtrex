@@ -68,7 +68,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/occurrenceid'
         - $ref: '#/components/parameters/provider'
-        - $ref: '#/components/parameters/dataset_key'
+        - $ref: '#/components/parameters/gbif_dataset_key'
         - $ref: '#/components/parameters/count_only'
       responses:
         '200':
@@ -245,8 +245,8 @@ components:
       schema:
         type: boolean
         default: true
-    dataset_key:
-      name: dataset_key
+    gbif_dataset_key:
+      name: gbif_dataset_key
       in: path
       description: Dataset GUID from GBIF
       required: true
