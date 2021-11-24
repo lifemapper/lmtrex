@@ -49,15 +49,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/names_tentacles'
-  #               examples:
-  #                 Denitrobacterium etoxificans:
-  #                   $ref: >-
-  #                     '#/components/examples/names_Denitrobacterium_detoxificans'
-  #                 Plagioecia patina:
-  #                   $ref: '#/components/examples/names_Plagioecia_patina'
-  #                 Tulipa sylvestris:
-  #                   $ref: '#/components/examples/names_Tulipa_sylvestris'
-  #
+              examples:
+                Denitrobacterium etoxificans:
+                   $ref:
+                    '#/components/examples/names_Denitrobacterium_detoxificans'
+                Plagioecia patina:
+                  $ref: '#/components/examples/names_Plagioecia_patina'
+                Tulipa sylvestris:
+                  $ref: '#/components/examples/names_Tulipa_sylvestris'
+
   '/occ/{occid}':
     get:
       tags:
@@ -77,11 +77,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/occ_tentacles'
-  #               examples:
-  #                 KU Bird occurrence:
-  #                   $ref: '#/components/examples/occ_tentacles'
-  #                 KU Bird Occurence (count only):
-  #                   $ref: '#/components/examples/occ_tentacles_count_only'
+              examples:
+                KU Bird occurrence:
+                  $ref: '#/components/examples/occ_tentacles'
 
   '/map/{namestr}':
     get:
@@ -116,6 +114,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/resolve_record'
+              examples:
+                KU Bird occurrence:
+                  $ref: '#/components/examples/resolve'
 
 components:
 
@@ -1099,41 +1100,710 @@ components:
           type: string
 
   examples:
-    names_gbif_Denitrobacterium_detoxificans:
+    names_Denitrobacterium_detoxificans:
       description: 'namestr: Denitrobacterium detoxificans'
       value:
-        count: 1
-        query_term: Denitrobacterium detoxificans
-        service: name
-        provider: GBIF
-        provider_query:
-          - 'http://api.gbif.org/v1/species/match?name=Denitrobacterium+detoxificans&verbose=true'
-          - 'http://api.gbif.org/v1/occurrence/search?taxonKey=3223473'
-        record_format: 'https://www.gbif.org/developer/species'
+        count: 3
+        errors: {}
+        provider:
+          code: specifynetwork
+          icon_url: https://broker.spcoco.org/api/v1/badge?provider=specifynetwork
+          label: Specify Network
+          query_url:
+            - https://broker.spcoco.org/api/v1/name?namestr=Denitrobacterium detoxificans&provider=gbif,itis,worms&is_accepted=True&gbif_count=True&kingdom=None
+          status_code: 200
+        record_format: ''
         records:
-          - usageKey: 3223473
-            scientificName: 'Denitrobacterium detoxificans Anderson et al., 2000'
-            canonicalName: Denitrobacterium detoxificans
-            rank: SPECIES
-            status: ACCEPTED
-            confidence: 98
-            note: 'Similarity: name=110; authorship=0; classification=-2; rank=5; status=1; singleMatch=5'
-            matchType: EXACT
-            kingdom: Bacteria
-            phylum: Actinobacteriota
-            order: Coriobacteriales
-            family: Eggerthellaceae
-            genus: Denitrobacterium
-            species: Denitrobacterium detoxificans
-            kingdomKey: 3
-            phylumKey: 10813635
-            classKey: 10790850
-            orderKey: 568
-            familyKey: 8916439
-            genusKey: 3223472
-            speciesKey: 3223473
-            synonym: false
-            class: Coriobacteriia
-            occurrence_count: 25
-            occurrence_url: 'https://www.gbif.org/species/3223473'
-        errors: [ ]
+          - count: 1
+            errors: {}
+            provider:
+              code: gbif
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=gbif
+              label: GBIF
+              query_url:
+                - https://api.gbif.org/v1/species/match?name=Denitrobacterium+detoxificans&verbose=true
+                - https://api.gbif.org/v1/occurrence/search?taxonKey=3223473
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: https://api.gbif.org/v1/species/3223473
+                s2n:canonical_name: Denitrobacterium detoxificans
+                s2n:common_names: null
+                s2n:gbif_confidence: 98
+                s2n:gbif_occurrence_count: 39
+                s2n:gbif_occurrence_url: https://api.gbif.org/v1/occurrence/search?taxonKey=3223473
+                s2n:gbif_taxon_key: 3223473
+                s2n:hierarchy:
+                  - class: Coriobacteriia
+                    family: Eggerthellaceae
+                    genus: Denitrobacterium
+                    kingdom: Bacteria
+                    order: Coriobacteriales
+                    phylum: Actinobacteriota
+                    species: Denitrobacterium detoxificans
+                s2n:itis_credibility: null
+                s2n:itis_tsn: null
+                s2n:kingdom: Bacteria
+                s2n:rank: SPECIES
+                s2n:scientific_name: Denitrobacterium detoxificans Anderson et al., 2000
+                s2n:status: ACCEPTED
+                s2n:synonyms: []
+                s2n:view_url: https://www.gbif.org/species/3223473
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+            service: name
+          - count: 1
+            errors: {}
+            provider:
+              code: itis
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=itis
+              label: ITIS
+              query_url:
+                - https://services.itis.gov?wt=json&q=nameWInd:Denitrobacterium\%20detoxificans
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: https://services.itis.gov?q=tsn:961092
+                s2n:canonical_name: Denitrobacterium detoxificans
+                s2n:common_names: null
+                s2n:gbif_confidence: null
+                s2n:gbif_occurrence_count: null
+                s2n:gbif_occurrence_url: null
+                s2n:gbif_taxon_key: null
+                s2n:hierarchy:
+                  - class: null
+                    family: Coriobacteriaceae
+                    genus: Denitrobacterium
+                    kingdom: Bacteria
+                    order: Coriobacteriales
+                    phylum: Actinobacteria
+                    species: Denitrobacterium detoxificans
+                s2n:itis_credibility: TWG standards met
+                s2n:itis_tsn: '961092'
+                s2n:kingdom: Bacteria
+                s2n:rank: Species
+                s2n:scientific_name: Denitrobacterium detoxificans Anderson et al., 2000
+                s2n:status: valid
+                s2n:synonyms: []
+                s2n:view_url: https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=961092
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+            service: name
+          - count: 0
+            errors:
+              error:
+                - WormsAPI; URL http://www.marinespecies.org/rest/AphiaRecordsByMatchNames, code = 204, reason = No Content
+            provider:
+              code: worms
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=worms
+              label: WoRMS
+              query_url:
+                - http://www.marinespecies.org/rest/AphiaRecordsByMatchNames?marine_only=true&scientificnames%5B%5D%3D=Denitrobacterium+detoxificans
+              status_code: 204
+            record_format: ''
+            records: []
+            service: name
+        service: name
+    names_Plagioecia_patina:
+      description: 'namestr: Plagioecia patina'
+      value:
+        count: 3
+        errors: {}
+        provider:
+          code: specifynetwork
+          icon_url: https://broker.spcoco.org/api/v1/badge?provider=specifynetwork
+          label: Specify Network
+          query_url:
+            - https://broker.spcoco.org/api/v1/name?namestr=Plagioecia patina&provider=gbif,itis,worms&is_accepted=True&gbif_count=True&kingdom=None
+          status_code: 200
+        record_format: ''
+        records:
+          - count: 1
+            errors: {}
+            provider:
+              code: gbif
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=gbif
+              label: GBIF
+              query_url:
+                - https://api.gbif.org/v1/species/match?name=Plagioecia+patina&verbose=true
+                - https://api.gbif.org/v1/occurrence/search?taxonKey=1004151
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: https://api.gbif.org/v1/species/1004151
+                s2n:canonical_name: Plagioecia patina
+                s2n:common_names: null
+                s2n:gbif_confidence: 98
+                s2n:gbif_occurrence_count: 1029
+                s2n:gbif_occurrence_url: https://api.gbif.org/v1/occurrence/search?taxonKey=1004151
+                s2n:gbif_taxon_key: 1004151
+                s2n:hierarchy:
+                  - class: Stenolaemata
+                    family: Plagioeciidae
+                    genus: Plagioecia
+                    kingdom: Animalia
+                    order: Cyclostomatida
+                    phylum: Bryozoa
+                    species: Plagioecia patina
+                s2n:itis_credibility: null
+                s2n:itis_tsn: null
+                s2n:kingdom: Animalia
+                s2n:rank: SPECIES
+                s2n:scientific_name: Plagioecia patina (Lamarck, 1816)
+                s2n:status: ACCEPTED
+                s2n:synonyms: []
+                s2n:view_url: https://www.gbif.org/species/1004151
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+            service: name
+          - count: 1
+            errors: {}
+            provider:
+              code: itis
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=itis
+              label: ITIS
+              query_url:
+                - https://services.itis.gov?wt=json&q=nameWInd:Plagioecia\%20patina
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: https://services.itis.gov?q=tsn:155729
+                s2n:canonical_name: Plagioecia patina
+                s2n:common_names: null
+                s2n:gbif_confidence: null
+                s2n:gbif_occurrence_count: null
+                s2n:gbif_occurrence_url: null
+                s2n:gbif_taxon_key: null
+                s2n:hierarchy:
+                  - class: Stenolaemata
+                    family: Plagioeciidae
+                    genus: Plagioecia
+                    kingdom: Animalia
+                    order: Cyclostomata
+                    phylum: Bryozoa
+                    species: Plagioecia patina
+                s2n:itis_credibility: No review; untreated NODC data
+                s2n:itis_tsn: '155729'
+                s2n:kingdom: Animalia
+                s2n:rank: Species
+                s2n:scientific_name: 'Plagioecia patina '
+                s2n:status: valid
+                s2n:synonyms: []
+                s2n:view_url: https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=155729
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+            service: name
+          - count: 1
+            errors: {}
+            provider:
+              code: worms
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=worms
+              label: WoRMS
+              query_url:
+                - http://www.marinespecies.org/rest/AphiaRecordsByMatchNames?marine_only=true&scientificnames%5B%5D%3D=Plagioecia+patina
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: http://www.marinespecies.org/rest/AphiaNameByAphiaID/111719
+                s2n:canonical_name: Plagioecia patina
+                s2n:common_names: null
+                s2n:gbif_confidence: null
+                s2n:gbif_occurrence_count: null
+                s2n:gbif_occurrence_url: null
+                s2n:gbif_taxon_key: null
+                s2n:hierarchy:
+                  - class: Stenolaemata
+                    family: Plagioeciidae
+                    genus: Plagioecia
+                    kingdom: Animalia
+                    order: Cyclostomatida
+                    phylum: Bryozoa
+                s2n:itis_credibility: null
+                s2n:itis_tsn: null
+                s2n:kingdom: Animalia
+                s2n:rank: Species
+                s2n:scientific_name: Plagioecia patina (Lamarck, 1816)
+                s2n:status: accepted
+                s2n:synonyms: []
+                s2n:view_url: http://www.marinespecies.org/aphia.php?p=taxdetails&id=111719
+                s2n:worms_isBrackish: 0
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: 0
+                s2n:worms_isMarine: 1
+                s2n:worms_isTerrestrial: 0
+                s2n:worms_lsid: urn:lsid:marinespecies.org:taxname:111719
+                s2n:worms_match_type: exact
+                s2n:worms_valid_AphiaID: 111719
+            service: name
+        service: name
+    names_Tulipa_sylvestris:
+      description: 'namestr: Tulipa sylvestris'
+      value:
+        count: 3
+        errors: {}
+        provider:
+          code: specifynetwork
+          icon_url: https://broker.spcoco.org/api/v1/badge?provider=specifynetwork
+          label: Specify Network
+          query_url:
+            - https://broker.spcoco.org/api/v1/name?namestr=Tulipa sylvestris&provider=gbif,itis,worms&is_accepted=True&gbif_count=True&kingdom=None
+          status_code: 200
+        record_format: ''
+        records:
+          - count: 2
+            errors: {}
+            provider:
+              code: gbif
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=gbif
+              label: GBIF
+              query_url:
+                - https://api.gbif.org/v1/species/match?name=Tulipa+sylvestris&verbose=true
+                - https://api.gbif.org/v1/occurrence/search?taxonKey=5299536
+                - https://api.gbif.org/v1/occurrence/search?taxonKey=5662842
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: https://api.gbif.org/v1/species/5299536
+                s2n:canonical_name: Tulipa sylvestris
+                s2n:common_names: null
+                s2n:gbif_confidence: 97
+                s2n:gbif_occurrence_count: 35191
+                s2n:gbif_occurrence_url: https://api.gbif.org/v1/occurrence/search?taxonKey=5299536
+                s2n:gbif_taxon_key: 5299536
+                s2n:hierarchy:
+                  - class: Liliopsida
+                    family: Liliaceae
+                    genus: Tulipa
+                    kingdom: Plantae
+                    order: Liliales
+                    phylum: Tracheophyta
+                    species: Tulipa sylvestris
+                s2n:itis_credibility: null
+                s2n:itis_tsn: null
+                s2n:kingdom: Plantae
+                s2n:rank: SPECIES
+                s2n:scientific_name: Tulipa sylvestris L.
+                s2n:status: ACCEPTED
+                s2n:synonyms: []
+                s2n:view_url: https://www.gbif.org/species/5299536
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+              - s2n:api_url: https://api.gbif.org/v1/species/5662842
+                s2n:canonical_name: Tulipa silvestris
+                s2n:common_names: null
+                s2n:gbif_confidence: 94
+                s2n:gbif_occurrence_count: 0
+                s2n:gbif_occurrence_url: https://api.gbif.org/v1/occurrence/search?taxonKey=5662842
+                s2n:gbif_taxon_key: 5662842
+                s2n:hierarchy:
+                  - class: Liliopsida
+                    family: Liliaceae
+                    genus: Tulipa
+                    kingdom: Plantae
+                    order: Liliales
+                    phylum: Tracheophyta
+                    species: Tulipa silvestris
+                s2n:itis_credibility: null
+                s2n:itis_tsn: null
+                s2n:kingdom: Plantae
+                s2n:rank: SPECIES
+                s2n:scientific_name: Tulipa silvestris Herb.Bout. ex Willk. & Lange, 1862
+                s2n:status: ACCEPTED
+                s2n:synonyms: []
+                s2n:view_url: https://www.gbif.org/species/5662842
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+            service: name
+          - count: 1
+            errors: {}
+            provider:
+              code: itis
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=itis
+              label: ITIS
+              query_url:
+                - https://services.itis.gov?wt=json&q=nameWInd:Tulipa\%20sylvestris
+              status_code: 200
+            record_format: ''
+            records:
+              - s2n:api_url: https://services.itis.gov?q=tsn:43106
+                s2n:canonical_name: Tulipa sylvestris
+                s2n:common_names: null
+                s2n:gbif_confidence: null
+                s2n:gbif_occurrence_count: null
+                s2n:gbif_occurrence_url: null
+                s2n:gbif_taxon_key: null
+                s2n:hierarchy:
+                  - class: Magnoliopsida
+                    family: Liliaceae
+                    genus: Tulipa
+                    kingdom: Plantae
+                    order: Liliales
+                    phylum: null
+                    species: Tulipa sylvestris
+                s2n:itis_credibility: TWG standards met
+                s2n:itis_tsn: '43106'
+                s2n:kingdom: Plantae
+                s2n:rank: Species
+                s2n:scientific_name: Tulipa sylvestris L.
+                s2n:status: accepted
+                s2n:synonyms: []
+                s2n:view_url: https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=43106
+                s2n:worms_isBrackish: null
+                s2n:worms_isExtinct: null
+                s2n:worms_isFreshwater: null
+                s2n:worms_isMarine: null
+                s2n:worms_isTerrestrial: null
+                s2n:worms_lsid: null
+                s2n:worms_match_type: null
+                s2n:worms_valid_AphiaID: null
+            service: name
+          - count: 0
+            errors:
+              error:
+                - WormsAPI; URL http://www.marinespecies.org/rest/AphiaRecordsByMatchNames, code = 204, reason = No Content
+            provider:
+              code: worms
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=worms
+              label: WoRMS
+              query_url:
+                - http://www.marinespecies.org/rest/AphiaRecordsByMatchNames?marine_only=true&scientificnames%5B%5D%3D=Tulipa+sylvestris
+              status_code: 204
+            record_format: ''
+            records: []
+            service: name
+        service: name
+    occ_tentacles:
+      description: 'occid: ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5'
+      value:
+        count: 4
+        errors: {}
+        provider:
+          code: specifynetwork
+          icon_url: https://broker.spcoco.org/api/v1/badge?provider=specifynetwork
+          label: Specify Network
+          query_url:
+            - https://broker.spcoco.org/api/v1/occ?occid=ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5&provider=specify,gbif,idb,mopho&count_only=False
+          status_code: 200
+        record_format: ''
+        records:
+          - count: 1
+            errors: {}
+            provider:
+              code: specify
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=specify
+              label: Specify
+              query_url:
+                - https://syftorium.org/api/v1/sp_cache/collection/d4b334b9-8063-4fab-bd0d-71e3fc04ae00/occurrences/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+              status_code: 200
+            record_format: ''
+            records:
+              - dcterms:accessRights: http://biodiversity.ku.edu/research/university-kansas-biodiversity-institute-data-publication-and-use-norms
+                dcterms:language: null
+                dcterms:license: null
+                dcterms:modified: '2014-10-29 12:38:05.0'
+                dcterms:type: null
+                dwc:associatedReferences: []
+                dwc:associatedSequences: []
+                dwc:basisOfRecord: PreservedSpecimen
+                dwc:catalogNumber: '66968'
+                dwc:class: Aves
+                dwc:collectionCode: KUO
+                dwc:country: USA
+                dwc:countryCode: null
+                dwc:county: Boulder
+                dwc:datasetName: University of Kansas Biodiversity Institute Ornithology Collection
+                dwc:day: '11'
+                dwc:decimalLatitude: null
+                dwc:decimalLongitude: null
+                dwc:family: Corvidae
+                dwc:fieldNumber: null
+                dwc:genus: Perisoreus
+                dwc:geodeticDatum: null
+                dwc:institutionCode: KU
+                dwc:kingdom: Animalia
+                dwc:locality: Ward, 2.5 mi. W
+                dwc:month: '6'
+                dwc:order: Passeriformes
+                dwc:otherCatalogNumbers: null
+                dwc:phylum: Chordata
+                dwc:preparations: Alcoholic - 1
+                dwc:recordedBy: PATTERSON, R.
+                dwc:scientificName: Perisoreus canadensis
+                dwc:scientificNameAuthorship: null
+                dwc:specificEpithet: canadensis
+                dwc:stateProvince: Colorado
+                dwc:taxonRank: null
+                dwc:year: '1972'
+                gbif:acceptedScientificName: null
+                gbif:datasetKey: null
+                gbif:gbifID: null
+                gbif:publishingOrgKey: null
+                idigbio:uuid: null
+                mopho:specimen.specimen_id: null
+                s2n:api_url: null
+                s2n:issues: {}
+                s2n:specify_identifier: ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+                s2n:view_url: null
+            service: occ
+          - count: 1
+            errors: {}
+            provider:
+              code: gbif
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=gbif
+              label: GBIF
+              query_url:
+                - https://api.gbif.org/v1/occurrence/search?occurrenceID=ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+              status_code: 200
+            record_format: ''
+            records:
+              - dcterms:accessRights: http://biodiversity.ku.edu/research/university-kansas-biodiversity-institute-data-publication-and-use-norms
+                dcterms:language: en
+                dcterms:license: http://creativecommons.org/licenses/by/4.0/legalcode
+                dcterms:modified: null
+                dcterms:type: PhysicalObject
+                dwc:associatedReferences: []
+                dwc:associatedSequences: []
+                dwc:basisOfRecord: PRESERVED_SPECIMEN
+                dwc:catalogNumber: '66968'
+                dwc:class: Aves
+                dwc:collectionCode: Birds
+                dwc:country: United States of America
+                dwc:countryCode: US
+                dwc:county: Boulder
+                dwc:datasetName: University of Kansas Biodiversity Institute Ornithology Collection
+                dwc:day: '11'
+                dwc:decimalLatitude: null
+                dwc:decimalLongitude: null
+                dwc:family: Corvidae
+                dwc:fieldNumber: '2102'
+                dwc:genus: Perisoreus
+                dwc:geodeticDatum: null
+                dwc:institutionCode: KU
+                dwc:kingdom: Animalia
+                dwc:locality: Ward, 2.5 mi. W
+                dwc:month: '6'
+                dwc:order: Passeriformes
+                dwc:otherCatalogNumbers: null
+                dwc:phylum: Chordata
+                dwc:preparations: Alcoholic - 1
+                dwc:recordedBy: PATTERSON, R. R.
+                dwc:scientificName: Perisoreus canadensis (Linnaeus, 1766)
+                dwc:scientificNameAuthorship: null
+                dwc:specificEpithet: canadensis
+                dwc:stateProvince: Colorado
+                dwc:taxonRank: SPECIES
+                dwc:year: '1972'
+                gbif:acceptedScientificName: Perisoreus canadensis (Linnaeus, 1766)
+                gbif:datasetKey: e635240a-3cb1-4d26-ab87-57d8c7afdfdb
+                gbif:gbifID: '686237100'
+                gbif:publishingOrgKey: b554c320-0560-11d8-b851-b8a03c50a862
+                idigbio:uuid: null
+                mopho:specimen.specimen_id: null
+                s2n:api_url: https://api.gbif.org/v1/occurrence/686237100
+                s2n:issues: {}
+                s2n:specify_identifier: null
+                s2n:view_url: https://www.gbif.org/occurrence/686237100
+            service: occ
+          - count: 1
+            errors: {}
+            provider:
+              code: idb
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=idb
+              label: iDigBio
+              query_url:
+                - https://search.idigbio.org/v2/search/records?rq=%7B%22occurrenceid%22%3A%22ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5%22%7D
+              status_code: 200
+            record_format: ''
+            records:
+              - dcterms:accessRights: http://biodiversity.ku.edu/research/university-kansas-biodiversity-institute-data-publication-and-use-norms
+                dcterms:language: en
+                dcterms:license: http://creativecommons.org/licenses/by/4.0/
+                dcterms:modified: '2014-10-29 12:38:05.0'
+                dcterms:type: PhysicalObject
+                dwc:associatedReferences: []
+                dwc:associatedSequences: []
+                dwc:basisOfRecord: PreservedSpecimen
+                dwc:catalogNumber: '66968'
+                dwc:class: Aves
+                dwc:collectionCode: Birds
+                dwc:country: United States
+                dwc:countryCode: usa
+                dwc:county: Boulder
+                dwc:datasetName: University of Kansas Biodiversity Institute Ornithology Collection
+                dwc:day: '11'
+                dwc:decimalLatitude: null
+                dwc:decimalLongitude: null
+                dwc:family: Corvidae
+                dwc:fieldNumber: '2102'
+                dwc:genus: Perisoreus
+                dwc:geodeticDatum: null
+                dwc:institutionCode: KU
+                dwc:kingdom: Animalia
+                dwc:locality: Ward, 2.5 mi. W
+                dwc:month: '6'
+                dwc:order: Passeriformes
+                dwc:otherCatalogNumbers: null
+                dwc:phylum: Chordata
+                dwc:preparations: Alcoholic - 1
+                dwc:recordedBy: PATTERSON, R. R.
+                dwc:scientificName: Perisoreus canadensis
+                dwc:scientificNameAuthorship: null
+                dwc:specificEpithet: canadensis
+                dwc:stateProvince: Colorado
+                dwc:taxonRank: species
+                dwc:year: '1972'
+                gbif:acceptedScientificName: null
+                gbif:datasetKey: null
+                gbif:gbifID: null
+                gbif:publishingOrgKey: null
+                idigbio:uuid: 438c6349-f17c-4908-88bd-c6cf9fe48747
+                mopho:specimen.specimen_id: null
+                s2n:api_url: https://search.idigbio.org/v2/view/records/438c6349-f17c-4908-88bd-c6cf9fe48747
+                s2n:issues:
+                  dwc_datasetid_added: Darwin Core Dataset ID (dwc:datasetID) added where none was provided.
+                  dwc_multimedia_added: TBD
+                  dwc_originalnameusageid_added: Darwin Core Original Name Usage ID (dwc:originalNameUsageID) added where none was provided.
+                  dwc_parentnameusageid_added: Darwin Core Parent Name Usage ID (dwc:parentNameUsageID) added where none was provided.
+                  dwc_scientificnameauthorship_added: Darwin Core Scientific Name Authorship (dwc:scientificNameAuthorship) added where none was provided.
+                  dwc_taxonid_added: Darwin Core Taxon ID (dwc:taxonID) added where none was provided.
+                  dwc_taxonomicstatus_added: Darwin Core Taxonomic Status (dwc:taxonomicStatus) added where none was provided.
+                  dwc_taxonrank_replaced: Darwin Core Taxon Rank (dwc:taxonRank) replaced with a standardized value from GBIF Backbone Taxonomy.
+                  gbif_canonicalname_added: GBIF Canonical Name added from GBIF Backbone Taxonomy.
+                  gbif_genericname_added: GBIF Generic Name added from GBIF Backbone Taxonomy.
+                  gbif_reference_added: GBIF Reference added from GBIF Backbone Taxonomy
+                  gbif_taxon_corrected: A match in GBIF Backbone Taxonomy was found. Inverse of taxon_match_failed flag.
+                  gbif_vernacularname_added: GBIF Vernacular Name (common name) added.
+                  idigbio_isocountrycode_added: iDigBio ISO 3166-1 alpha-3 Country Code added.
+                s2n:specify_identifier: null
+                s2n:view_url: https://www.idigbio.org/portal/records/438c6349-f17c-4908-88bd-c6cf9fe48747
+            service: occ
+          - count: 1
+            errors: {}
+            provider:
+              code: mopho
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=mopho
+              label: MorphoSource
+              query_url:
+                - https://ms1.morphosource.org/api/v1/find/specimens?start=0&limit=1000&q=occurrence_id%3Aed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+              status_code: 200
+            record_format: ''
+            records:
+              - dcterms:accessRights: null
+                dcterms:language: null
+                dcterms:license: null
+                dcterms:modified: null
+                dcterms:type: null
+                dwc:associatedReferences: []
+                dwc:associatedSequences: []
+                dwc:basisOfRecord: null
+                dwc:catalogNumber: '66968'
+                dwc:class: null
+                dwc:collectionCode: null
+                dwc:country: null
+                dwc:countryCode: null
+                dwc:county: null
+                dwc:datasetName: null
+                dwc:day: null
+                dwc:decimalLatitude: null
+                dwc:decimalLongitude: null
+                dwc:family: null
+                dwc:fieldNumber: null
+                dwc:genus: null
+                dwc:geodeticDatum: null
+                dwc:institutionCode: ku
+                dwc:kingdom: null
+                dwc:locality: null
+                dwc:month: null
+                dwc:order: null
+                dwc:otherCatalogNumbers: null
+                dwc:phylum: null
+                dwc:preparations: null
+                dwc:recordedBy: null
+                dwc:scientificName: null
+                dwc:scientificNameAuthorship: null
+                dwc:specificEpithet: null
+                dwc:stateProvince: null
+                dwc:taxonRank: null
+                dwc:year: null
+                gbif:acceptedScientificName: null
+                gbif:datasetKey: null
+                gbif:gbifID: null
+                gbif:publishingOrgKey: null
+                idigbio:uuid: 438c6349-f17c-4908-88bd-c6cf9fe48747
+                mopho:specimen.specimen_id: null
+                s2n:api_url: null
+                s2n:issues: {}
+                s2n:specify_identifier: null
+                s2n:view_url: https://www.morphosource.org/concern/biological_specimens/000S25481
+            service: occ
+        service: occ
+    resolve:
+      description: 'occid: ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5'
+      value:
+        count: 1
+        errors: {}
+        provider:
+          code: specifynetwork
+          icon_url: https://broker.spcoco.org/api/v1/badge?provider=specifynetwork
+          label: Specify Network
+          query_url:
+            - https://broker.spcoco.org/api/v1/resolve?occid=ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+          status_code: 200
+        record_format: ''
+        records:
+          - count: 1
+            errors: {}
+            provider:
+              code: specify
+              icon_url: https://broker.spcoco.org/api/v1/badge?provider=specify
+              label: Specify
+              query_url:
+                - https://syftorium.org/api/v1/resolve/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+              status_code: 200
+            record_format: ''
+            records:
+              - dwc:basisOfRecord: PreservedSpecimen
+                dwc:institutionCode: KUO
+                s2n:api_url: https://syftorium.org/api/v1/sp_cache/collection/d4b334b9-8063-4fab-bd0d-71e3fc04ae00/occurrences/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+                s2n:ark: http://spcoco.org/ark:/ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+                s2n:dataset_guid: d4b334b9-8063-4fab-bd0d-71e3fc04ae00
+                s2n:date: '2021-09-29'
+                s2n:ident: ed8cfa5a-7b47-11e4-8ef3-782bcb9cd5b5
+            service: resolve
+        service: resolve
