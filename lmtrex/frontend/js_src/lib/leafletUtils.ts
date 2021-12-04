@@ -83,6 +83,11 @@ export function showMap(
 ): Readonly<[L.Map, L.Control.Layers]> {
   const map = L.map(mapContainer, {
     maxZoom: 23,
+    /*
+    * Workaround for pop-ups not working in Safari. See:
+    * https://stackoverflow.com/questions/65369083/popup-does-not-open-when-clicking-on-marker-safari/65369228
+    * */
+    tap: false,
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
 
   // @ts-expect-error GestureHandling plugin has no type definitions
