@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, make_response, request, render_template
+from flask import Flask, request, render_template, url_for
+import os
 
 from lmtrex.flask_app.broker.address import AddressSvc
 from lmtrex.flask_app.broker.badge import BadgeSvc
@@ -9,24 +10,31 @@ from lmtrex.flask_app.broker.occ import OccurrenceSvc
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.flask_app.broker.stats import StatsSvc
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(
+    __name__, 
+    template_folder='../templates', 
+    static_folder='../../static', 
+    static_url_path='/static')
 app.config['JSON_SORT_KEYS'] = False
+
+# downloadable from <baseurl>/static/schema/open_api.yaml
+SCHEMA_FNAME = 'open_api.yaml'
+SCHEMA_FILE = 'schema/{}'.format(SCHEMA_FNAME)
 
 # .....................................................................................
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# # ..........................
+# @app.route('/api/v1/schema')
+# def schema():
+#     return "<a href={}>API schema</a>".format(
+#         SCHEMA_FNAME, url_for('static', filename='{}'.format(SCHEMA_FILE)))
 
 # ..........................
-@app.route('/api/v1/openapi')
-def openapi():
-    return render_template('open_api.yaml')
-
-# ..........................
-@app.route('/api/v1/docs')
-def swagger():
-    print('sending docs')
+@app.route('/api/v1/swaggerui')
+def swagger_ui():
     return render_template('swagger_ui.html')
 
 # .....................................................................................

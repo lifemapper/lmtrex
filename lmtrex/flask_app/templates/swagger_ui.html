@@ -18,7 +18,8 @@
 
     <script>
       SwaggerUIBundle({
-        url: "/api/v1/openapi",
+        url: "/static/schema/open_api.yaml",
+        <!-- url: "{{ url_for('static', filename='schema/open_api.yaml') }}", -->
         dom_id: "#swagger-ui",
       });
     </script>
