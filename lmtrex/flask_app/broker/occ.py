@@ -28,7 +28,7 @@ class OccurrenceSvc(_S2nService):
                 if cls.SERVICE_TYPE['endpoint'] in p[S2nKey.SERVICES]:
                     provnames.add(p[S2nKey.PARAM])
         # Fewer providers by dataset
-        elif 'dataset_key' in filter_params.keys():
+        elif 'gbif_dataset_key' in filter_params.keys():
             provnames = set([ServiceProvider.GBIF[S2nKey.PARAM]])
         return provnames
 
@@ -86,14 +86,14 @@ class OccurrenceSvc(_S2nService):
 
     # ...............................................
     @classmethod
-    def _get_gbif_records(cls, occid, dataset_key, count_only):
+    def _get_gbif_records(cls, occid, gbif_dataset_key, count_only):
         try:
             if occid is not None:
                 output = GbifAPI.get_occurrences_by_occid(
                     occid, count_only=count_only)
-            elif dataset_key is not None:
+            elif gbif_dataset_key is not None:
                 output = GbifAPI.get_occurrences_by_dataset(
-                    dataset_key, count_only)
+                    gbif_dataset_key, count_only)
         except Exception as e:
             traceback = get_traceback()
             output = GbifAPI.get_api_failure(
@@ -106,16 +106,16 @@ class OccurrenceSvc(_S2nService):
 
     # ...............................................
     @classmethod
-    def _get_records(cls, occid, req_providers, count_only, dataset_key=None):
+    def _get_records(cls, occid, req_providers, count_only, gbif_dataset_key=None):
         allrecs = []
         # for response metadata
         query_term = None
         provstr = ','.join(req_providers)
         if occid is not None:
             query_term = 'occid={}&provider={}&count_only={}'.format(occid, provstr, count_only)
-        elif dataset_key:
+        elif gbif_dataset_key:
             try:
-                query_term = 'dataset_key={}&provider={}&count_only={}'.format(dataset_key, provstr, count_only)
+                query_term = 'gbif_dataset_key={}&provider={}&count_only={}'.format(gbif_dataset_key, provstr, count_only)
             except:
                 pass
 
@@ -124,7 +124,7 @@ class OccurrenceSvc(_S2nService):
             if occid is not None:
                 # GBIF
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    gbif_output = cls._get_gbif_records(occid, dataset_key, count_only)
+                    gbif_output = cls._get_gbif_records(occid, gbif_dataset_key, count_only)
                     allrecs.append(gbif_output)
                 # iDigBio
                 elif pr == ServiceProvider.iDigBio[S2nKey.PARAM]:
@@ -139,9 +139,9 @@ class OccurrenceSvc(_S2nService):
                     sp_output = cls._get_specify_records(occid, count_only)
                     allrecs.append(sp_output)
             # Filter by parameters
-            elif dataset_key:
+            elif gbif_dataset_key:
                 if pr == ServiceProvider.GBIF[S2nKey.PARAM]:
-                    gbif_output = cls._get_gbif_records(occid, dataset_key, count_only)
+                    gbif_output = cls._get_gbif_records(occid, gbif_dataset_key, count_only)
                     allrecs.append(gbif_output)
 
         prov_meta = cls._get_s2n_provider_response_elt(query_term=query_term)
@@ -154,7 +154,7 @@ class OccurrenceSvc(_S2nService):
 
     # ...............................................
     @classmethod
-    def get_occurrence_records(cls, occid=None, provider=None, dataset_key=None, count_only=False, **kwargs):
+    def get_occurrence_records(cls, occid=None, provider=None, gbif_dataset_key=None, count_only=False, **kwargs):
         """Get one or more occurrence records for a dwc:occurrenceID from each
         available occurrence record service.
         
@@ -171,13 +171,13 @@ class OccurrenceSvc(_S2nService):
             list of dictionaries of records corresponding to specimen 
             occurrences in the provider database
         """
-        if occid is None and dataset_key is None:
+        if occid is None and gbif_dataset_key is None:
             return cls.get_endpoint()
         else:   
             # No filter_params defined for Name service yet
             try:
                 good_params, errinfo = cls._standardize_params(
-                    occid=occid, provider=provider, dataset_key=dataset_key, count_only=count_only)
+                    occid=occid, provider=provider, gbif_dataset_key=gbif_dataset_key, count_only=count_only)
                 # Bad parameters
                 try:
                     error_description = '; '.join(errinfo['error'])
@@ -193,7 +193,7 @@ class OccurrenceSvc(_S2nService):
             try:
                 output = cls._get_records(
                     good_params['occid'], good_params['provider'], good_params['count_only'], 
-                    dataset_key=good_params['dataset_key'])
+                    gbif_dataset_key=good_params['gbif_dataset_key'])
 
                 # Add message on invalid parameters to output
                 try:

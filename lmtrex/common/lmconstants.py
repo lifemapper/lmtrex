@@ -150,7 +150,7 @@ class APIService:
         'params': ['provider', 'namestr', 'is_accepted', 'gbif_parse', 'gbif_count', 'kingdom'],
         S2nKey.RECORD_FORMAT: ''}
     # Specimen occurrence records
-    Occurrence = {'endpoint': S2nEndpoint.Occurrence, 'params': ['provider', 'occid', 'dataset_key', 'count_only'],
+    Occurrence = {'endpoint': S2nEndpoint.Occurrence, 'params': ['provider', 'occid', 'gbif_dataset_key', 'count_only'],
         S2nKey.RECORD_FORMAT: ''}
     # Specify guid resolver
     Resolve = {
@@ -398,7 +398,7 @@ BrokerParameters = {
     'itis_match': {'type': False, 'default': False},
     'kingdom': {'type': '', 'default': None},
     'occid': {'type': '', 'default': None},
-    'dataset_key': {'type': '', 'default': None},
+    'gbif_dataset_key': {'type': '', 'default': None},
     'count_only': {'type': False, 'default': False},
     'url': {'type': '', 'default': None},
     'scenariocode': {
