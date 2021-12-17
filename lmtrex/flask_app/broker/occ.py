@@ -1,6 +1,4 @@
 from http import HTTPStatus
-from markupsafe import escape
-from urllib.error import HTTPError
 from werkzeug.exceptions import (BadRequest, InternalServerError)
 
 from lmtrex.common.lmconstants import (APIService, ServiceProvider)

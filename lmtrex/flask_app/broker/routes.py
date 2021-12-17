@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, jsonify, make_response, request, render_template
 
 from lmtrex.flask_app.broker.address import AddressSvc
 from lmtrex.flask_app.broker.badge import BadgeSvc
@@ -9,8 +9,25 @@ from lmtrex.flask_app.broker.occ import OccurrenceSvc
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.flask_app.broker.stats import StatsSvc
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 app.config['JSON_SORT_KEYS'] = False
+
+# .....................................................................................
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+# ..........................
+@app.route('/api/v1/openapi')
+def openapi():
+    return render_template('open_api.yaml')
+
+# ..........................
+@app.route('/api/v1/docs')
+def swagger():
+    print('sending docs')
+    return render_template('swagger_ui.html')
 
 # .....................................................................................
 @app.route("/api/v1/address")
@@ -190,3 +207,8 @@ def frontend_get():
     namestr = request.args.get('namestr', default = None, type = str)
     response = FrontendSvc.get_frontend(occid=occid, namestr=namestr)
     return response
+
+# .....................................................................................
+# .....................................................................................
+if __name__ == "__main__":
+    app.run(debug=True)
