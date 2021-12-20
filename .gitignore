@@ -1,6 +1,9 @@
 # project virtual env
 venv/
 
+# pydev-eclipse project
+.pydevproject
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
