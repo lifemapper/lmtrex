@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request, render_template, url_for
 import json
 import os
 
+from lmtrex.common.lmconstants import (
+    TEMPLATE_DIR, STATIC_DIR, SCHEMA_DIR, SCHEMA_FNAME)
 from lmtrex.flask_app.broker.address import AddressSvc
 from lmtrex.flask_app.broker.badge import BadgeSvc
 from lmtrex.flask_app.broker.frontend import FrontendSvc
@@ -12,10 +14,6 @@ from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.flask_app.broker.stats import StatsSvc
 
 # downloadable from <baseurl>/static/schema/open_api.yaml
-SCHEMA_FNAME = 'open_api.yaml'
-SCHEMA_FILE = 'schema/{}'.format(SCHEMA_FNAME)
-STATIC_DIR='../../static'
-TEMPLATE_DIR = '../templates'
 
 app = Flask(
     __name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path='/static')
@@ -36,8 +34,8 @@ def index():
 # ..........................
 @app.route('/api/v1/schema')
 def display_raw_schema():
-    fname = os.path.join(STATIC_DIR, SCHEMA_FILE)
-    fname = '/Users/aimeestewart/git/lmtrex/lmtrex/static/schema/open_api.yaml'
+    fname = os.path.join(SCHEMA_DIR, SCHEMA_FNAME)
+    # fname = '/Users/aimeestewart/git/lmtrex/lmtrex/static/schema/open_api.yaml'
     with open(fname, 'r') as f:
         schema = f.read()
     return schema

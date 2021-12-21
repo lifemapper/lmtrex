@@ -25,7 +25,13 @@ GBIF_MISSING_KEY = 'unmatched_gbif_ids'
 # VALID broker parameter options, must be list
 VALID_MAP_REQUESTS = ['getmap', 'getlegendgraphic']
 VALID_ICON_OPTIONS = ['active', 'inactive', 'hover']
-ICON_DIR='../../static/img'
+
+STATIC_DIR='../frontend/static'
+ICON_DIR='{}/icon'.format(STATIC_DIR)
+
+TEMPLATE_DIR = '../templates'
+SCHEMA_DIR='{}/schema'.format(STATIC_DIR)
+SCHEMA_FNAME = 'open_api.yaml'
 
 ICON_CONTENT = 'image/png'
     
