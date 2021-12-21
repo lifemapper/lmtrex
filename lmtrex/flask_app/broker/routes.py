@@ -1,4 +1,5 @@
-from flask import Flask, request, render_template, url_for
+from flask import Flask, jsonify, request, render_template, url_for
+import json
 import os
 
 from lmtrex.flask_app.broker.address import AddressSvc
@@ -10,16 +11,16 @@ from lmtrex.flask_app.broker.occ import OccurrenceSvc
 from lmtrex.flask_app.broker.resolve import ResolveSvc
 from lmtrex.flask_app.broker.stats import StatsSvc
 
-app = Flask(
-    __name__, 
-    template_folder='../templates', 
-    static_folder='../../static', 
-    static_url_path='/static')
-app.config['JSON_SORT_KEYS'] = False
-
 # downloadable from <baseurl>/static/schema/open_api.yaml
 SCHEMA_FNAME = 'open_api.yaml'
 SCHEMA_FILE = 'schema/{}'.format(SCHEMA_FNAME)
+STATIC_DIR='../../static'
+TEMPLATE_DIR = '../templates'
+
+app = Flask(
+    __name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR, static_url_path='/static')
+app.config['JSON_SORT_KEYS'] = False
+
 
 # .....................................................................................
 @app.route('/')
@@ -28,9 +29,18 @@ def index():
 
 # # ..........................
 # @app.route('/api/v1/schema')
-# def schema():
+# def download_schema():
 #     return "<a href={}>API schema</a>".format(
-#         SCHEMA_FNAME, url_for('static', filename='{}'.format(SCHEMA_FILE)))
+#         url_for('static', filename='{}'.format(SCHEMA_FILE)))
+
+# ..........................
+@app.route('/api/v1/schema')
+def display_raw_schema():
+    fname = os.path.join(STATIC_DIR, SCHEMA_FILE)
+    fname = '/Users/aimeestewart/git/lmtrex/lmtrex/static/schema/open_api.yaml'
+    with open(fname, 'r') as f:
+        schema = f.read()
+    return schema
 
 # ..........................
 @app.route('/api/v1/swaggerui')
