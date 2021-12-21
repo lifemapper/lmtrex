@@ -22,6 +22,8 @@ COPY --chown=specify:specify ./requirements.txt .
 RUN python -m venv venv \
  && venv/bin/pip install --no-cache-dir -r ./requirements.txt
 
+COPY --chown=specify:specify ./lmtrex ./lmtrex
+
 
 
 FROM back-end-base as dev-back-end
@@ -39,8 +41,6 @@ CMD venv/bin/python -m debugpy --listen 0.0.0.0:${DEBUG_PORT} -m ${FLASK_MANAGE}
 
 
 FROM back-end-base as back-end
-
-COPY --chown=specify:specify ./lmtrex ./lmtrex
 ENV FLASK_ENV=production
 CMD venv/bin/python -m gunicorn -w 4 --bind 0.0.0.0:5000 ${FLASK_APP}
 
