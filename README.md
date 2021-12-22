@@ -120,6 +120,12 @@ And run this command (which ignores running container):
 docker system prune --all --volumes
 ```
 
+To examine containers at a shell prompt: 
+
+```zsh
+docker exec -it lmtrex_nginx_1 /bin/sh
+```
+
 ### SSL certificates
 
 SSL certificates are served from the base VM, and need apache to be renewed.  
