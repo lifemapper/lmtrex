@@ -2,6 +2,7 @@ import React from 'react';
 import type { State } from 'typesafe-reducer';
 import { generateReducer } from 'typesafe-reducer';
 
+import { Section } from '../components/common';
 import { ErrorMessage } from '../components/errorBoundary';
 import { Loading } from '../components/loading';
 import type { Component, RA } from '../config';
@@ -86,7 +87,11 @@ export const stateReducer = generateReducer<Component | undefined, States>({
                 scientificName={scientificName}
               />
             </>
-          ) : undefined}
+          ) : (
+            <Section key="name" anchor="name" label={frontEndText('taxonomy')}>
+              <p>{frontEndText('fetchingInformation')}</p>
+            </Section>
+          )}
           {typeof occurrence === 'object' ? (
             <SyftoriumLink occurrence={occurrence} />
           ) : undefined}
