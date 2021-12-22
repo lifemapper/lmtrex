@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     volumes:
       - "scratch-path:/scratch-path"
-      - "webpack-output:/home/specify/lmtrex/frontend/js_src/dist"
+      - "webpack-output:/volumes/webpack-output"
       - "static-files:/home/specify/lmtrex/frontend/static"
 
   front-end:

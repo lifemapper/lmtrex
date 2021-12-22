@@ -36,7 +36,7 @@ def inline_static(file_path):
 
 
 def get_bundle_location(name):
-    manifest = json.loads(inline_static("js_src/dist/manifest.json"))
+    manifest = json.loads(inline_static("/volumes/webpack-output/manifest.json"))
     file_name = os.path.basename(manifest[name])
     return f"/static/js/{file_name}"
 
