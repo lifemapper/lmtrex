@@ -2,24 +2,6 @@ import React from 'react';
 
 import type { Component } from '../config';
 
-const tagLines = [
-  'Searching',
-  'Running',
-  'Exploring',
-  'Hustling',
-  'Gathering',
-  'Hacking',
-  'Pursuing',
-  'Going after',
-  'Assembling',
-  'Fetching',
-  'Grabbing',
-  'Loading',
-];
-
-const getTagLine = (): string =>
-  tagLines[Math.floor(Math.random() * tagLines.length)];
-
 export function Loading(): Component {
   // Don't regenerate the tagline on reRenders
   const [tagLine] = React.useState(getTagLine());
@@ -36,7 +18,7 @@ export function Loading(): Component {
             />
           </div>
         </div>
-        <h1>{tagLine}</h1>
+        <h1>Extending...</h1>
       </div>
     </div>
   );
