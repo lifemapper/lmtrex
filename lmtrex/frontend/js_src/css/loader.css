@@ -24,6 +24,7 @@ body.loading main {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
 
 #loader .logo {
@@ -32,6 +33,7 @@ body.loading main {
   align-content: center;
   justify-content: center;
   position: relative;
+  width: fit-content;
   row-gap: calc(var(--double-size) * 3);
 }
 
