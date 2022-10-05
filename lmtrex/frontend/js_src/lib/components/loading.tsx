@@ -3,9 +3,6 @@ import React from 'react';
 import type { Component } from '../config';
 
 export function Loading(): Component {
-  // Don't regenerate the tagline on reRenders
-  const [tagLine] = React.useState(getTagLine());
-
   return (
     <div id="loader">
       <div>
@@ -18,7 +15,7 @@ export function Loading(): Component {
             />
           </div>
         </div>
-        <h1>Extending...</h1>
+        <h1>Extending the Specimen...</h1>
       </div>
     </div>
   );
