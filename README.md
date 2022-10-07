@@ -1,6 +1,9 @@
-# t-rex
+# lmtrex
 
-The Lifemapper trex repository houses objects and common tools used within a
+This project has been merged into the https://github.com/specifysystems/specify_network
+repository, and archived.
+
+The Lifemapper lmtrex repository houses objects and common tools used within a
 Lifemapper Broker installation that may also be useful for outside
 contributors and the community as a whole.
 
@@ -21,7 +24,7 @@ top level of the repo, activate, then add dependencies from requirements.txt:
 cd ~/git/lmtrex
 python3 -m venv venv
 . venv/bin/activate
-pip3 install flask requests pykew gunicorn
+pip3 install -r requirements.txt
 ```
 
 then start the flask application
@@ -70,7 +73,7 @@ Run the containers:
 docker compose -f docker-compose.yml -f docker-compose.development.yml up
 ```
 
-Broker is now available at [http://localhost/](http://localhost:443).
+Broker is now available at [https://localhost/](http://localhost:443).
 
 Webpack is watching for front-end file changes and rebuilds the bundle when
 needed.
@@ -120,11 +123,31 @@ And run this command (which ignores running container):
 docker system prune --all --volumes
 ```
 
+And rebuild/restart:
+
+```zsh
+docker compose up -d
+```
+
 To examine containers at a shell prompt: 
 
 ```zsh
 docker exec -it lmtrex_nginx_1 /bin/sh
 ```
+
+Error port in use:
+"Error starting userland proxy: listen tcp4 0.0.0.0:443: bind: address already in use"
+
+See what else is using the port.  In my case apache was started on reboot.  Bring down 
+all docker containers, shut down httpd, bring up docker.
+
+```zsh
+lsof -i -P -n | grep 443
+docker compose down
+systemctl stop httpd
+docker compose  up -d
+```
+
 
 ### SSL certificates
 
